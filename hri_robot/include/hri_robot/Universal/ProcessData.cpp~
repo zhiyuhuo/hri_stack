@@ -1,0 +1,245 @@
+#ifndef PROCESSDATA_CPP
+#define PROCESSDATA_CPP
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "std_msgs/String.h"
+#include "sensor_msgs/PointCloud2.h"
+
+#include <math.h>
+#include <time.h>
+#include <vector>
+
+#include "../Defines/Defines.h"
+#include "Header.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
+
+vector<float> ReadPointCloud(int name, int sequence)
+{
+	vector<float> res;
+	int L = 10;
+
+	char pointscloudFileName[80] = {};
+	sprintf(pointscloudFileName, "//home//hri//Thesisdata//RawData//%d//pt-%d-%d", name, name, sequence);	
+
+	res.clear();
+	FILE* fp;	
+	fp = fopen(pointscloudFileName, "r");
+	for (int i = 0; i < IMG_SIZE3; i++)
+	{
+		float f;
+		char str_f[10] = {};
+
+		for(int j = 0; j < L; j++)
+		{ 
+			str_f[j] = fgetc(fp);
+		}
+		char cc = fgetc(fp);
+		
+		f = atof(str_f);
+
+		res.push_back(f);
+	} 
+	fclose(fp);
+
+	return res;
+}
+
+vector<int> ReadIndex(int name, int sequence)
+{
+	vector<int> res;
+	int L = 10;
+
+	char indexFileName[80] = {};
+	sprintf(indexFileName, "//home//hri//Thesisdata//RawData//%d//index-%d-%d", name, name, sequence);	
+	res.clear();
+	FILE* fp;	
+	fp = fopen(indexFileName, "r");
+	fseek(fp, 0L, SEEK_END);
+	int sz = ftell(fp);
+	fclose(fp);
+
+	fp = fopen(indexFileName, "r");
+
+	for (int i = 0; i < sz / 11; i++)
+	{
+		int id;
+		char str_id[10] = {};
+
+		for(int j = 0; j < L; j++)
+		{ 
+			str_id[j] = fgetc(fp);
+		}
+		char cc = fgetc(fp);
+		
+		id = atoi(str_id);
+
+		res.push_back(id);
+	} 
+	fclose(fp);
+
+	return res;
+}
+
+cv::Mat ReadSceneRGB(int name, int sequence)
+{
+	char rgbFileName[80] = {};
+	sprintf(rgbFileName, "//home//hri//Thesisdata//RawData//%d//scenseimg-%d-%d.bmp", name, name, sequence);
+
+	cv::Mat res = cv::imread(rgbFileName, 1);
+	return res;
+}
+
+void ReadSceneRGB(int name, int sequence, IplImage *imgSceneRGB)
+{
+	char rgbFileName[80] = {};
+	sprintf(rgbFileName, "//home//hri//Thesisdata//RawData//%d//scenseimg-%d-%d.bmp", name, name, sequence);
+	IplImage* imgScene = cvLoadImage(rgbFileName);
+	memcpy(imgSceneRGB->imageData, imgScene->imageData, IMG_SIZE3);
+	cvReleaseImage(&imgScene);
+}
+
+cv::Mat ReadTargetRGB(int name, int sequence)
+{
+	char rgbFileName[80] = {};
+	sprintf(rgbFileName, "//home//hri//Thesisdata//RawData//%d//targetimg-%d-%d.bmp", name, name, sequence);
+
+	cv::Mat res = cv::imread(rgbFileName, 1);
+	return res;
+}
+
+void ReadTargetRGB(int name, int sequence, IplImage *imgtargetRGB)
+{
+	char rgbFileName[80] = {};
+	sprintf(rgbFileName, "//home//hri//Thesisdata//RawData//%d//targetimg-%d-%d.bmp", name, name, sequence);
+	IplImage* imgTarget = cvLoadImage(rgbFileName);
+	memcpy(imgtargetRGB->imageData, imgTarget->imageData, IMG_SIZE3);
+	cvReleaseImage(&imgTarget);
+}
+
+void SaveIntVectorSet(char* name, veread_sceneRGBctor<vector<int> > intVectorSet)
+{
+	FILE* fp;
+	fp = fopen(name, "w");
+	int n = intVectorSet.size();
+	vector<int> example = intVectorSet[0];
+	int d = example.size();
+	for(int i = 0; i < n; i++)
+	{
+		vector<int> sample = intVectorSet[i];
+		for(int j = 0; j < d; j++)
+		{
+			char str_i[10] = {};
+			sprintf(str_i, "%d", sample[j] );
+			for(int j=0; j<10; j++)
+			{ fputc(str_i[j],fp);}
+			fputc(' ',fp);
+		}
+		fputc('\n',fp);
+	}
+
+	fclose(fp);
+}
+
+void SaveFloatVectorSet(char* name, vector<vector<float> > floatVectorSet)
+{
+	FILE* fp;
+	fp = fopen(name, "w");
+	int n = floatVectorSet.size();
+	vector<float> example = floatVectorSet[0];
+	int d = example.size();
+	for(int i = 0; i < n; i++)
+	{
+		vector<float> sample = floatVectorSet[i];
+		for(int j = 0; j < d; j++)
+		{
+			char str_f[20] = {};
+			sprintf(str_f, "%f", sample[j] );
+			for(int k=0; k < 20; k++)
+			{ 
+				fputc(str_f[k],fp);
+			}
+			fputc(' ',fp);
+		}
+		fputc('\n',fp);
+	}
+
+	fclose(fp);
+}
+
+vector<int> ReadIntVectorFile(char* dataName)
+{
+	vector<int> res;
+	FILE* fp;	
+	fp = fopen(dataName, "r");
+	
+	char c;
+	vector<char> cTMP;
+	while(!feof(fp))
+	{
+		c = fgetc(fp);
+		if (c == 46 || (c >= 47 && c < 58))
+		{
+			cTMP.push_back(c);
+		}
+		else 
+		{
+			if (c == 32)
+			{
+				char str_f[10] = {};
+				for(int i = 0; i < cTMP.size(); i++)
+				{ 
+					str_f[i] = cTMP[i];
+				}
+				int i = atoi(str_f);
+				res.push_back(i);
+				cTMP.clear();
+			}
+		}
+	}
+	fclose(fp);
+	
+	return res;
+}
+
+vector<float> ReadFloatVectorFile(char* dataName)
+{
+	vector<float> res;
+	FILE* fp;	
+	fp = fopen(dataName, "r");
+	
+	char c;
+	vector<char> cTMP;
+	while(!feof(fp))
+	{
+		c = fgetc(fp);
+		if (c == 46 || (c >= 47 && c < 58))
+		{
+			cTMP.push_back(c);
+		}
+		else 
+		{
+			if (c == 32)
+			{
+				char str_f[20] = {};
+				for(int i = 0; i < cTMP.size(); i++)
+				{ 
+					str_f[i] = cTMP[i];
+				}
+				float f = atof(str_f);
+				res.push_back(f);
+				cTMP.clear();
+			}
+		}
+	}
+	fclose(fp);
+	
+	return res;
+}
+#endif

@@ -1,0 +1,102 @@
+#ifndef NEW_BEHAVIOR_H_
+#define NEW_BEHAVIOR_H_
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <math.h>
+
+#include "Header.h"
+
+int Robot::SpinSearchTargetFurniture(string tar)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "proceed_perception";		
+		//m_ifSuccessful = 0;
+		m_counter = 0;
+		m_ifFindTarget = 0;
+
+		//cout << "m_action: " << m_action << "show" << endl;
+	}
+	
+	else if (m_action.compare("proceed_perception") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		RecognizeFurniture(tarFurniture);
+		m_action = "decide_turnto_angle_search";
+	}
+	
+	else if (m_action.compare("decide_turnto_angle_search") == 0)
+	{
+		cout << "m_action: " << m_action << " m_counter: " << m_counter <<endl;
+		m_turnTarget = m_theta + PI / 3;
+		if (m_counter > 6)
+		{
+			//m_action = "end";
+			m_action = "decide_target";
+		}
+		else
+		{
+			m_action = "turn_to_search_angle";
+		}
+		m_counter++;
+		cout << "m_action: " << m_action << endl;
+	}
+	
+	else if (m_action.compare("turn_to_search_angle") == 0)
+	{
+		//cout << "angles" << m_theta << ", " << m_turnTarget << endl;
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "proceed_perception";
+		}
+	}
+	
+	else if (m_action.compare("decide_target") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		vector<float> confidenceList;
+		vector<float> distList;
+		cout << "m_furnitureList size: " << m_furnitureList.size() << endl;
+		if (m_furnitureList.size() > 0)
+		{
+		  	m_ifFindTarget = 1;
+			for (int i = 0; i < m_furnitureList.size(); i++)
+			{
+				confidenceList.push_back(m_furnitureList[i].m_confidence);
+			}
+			for (int i = 0; i < m_furnitureList.size(); i++)
+			{
+				distList.push_back((m_furnitureList[i].m_posGL - m_posRobot).GetMagnitude());
+			}
+			vector<int> confidenceSorted = RankArray(confidenceList);
+			vector<int> distSorted = RankArray(distList);
+
+			int L = m_furnitureList.size();
+			m_moveTarget = m_furnitureList[distSorted[L-1]].m_posGL;
+			m_turnTarget = m_furnitureList[distSorted[L-1]].m_thetaGL;
+			m_targetFurniture = m_furnitureList[distSorted[L-1]];
+			printf("target position: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+		}
+		else
+		{
+			m_ifFindTarget = 0;
+		}
+		m_action = "end";
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "init";
+		res = 1;
+	}
+	
+	return res;
+  
+}
+
+#endif

@@ -1,0 +1,218 @@
+#ifndef CRUISE_H_
+#define CRUISE_H_
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <math.h>
+
+#include "std_msgs/String.h"
+#include "sensor_msgs/PointCloud2.h"
+#include <time.h>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include "opencv2/objdetect/objdetect.hpp"
+// #include "opencv2/gpu/gpu.hpp"
+// #include <opencv2/ml/ml.hpp>  
+
+#include "../CommandProc/Header.h"
+#include "Header.h"
+
+using namespace std;
+using namespace cv;
+
+int Robot::Cruise(VecPosition pos1, VecPosition pos2)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_state = "init_glocal_map";
+	}
+	
+	else if (m_state.compare("init_glocal_map") == 0)
+	{
+		ShowTaskInfo();
+		for (int i = 0; i < GLMAP_SIZE; i++)
+		{
+			m_imgGlobalMap->imageData[i] = 150;
+		}
+		DrawGlobalMap();
+		int u1, v1, u2, v2;
+		u1 = (int)((pos1.GetX() + GLMAP_X / 2) / GLMAP_RESOLUTION);
+		v1 = (int)((pos1.GetY() + GLMAP_Y / 2) / GLMAP_RESOLUTION);
+		u2 = (int)((pos2.GetX() + GLMAP_X / 2) / GLMAP_RESOLUTION);
+		v2 = (int)((pos2.GetY() + GLMAP_Y / 2) / GLMAP_RESOLUTION);
+		cvRectangle(m_imgGlobalMap, cvPoint(u1, v1), cvPoint(u2, v2), cvScalar(255, 255, 255), 1, 8, 0);
+		m_state = "perception_and_decide_spin_angle";
+		m_counter = 0;
+	}
+	
+	else if (m_state.compare("perception_and_decide_spin_angle") == 0)
+	{
+		ShowTaskInfo();
+		DrawGlobalMap();
+		m_turnTarget = m_theta + PI / 3;
+		if (m_counter < 6)
+		{
+			m_state = "first_spin";
+		}
+		else
+		{
+			m_state = "decide_start_cruise_pos";
+			//m_state = "end";
+		}
+		m_counter++;
+	}
+	
+	else if (m_state.compare("first_spin") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "perception_and_decide_spin_angle";
+		}
+	}
+	
+	else if (m_state.compare("decide_start_cruise_pos") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = (m_posRobot + TargetPosPlot(pos1, pos2)) / 2;
+	
+		cout << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << endl;
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		m_state = "cruise_turn";
+		m_counter = 0;
+	}
+	
+	else if (m_state.compare("cruise_turn") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "cruise_move";
+		}		
+	}
+	
+	
+	
+	else if (m_state.compare("cruise_move") == 0)
+	{
+		if (ToPosAvoidObstacle(m_moveTarget))
+		{
+			m_state = "cruise_perception";
+		}
+	}
+	
+	else if (m_state.compare("cruise_perception") == 0)
+	{
+		ShowTaskInfo();
+		DrawGlobalMap();
+		m_moveTarget = m_posRobot + (TargetPosPlot(pos1, pos2) - m_posRobot) / 2 * 3;
+		cout << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << endl;
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		m_counter++;
+		if (m_counter < 3)
+		{
+			m_state = "cruise_turn";
+		}
+		else 
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+	}
+	
+	ProcInfoImage();
+	cvShowImage("Global Map", m_imgGlobalMapInfo);
+	cvShowImage("Local Map", m_imgLocalMap);
+	cvWaitKey(1);
+	
+	return res;
+}
+
+VecPosition Robot::TargetPosPlot(VecPosition pos1, VecPosition pos2)
+{
+	VecPosition posRobot = m_posRobot;
+	float thetaRobot = m_theta;
+	VecPosition res = 0;
+	int u1, v1, u2, v2;
+	u1 = (int)((pos1.GetX() + GLMAP_X / 2) / GLMAP_RESOLUTION);
+	v1 = (int)((pos1.GetY() + GLMAP_Y / 2) / GLMAP_RESOLUTION);
+	u2 = (int)((pos2.GetX() + GLMAP_X / 2) / GLMAP_RESOLUTION);
+	v2 = (int)((pos2.GetY() + GLMAP_Y / 2) / GLMAP_RESOLUTION);
+	float distMin = 1000;
+	VecPosition grayMin(1000, 1000);
+	printf("%d %d %d %d\n", u1, v1, u2, v2);
+	for (int i = u1; i < u2; i++)
+	{
+		for (int j = v1; j < v2; j++)
+		{
+			int idx = j * GLMAP_WIDTH + i;
+			//printf("%d\n", (unsigned char)(m_imgGlobalMap->imageData[idx]));
+			if ((unsigned char)(m_imgGlobalMap->imageData[idx]) == 150)
+			{
+				float xf = i * GLMAP_RESOLUTION - GLMAP_X / 2;
+				float yf = j * GLMAP_RESOLUTION - GLMAP_Y / 2;
+				VecPosition posf(xf, yf);
+				float angle = (posf - posRobot).GetDirection() - thetaRobot;
+				float dist = (posf - posRobot).GetMagnitude();
+				//printf("- %f %f %f\n", xf, yf, dist);
+				if (dist < distMin && dist > 1.5)
+				{
+					distMin = dist;
+					grayMin = posf;
+				}
+			}
+		}
+	}
+	printf("%f %f\n", grayMin.GetX(), grayMin.GetY());
+	res = grayMin;
+	return res;
+}
+
+int Robot::GrawRobotPath()
+{
+	int gu = (m_posRobot.GetX() + GLMAP_X / 2) / LOCALMAP_RESOLUTION;
+	int gv = (m_posRobot.GetY() + GLMAP_Y / 2) / LOCALMAP_RESOLUTION;		
+	int gid = gu + gv * GLMAP_WIDTH;
+	m_imgGlobalMap->imageData[gid] = 200;
+}
+
+int Robot::FollowPeople(VecPosition pos1, VecPosition pos2)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_counter = 0;
+		m_state = "detect_people";
+	}
+	
+	else if (m_state.compare("detect_people") == 0)
+	{
+		ToPos(m_moveTarget);
+		ObjectDetection peopleDetector;
+		if (m_counter > 200)
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+	}
+	
+	
+	return res;
+}
+
+#endif

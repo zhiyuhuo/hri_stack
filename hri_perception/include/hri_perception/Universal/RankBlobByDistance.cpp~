@@ -1,0 +1,77 @@
+#ifndef BUILDLOCALMAP_H
+#define BUILDLOCALMAP_H
+#include <stdio.h>
+#include <math.h>
+#include <vector>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include "Header.h"
+#include "../ToolFunctions/Header.h"
+
+using namespace std;
+
+std::vector<int> rank_blob_by_distance(IplImage* Ilabel) // from the nearest to the farthest
+{
+	std::vector<float> blobDistance;
+	int width = Ilabel->width;
+	int height = Ilabel->height;
+	
+	int numblob = 0;
+	for (int i = 0; i < Ilabel->imageSize; i++)
+	{
+		int idi = (int)Ilabel->imageData[i];
+		if (idi > numblob)
+		{
+			numblob = idi;
+		}
+
+	}
+	
+	for(int i = 1; i <= numblob; i++)
+	{
+		blobDistance.push_back(findblobdistance(i, Ilabel));
+	}
+	
+	std::vector<int> res = bubble_rank(blobDistance);
+	for(int i = 0; i < res.size(); i++)
+	{
+		res[i]++;
+	}
+	return res;
+}
+
+std::vector<int> rank_blob_by_distance(cv::Mat Ilabel) // from the nearest to the farthest
+{
+	std::vector<float> blobDistance;
+	int width = Ilabel.cols;
+	int height = Ilabel.rows;
+	
+	int numblob = 0;
+	for (int i = 0; i < width*height; i++)
+	{
+		int idi = (int)Ilabel.data[i];
+		if (idi > numblob)
+		{
+			numblob = idi;
+		}
+
+	}
+	
+	for(int i = 1; i <= numblob; i++)
+	{
+		blobDistance.push_back(findblobdistance(i, Ilabel));
+	}
+	
+	std::vector<int> res = bubble_rank(blobDistance);
+	for(int i = 0; i < res.size(); i++)
+	{
+		res[i]++;
+	}
+	return res;
+}
+
+#endif

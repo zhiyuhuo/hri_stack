@@ -1,0 +1,334 @@
+#ifndef ROBOT_H
+#define ROBOT_H
+
+#include "ros/ros.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+
+#include "std_msgs/String.h"
+#include <std_msgs/Float64.h>
+#include <sensor_msgs/LaserScan.h>
+#include "geometry_msgs/Twist.h"
+#include "nav_msgs/Odometry.h"
+#include <vector>
+#include <iostream>
+#include <math.h>
+#include <time.h>
+#include <sys/timeb.h>
+#include <unistd.h>
+#include <pthread.h>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include "../Geometry/Header.h"
+#include "../Universal/Header.h"
+#include "../CommandProc/Header.h"
+#include "Header.h"
+
+using namespace std;
+using namespace cv;
+
+class SampleInfo
+{
+public:
+	VecPosition m_posGL;
+	VecPosition m_posLC;
+	float m_thetaGL;
+	float m_thetaLC;
+	string m_category;
+	string m_instance;
+	float m_confidence;
+	SampleInfo(){}
+	~SampleInfo(){}
+};
+
+class RobotState
+{
+	string m_ref;
+	string m_dir;
+	string m_tar;
+	VecPosition m_position;
+	float m_theta;
+	vector<int> m_visibleFurniture;
+};
+
+class Robot
+{
+public:
+	Robot();
+	~Robot();
+	
+public:
+	//linear and angular speed control
+	float m_linearSpeed;
+	float m_angularSpeed;
+
+	//Robot Position and Orientation
+	VecPosition m_posRobot;
+	float m_theta;
+
+public:	//robot basic action
+	int ToPos(VecPosition posTarget);
+	int ToAngle(float angleTarget);
+	int ToPosAngle(VecPosition posTarget, float angleTarget);
+	int ToPosP(VecPosition posTarget);
+	
+public:	//robot sensor data processing
+	int m_laserUnitNumber;
+	vector<vector<float> > m_laserData;
+	vector<float> LocalToGlobal(float lx, float ly, float lth); //x, y, theta
+	int Perception();
+	int RecognizeFurniture(string tar);
+	
+public:	//robot linguistic command behavior
+	VecPosition m_moveTarget;
+	float m_turnTarget;
+	SampleInfo m_targetFurniture;
+	vector<SampleInfo> m_furnitureList;
+	vector<SampleInfo> m_tarfurnitureList;
+	int m_counter;
+	int m_ifFindTarget;
+	int m_ifSuccessful;
+	int m_nodeID;
+	double m_absoluteStartTime;
+	
+	vector<RDTNode> m_RDTNodeChain;	
+	string m_targetRoom;
+	string m_targetObject;
+	
+	double GetAbsoluteTime();
+	int RDTNodeProc(RDTNode node);
+	int DscpToCMD(string ref, string dir, string tar);	
+	
+	int MoveCMD(string dir, string tar);
+	int RoomReferenceCMD(string dir, string tar);
+	int DoorReferenceCMD(string dir, string tar);
+	int WallReferenceCMD(string dir, string tar);
+	int RobotReferenceCMD(string dir, string tar);
+	int FurnitureReferenceCMD(string ref, string dir, string tar);
+	
+	VecPosition GetFrontPositionPoint();
+	int SearchTargetFurnitureNearby(string tarFurniture, float searchScale);
+	VecPosition FindRoomKeyPoint(string dir);
+	VecPosition FindWallKeyPoint(string dir);
+	VecPosition FindViewPoint(string frCategory, string dir, VecPosition frPos, float frOrientation);
+	int ShowTaskInfo();
+	
+	int GoToTargetRoom();
+	int SearchAndGoToTargetFurniture();
+	int FetchTargetObject();
+	int GoToTheFrontFurniture(string tar);
+	
+public:	//new Behaviors for imitation learning
+	string m_humanCmd;
+	vector<string> m_cmdWords;
+	vector<float> m_originalRobotPose;
+
+	Mat m_imgmap;
+	Mat m_imgmask;
+	Mat m_imgrobot;
+	Mat m_imgshow;
+	Mat m_imglattice;
+
+	int SpinSearchTargetFurniture(string tar);
+	int SteadySearchTargetFurniture(string tar);
+	int MoveToGlobalPoint(VecPosition posTarget);
+	int MoveToLocalPoint(VecPosition posTarget);
+	int Forward();
+	int Left();
+	int Right();
+	int Stop();
+	int MoveToTargetFurniture();
+	int MoveToFurniture(int id);
+	int TurnAngle(float angle);
+	int SpotTarget(VecPosition posInterest);
+	
+	int m_step;
+	int m_save;
+	string m_cmdID;
+	int ExecuteCommand(string command);
+	
+	int GetRobotState();
+	
+	vector<float> PixelToCoordinate(int u, int v);
+	vector<int> CoordinateToPixel(float x, float y);
+	void ExploreMap();
+	void ShowRobotPose();
+	bool DetectObstacle(int x1, int y1, int x2, int y2);
+	
+	vector<vector<string> > GetGroundingInfo(string fileName);
+	vector<vector<string> > m_groundings;
+	vector<vector<string> > m_cmdRec;
+	vector<vector<float> > m_poseRec;
+	vector<int> m_fr;
+	vector<vector<int> > m_frRec;
+	string m_key;
+	
+	int GetUniversalFurnitureFeature();
+	vector<string> GetRobotPoseOriginalPoseFeature();
+	vector<vector<string> > GetRobotPoseRoomFeature();
+	vector<vector<string> > GetRobotPoseWallFeature();
+	vector<vector<string> > GetRobotPoseR2FFeature();
+	vector<vector<string> > GetRobotPoseF2RFeature();
+	vector<vector<string> > GetRobotPoseF2FFeature();
+	
+	vector<int> FindFurInVision(vector<int> furSet);
+	vector<string> GetSpatialRelationBetweenEntity(vector<float> pose1, vector<float> dim1, vector<float> pose2, vector<float> dim2);
+	vector<float> GetSpatialRelationBetweenEntity2(vector<float> pose1, vector<float> dim1, vector<float> pose2, vector<float> dim2);
+	int GetFurnitureInfor(int frid, string* name, float*angle, float* px, float* py, float*dimx, float* dimy);
+	
+	vector<float> ConvertOriginalAngleFeatureToVector(string f);
+	vector<float> ConvertOriginalPoseFeatureToVector(vector<string> f);
+	vector<float> ConvertRoomFeatureToVector(vector<vector<string> > f);
+	vector<float> ConvertWallFeatureToVector(vector<vector<string> > f);
+	vector<float> Convertr2fFeatureToVector(vector<vector<string> > f);
+	vector<float> Convertf2rFeatureToVector(vector<vector<string> > f);
+	vector<float> Convertf2fFeatureToVector(vector<vector<string> > f);
+	
+	int FindStrIndex(string a, string arr[], int length);
+	vector<int> FintInterestingFeature(vector<string> gd)
+	 
+	
+public:	//robot behavior
+	string m_move;
+	string m_action;
+	string m_state;
+	string m_mission;
+	
+	string m_currentTar;
+	string m_currentRef;
+	string m_currentDir;
+	
+	int DecisionMaking();
+	int Test();
+	int HumanMove(float x, float y, float theta);
+	int KeyBoardAction();
+	int HumanCommand();
+	
+	//This part is only for testing
+	int BuildFakeTestingData();
+	
+public://Show Robot State
+	int ShowRobotState();
+};
+
+Robot::Robot()
+{
+	m_counter = 0;
+	m_step = 0;
+	m_save = 0;
+	m_cmdID = "";
+	
+	m_move = "init";
+	m_action = "stop";
+	m_state = "init";	//temporally out of use
+	m_mission = "init";
+	
+	m_posRobot.SetX(0);
+	m_posRobot.SetY(0);
+	m_theta = PI / 2;
+	m_absoluteStartTime = GetAbsoluteTime();
+	
+	m_imgmap = imread("/home/hri/HRI_Doc/map.bmp");
+	m_imgmask = imread("/home/hri/HRI_Doc/mask.bmp");
+	m_imglattice = imread("/home/hri/HRI_Doc/lattice.bmp");
+	m_imgrobot = imread("/home/hri/HRI_Doc/robot.bmp");
+	m_imgshow = m_imgmask.clone();
+	
+	m_fr.push_back(-1);
+}
+
+Robot::~Robot()
+{
+	
+}
+
+double Robot::GetAbsoluteTime()
+{
+	struct timeval  tv;
+	gettimeofday(&tv, NULL);
+
+	double timeInMill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ;	
+	return timeInMill;
+}
+
+vector<float> Robot::LocalToGlobal(float lx, float ly, float lth)
+{
+	vector<float> res(3, 0);
+	float posX = m_posRobot.GetX();
+	float posY = m_posRobot.GetY();
+	float th = m_theta - PI/2;
+	float gx = cos(th) * lx + -sin(th) * ly + posX;
+	float gy = sin(th) * lx + cos(th) * ly + posY;
+	res[0] = gx;
+	res[1] = gy;
+	res[2] = lth + th;
+	while (res[2] > 2 * PI)
+	{
+		res[2] -= 2 * PI;
+	}
+	while (res[2] < 0)
+	{
+		res[2] += 2 * PI;
+	}
+	
+	return res;
+}
+
+int Robot::BuildFakeTestingData()
+{
+	m_targetRoom = "living room";
+	m_targetObject = "fork";
+	
+	RDTNode node1;
+	node1.m_tar = "table";
+	node1.m_refList.push_back("move");
+	node1.m_dirList.push_back("right");
+// 	node1.m_refList.push_back("robot");
+// 	node1.m_dirList.push_back("right");
+	
+//  	RDTNode node2;
+//  	node2.m_tar = "table";
+//  	node2.m_refList.push_back("move");
+//  	node2.m_dirList.push_back("right");
+	
+//  	RDTNode node3;
+//  	node3.m_tar = "";
+//  	node3.m_refList.push_back("wall");
+//  	node3.m_dirList.push_back("front");
+// 	
+//  	RDTNode node4;
+//  	node4.m_tar = "";
+//  	node4.m_refList.push_back("move");
+//  	node4.m_dirList.push_back("left");
+	
+	m_RDTNodeChain.push_back(node1);
+// 	m_RDTNodeChain.push_back(node2);
+// 	m_RDTNodeChain.push_back(node3);
+// 	m_RDTNodeChain.push_back(node4);
+	return 0;
+}
+
+int Robot::ShowRobotState()
+{
+// 	for (int i = 0; i < IMG_HEIGHT; i++)
+// 	{
+// 		for (int j = 0; j < IMG_WIDTH; j++)
+// 		{
+// 			for (int c = 0; c < 3; c++)
+// 			{
+// 				m_imgRobotState.at<uchar>(i, j, c) = 0;
+// 			}
+// 		}
+// 	}
+	stringstream ss (stringstream::in | stringstream::out);
+	ss << "Robot Pose: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
+	string str = ss.str();
+	return 0;
+}
+
+#endif

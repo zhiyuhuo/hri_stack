@@ -1,0 +1,1007 @@
+#ifndef NEW_BEHAVIOR_H_
+#define NEW_BEHAVIOR_H_
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <math.h>
+
+#include <iostream>
+#include <fstream>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include "Header.h"
+
+int Robot::SpinSearchTargetFurniture(string tar)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "proceed_perception";		
+		//m_ifSuccessful = 0;
+		m_counter = 0;
+		m_ifFindTarget = 0;
+		m_tarfurnitureList.clear();
+
+		//cout << "m_action: " << m_action << "show" << endl;
+	}
+	
+	else if (m_action.compare("proceed_perception") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		RecognizeFurniture(tar);
+		ExploreMap();
+		m_action = "decide_turnto_angle_search";
+	}
+	
+	else if (m_action.compare("decide_turnto_angle_search") == 0)
+	{
+		cout << "m_action: " << m_action << " m_counter: " << m_counter <<endl;
+		m_turnTarget = m_theta + PI / 3;
+		if (m_counter > 5)
+		{
+			//m_action = "end";
+			m_action = "decide_target";
+		}
+		else
+		{
+			m_action = "turn_to_search_angle";
+			m_counter++;
+			cout << "m_action: " << m_action << endl;
+		}
+	}
+	
+	else if (m_action.compare("turn_to_search_angle") == 0)
+	{
+		//cout << "angles" << m_theta << ", " << m_turnTarget << endl;
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "proceed_perception";
+		}
+	}
+	
+	else if (m_action.compare("decide_target") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		vector<float> confidenceList;
+		vector<float> distList;
+		cout << "m_tarfurnitureList size: " << m_tarfurnitureList.size() << endl;
+		if (m_tarfurnitureList.size() > 0)
+		{
+		  	m_ifFindTarget = 1;
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				confidenceList.push_back(m_tarfurnitureList[i].m_confidence);
+			}
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				distList.push_back((m_tarfurnitureList[i].m_posGL - m_posRobot).GetMagnitude());
+			}
+			vector<int> confidenceSorted = RankArray(confidenceList);
+			vector<int> distSorted = RankArray(distList);
+
+			int L = m_tarfurnitureList.size();
+			m_moveTarget = m_tarfurnitureList[distSorted[L-1]].m_posGL;
+			m_turnTarget = m_tarfurnitureList[distSorted[L-1]].m_thetaGL;
+			m_targetFurniture = m_tarfurnitureList[distSorted[L-1]];
+			printf("target position: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+		}
+		else
+		{
+			m_ifFindTarget = 0;
+		}
+		m_action = "end";
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "init";
+		res = 1;
+	}
+	
+	return res;
+  
+}
+
+int Robot::SteadySearchTargetFurniture(string tar)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "proceed_perception";		
+		//m_ifSuccessful = 0;
+		m_counter = 0;
+		m_ifFindTarget = 0;
+		m_tarfurnitureList.clear();
+		//cout << "m_action: " << m_action << "show" << endl;
+	}
+	
+	else if (m_action.compare("proceed_perception") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		RecognizeFurniture(tar);
+		ExploreMap();
+		m_action = "decide_target";
+	}
+	
+	else if (m_action.compare("decide_target") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		vector<float> confidenceList;
+		vector<float> distList;
+		cout << "m_tarfurnitureList size: " << m_tarfurnitureList.size() << endl;
+		if (m_tarfurnitureList.size() > 0)
+		{
+		  	m_ifFindTarget = 1;
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				confidenceList.push_back(m_tarfurnitureList[i].m_confidence);
+			}
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				distList.push_back((m_tarfurnitureList[i].m_posGL - m_posRobot).GetMagnitude());
+			}
+			vector<int> confidenceSorted = RankArray(confidenceList);
+			vector<int> distSorted = RankArray(distList);
+
+			int L = m_tarfurnitureList.size();
+			m_moveTarget = m_tarfurnitureList[distSorted[L-1]].m_posGL;
+			m_turnTarget = m_tarfurnitureList[distSorted[L-1]].m_thetaGL;
+			m_targetFurniture = m_tarfurnitureList[distSorted[L-1]];
+			printf("target position: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+		}
+		else
+		{
+			m_ifFindTarget = 0;
+		}
+		m_action = "end";
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "init";
+		res = 1;
+	}
+	
+	return res;
+  
+}
+
+int Robot::MoveToGlobalPoint(VecPosition posTarget)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_moveTarget = posTarget;
+		m_action = "move";
+	}
+	
+	else if (m_action.compare("move") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_action = "end";
+		}
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "move m_action: " << m_action << endl;
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+
+	return res;
+}
+
+int Robot::MoveToLocalPoint(VecPosition posTarget)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "local_to_global";
+	}
+	
+	else if (m_action.compare("local_to_global") == 0)
+	{
+		vector<float> globalPos = LocalToGlobal(posTarget.GetX(), posTarget.GetY(), 0);
+		m_moveTarget.SetVecPosition(globalPos[0], globalPos[1]);
+		m_action = "move";
+	}
+	
+	else if (m_action.compare("move") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_action = "end";
+		}
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "move m_action: " << m_action << endl;
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+
+	return res;	
+}
+
+int Robot::Forward()
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "decide_move_pose";
+	}
+	
+	else if (m_action.compare("decide_move_pose") == 0)
+	{
+		VecPosition posRobot = m_posRobot;
+		double robotTheta = m_theta;
+		VecPosition posTarget(posRobot + VecPosition::GetVecPositionFromPolar(1.5, robotTheta));
+		cout << "move front position: " << posTarget.GetX() << " " << posTarget.GetY() << endl;
+		m_moveTarget = posTarget;
+		m_action = "moveto_target";
+	}
+	
+	else if (m_action.compare("moveto_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_action = "end";
+		}		
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;
+}
+
+int Robot::Left()
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "decide_turnto_pose";
+	}
+	
+	else if (m_action.compare("decide_turnto_pose") == 0)
+	{
+		float robotTheta = m_theta;
+		float turnTarget = robotTheta + PI / 2;
+		if (turnTarget > 2 * PI)
+		{
+			turnTarget -= 2 * PI;
+		}
+		m_turnTarget = turnTarget;	
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "end";
+		}		
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;	
+}
+
+int Robot::Right()
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "decide_turnto_pose";
+	}
+	
+	else if (m_action.compare("decide_turnto_pose") == 0)
+	{
+		float robotTheta = m_theta;
+		float turnTarget = robotTheta - PI / 2;
+		if (turnTarget < 0)
+		{
+			turnTarget += 2 * PI;
+		}
+		m_turnTarget = turnTarget;		
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "end";
+		}		
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;	
+}
+
+int Robot::Stop()
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		m_action = "stop";
+	}
+		
+	else if (m_action.compare("stop") == 0)
+	{
+		m_action = "end";
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	return res;	
+}	
+
+int Robot::MoveToTargetFurniture()
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "moveto_target";
+		}
+	}
+	
+	else if (m_action.compare("moveto_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_action = "end";
+		}
+		else
+		{
+			m_action = "measure";
+		}
+	}
+	
+	else if (m_action.compare("measure") == 0)
+	{
+		float mindist = 100;
+		float mindistnotar = 100;
+		for (int i = 0; i < m_laserData.size(); i++)
+		{
+			vector<float> laserUnit = m_laserData[i];
+			float dist = laserUnit[1];
+			if (mindist > dist)
+			{
+				mindist = dist;
+			}
+		}
+		
+		cout << "mindist: " << mindist << endl;
+		if (mindist < 1.0)
+		{
+			m_linearSpeed = 0;
+			m_angularSpeed = 0;
+			m_action = "end";
+		}
+		else
+		{
+			m_action = "moveto_target";
+		}
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "mfur end\n";
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;
+}
+
+int Robot::MoveToFurniture(int id)
+{
+	int res = 0;
+
+	if (m_action.compare("init") == 0)
+	{
+	  	float positionArr[] = {	1, 3.0,
+                 1.7, -6.5,
+                 -0.7, -6.5,
+                 1, -2.2,
+                 6.5, 5.0,
+                 6.5, 5.6,
+                 6.5, 4.4,
+                 0.5, -3.8,
+                 -1, 3.0,
+                 0.5, -6.5,
+                 0.5, -3.0,
+                 0, 2.5};
+		int i = id - 11;
+		m_moveTarget.SetVecPosition(positionArr[2*i], positionArr[2*i+1]);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "moveto_target";
+		}
+	}
+	
+	else if (m_action.compare("moveto_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_action = "end";
+		}
+		else
+		{
+			m_action = "measure";
+		}
+	}
+	
+	else if (m_action.compare("measure") == 0)
+	{
+		float mindist = 100;
+		float mindistnotar = 100;
+		for (int i = 0; i < m_laserData.size(); i++)
+		{
+			vector<float> laserUnit = m_laserData[i];
+			float dist = laserUnit[1];
+			if (mindist > dist)
+			{
+				mindist = dist;
+			}
+		}
+		
+		cout << "mindist: " << mindist << endl;
+		if (mindist < 1.0)
+		{
+			m_linearSpeed = 0;
+			m_angularSpeed = 0;
+			m_action = "end";
+		}
+		else
+		{
+			m_action = "moveto_target";
+		}
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "gfur end\n";
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;	
+}
+
+int Robot::TurnAngle(float angle)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "decide_turnto_pose";
+	}
+	
+	else if (m_action.compare("decide_turnto_pose") == 0)
+	{
+		float robotTheta = m_theta;
+		angle = angle / 180 * PI;
+		float turnTarget = robotTheta + angle;
+		if (turnTarget < 0)
+		{
+			turnTarget += 2 * PI;
+		}
+		m_turnTarget = turnTarget;		
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "end";
+		}		
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;	
+}
+
+int Robot::SpotTarget(VecPosition posInterest)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		//ExploreMap();
+		m_action = "decide_turnto_pose";
+	}
+	
+	else if (m_action.compare("decide_turnto_pose") == 0)
+	{
+		float robotTheta = m_theta;
+		float turnTarget = (posInterest - m_posRobot).GetDirection();
+		if (turnTarget < 0)
+		{
+			turnTarget += 2 * PI;
+		}
+		m_turnTarget = turnTarget;		
+		m_action = "turnto_target";
+	}
+	
+	else if (m_action.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "end";
+		}		
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		m_action = "init";
+		//ExploreMap();
+		res = 1;
+	}
+	
+	return res;	
+}
+
+int Robot::ExecuteCommand(string str)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		m_state = "parse_command";
+	}
+	
+	else if (m_state.compare("parse_command") == 0)
+	{
+		int n = 0;
+		string word;
+		vector<string> words;
+		while (n <= str.size())
+		{
+			if (str[n] != ' ' && n < str.size())
+			{
+				word.push_back(str[n]);
+			}
+			else
+			{
+				words.push_back(word);
+				word = "";
+			}
+			n++;
+		}
+		m_cmdWords = words;
+		
+		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_cmdRec.push_back(words);
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		
+		char imgViewNameArr[50];
+		sprintf(imgViewNameArr, "/home/hri/HRI_Doc/Imitation/%s/imgmask-%s-%d.bmp", m_cmdID.c_str(), m_cmdID.c_str(), m_save);
+		string imgViewName(imgViewNameArr); 
+		imwrite(imgViewName.c_str(), m_imgmask);
+		m_save++;
+		
+		m_state = "execute_command";
+	}
+	
+	else if (m_state.compare("execute_command") == 0)
+	{
+		int r = 0;
+		string cmd = m_cmdWords[0];
+		
+		if (cmd.compare("sp_fur") == 0)
+		{
+			string tar = m_cmdWords[1];
+			r = SpinSearchTargetFurniture(tar);
+		}
+		
+		else if (cmd.compare("st_fur") == 0)
+		{
+			string tar = m_cmdWords[1];
+			cout << "tar-" << tar << endl;
+			r = SteadySearchTargetFurniture(tar);
+		}
+		
+		else if (cmd.compare("sp_sch") == 0)
+		{
+			r = SpinSearchTargetFurniture("obj");
+		}
+		
+		else if (cmd.compare("st_sch") == 0)
+		{
+			r = SteadySearchTargetFurniture("obj");
+		}
+		
+		else if (cmd.compare("mgl") == 0)
+		{
+			vector<float> paras;
+			for (int i = 1; i < m_cmdWords.size(); i++)
+			{
+				paras.push_back(atof(m_cmdWords[i].c_str()));
+			}
+			VecPosition posTarget(paras[0], paras[1]);
+			r = MoveToGlobalPoint(posTarget);
+		}
+		
+		else if (cmd.compare("mlc") == 0)
+		{
+			vector<float> paras;
+			for (int i = 1; i < m_cmdWords.size(); i++)
+			{
+				paras.push_back(atof(m_cmdWords[i].c_str()));
+			}
+			VecPosition posTarget(paras[0], paras[1]);
+			r = MoveToLocalPoint(posTarget);
+		}
+		
+		else if (cmd.compare("f") == 0)
+		{
+			r = Forward();
+		}
+		
+		else if (cmd.compare("l") == 0)
+		{
+			r = Left();
+		}
+		
+		else if (cmd.compare("r") == 0)
+		{
+			r = Right();
+		}
+		
+		else if (cmd.compare("stop") == 0)
+		{
+			r = Stop();
+		}
+		
+		else if (cmd.compare("mfur") == 0)
+		{
+			r = MoveToTargetFurniture();
+		}
+		
+		else if (cmd.compare("gfur") == 0)
+		{
+		  	vector<float> paras;
+			for (int i = 1; i < m_cmdWords.size(); i++)
+			{
+				paras.push_back(atof(m_cmdWords[i].c_str()));
+			}
+			int id = (int)paras[0];
+			r = MoveToFurniture(id);
+		}
+		
+		else if (cmd.compare("tr") == 0)
+		{
+			vector<float> paras;
+			for (int i = 1; i < m_cmdWords.size(); i++)
+			{
+				paras.push_back(atof(m_cmdWords[i].c_str()));
+			}
+			float turnAngle = paras[0];
+			r = TurnAngle(turnAngle);
+		}
+
+		else if (cmd.compare("st") == 0)
+		{
+			vector<float> paras;
+			for (int i = 1; i < m_cmdWords.size(); i++)
+			{
+				paras.push_back(atof(m_cmdWords[i].c_str()));
+			}
+			VecPosition posInterest(paras[0], paras[1]);
+			r = SpotTarget(posInterest);
+		}
+		
+		else if (cmd.compare("finish") == 0)
+		{
+			cout << "execute finish\n";
+			string cmdfilename = "/home/hri/HRI_Doc/Imitation/" + m_cmdID + "/cmd - " + m_cmdID + ".out";
+			ofstream cmdfile(cmdfilename.c_str());
+			for (int n = 0; n < m_cmdRec.size(); n++)
+			{
+				vector<string> cmdSet = m_cmdRec[n];
+				for(int i = 0; i < cmdSet.size(); i++)
+				{
+					cmdfile << cmdSet[i] << " ";
+				}
+				cmdfile << endl;
+			}
+			cmdfile.close();
+			
+			string posefilename = "/home/hri/HRI_Doc/Imitation/"+ m_cmdID + "/pose - " + m_cmdID + ".out";
+			ofstream posefile(posefilename.c_str());
+			for (int n = 0; n < m_poseRec.size(); n++)
+			{
+				vector<float> poseSet = m_poseRec[n];
+				for(int i = 0; i < poseSet.size(); i++)
+				{
+					posefile << poseSet[i] << " ";
+				}
+				posefile << endl;
+			}
+			posefile.close();
+			
+			string frfilename = "/home/hri/HRI_Doc/Imitation/"+ m_cmdID + "/fr - " + m_cmdID + ".out";
+			ofstream frfile(frfilename.c_str());
+			for (int n = 0; n < m_frRec.size(); n++)
+			{
+				vector<int> frSet = m_frRec[n];
+				for(int i = 0; i < frSet.size(); i++)
+				{
+					frfile << frSet[i] << " ";
+				}
+				frfile << endl;
+			}
+			frfile.close();
+			
+			exit(0);
+		}	
+		
+		else
+		{
+			cout << "invalid command\n";
+			r = 1;
+		}
+		
+		if (r == 1)
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+		m_state = "init";
+	}
+	
+	return res;
+}
+
+int Robot::GetRobotState()
+{
+	float poseGL[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+
+}
+
+vector<float> Robot::PixelToCoordinate(int u, int v)
+{
+	vector<float> res(2, 0);
+	res[0] = (u - 250.0) * 0.04;
+	res[1] = -(v - 250.0) * 0.04;
+	return res;
+}
+
+vector<int> Robot::CoordinateToPixel(float x, float y)
+{
+	vector<int> res(2, 0);
+	res[0] = (int)(x / 0.04 + 250);
+	res[1] = (int)(250 - y / 0.04);
+	return res;	
+}
+
+bool Robot::DetectObstacle(int x1, int y1, int x2, int y2)
+{
+	int nid[] = { 0, -1, -1, 0, 1, 0, 0, 1 };
+	float dmin = sqrt((float)(pow(x2-x1, 2)+ pow(y2-y1, 2)));
+	int xp = x1;
+	int yp = y1;
+	while(dmin > 0)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int pnix = xp + nid[2*i]; 
+			int pniy = yp + nid[2*i+1];
+			float dist = (float)(sqrt(pow(x2-pnix, 2) + pow(y2-pniy, 2)));
+			//printf("%f %f\n", dist, dmin);
+			if ( dist < dmin )
+			{
+				dmin = dist;
+				xp = pnix;
+				yp = pniy;
+				if (m_imgmap.at<Vec3b>(yp, xp)[0] == 255
+				  && m_imgmap.at<Vec3b>(yp, xp)[1] == 255
+				  && m_imgmap.at<Vec3b>(yp, xp)[2] == 255
+				)
+				{
+					return false;
+				}
+			} 
+		}
+	}
+	return true;
+}
+
+void Robot::ExploreMap()
+{
+	int robotPixelX;
+	int robotPixelY;
+	float mindist = 1000;
+	for (int i = 0; i < m_imgmap.cols; i++)
+	{
+		for (int j = 0; j < m_imgmap.rows; j++)
+		{
+			vector<float> p = PixelToCoordinate(i, j);
+			float dist = sqrt(pow(p[0]-m_posRobot.GetX(), 2) + pow(p[1]-m_posRobot.GetY(), 2));
+			if (dist < mindist)
+			{
+				mindist = dist;
+				robotPixelX = i;
+				robotPixelY = j;
+			}			
+		}
+	}
+	for (int i = 0; i < m_imgmap.cols; i++)
+	{
+		for (int j = 0; j < m_imgmap.rows; j++)
+		{
+			vector<float> p = PixelToCoordinate(i, j);
+			float dist = sqrt(pow(p[0]-m_posRobot.GetX(), 2) + pow(p[1]-m_posRobot.GetY(), 2));
+			float dir = atan2(p[1] - m_posRobot.GetY(), p[0] - m_posRobot.GetX());
+			if (dist < 2.5 && dist > 0.5)
+			{
+				float deltaDir = dir - m_theta;
+				if (deltaDir > PI)
+				{
+					deltaDir = deltaDir - 2 * PI;
+				}
+				if (deltaDir < -PI)
+				{
+					deltaDir = deltaDir + 2 * PI;
+				}
+				if (abs(deltaDir) < PI/6)
+				{
+					if (DetectObstacle(i, j, robotPixelX, robotPixelY))
+					{
+						m_imgmask.at<Vec3b>(j, i) = m_imgmap.at<Vec3b>(j, i);
+					}
+				}
+			}
+			m_imgshow.at<Vec3b>(j, i) = m_imgmask.at<Vec3b>(j, i);
+		}
+	}
+
+}
+
+void Robot::ShowRobotPose()
+{
+	int robotPixelX;
+	int robotPixelY;
+	float mindist = 1000;
+	for (int i = 0; i < m_imgmap.cols; i++)
+	{
+		for (int j = 0; j < m_imgmap.rows; j++)
+		{
+			vector<float> p = PixelToCoordinate(i, j);
+			float dist = sqrt(pow(p[0]-m_posRobot.GetX(), 2) + pow(p[1]-m_posRobot.GetY(), 2));
+			if (dist < mindist)
+			{
+				mindist = dist;
+				robotPixelX = i;
+				robotPixelY = j;
+			}			
+		}
+	}  
+	for (int i = 0; i < m_imgrobot.cols; i++)
+	{
+		for (int j = 0; j < m_imgrobot.rows; j++)
+		{ 
+			Vec3b intensity;
+			intensity.val[0] = 0;
+			intensity.val[1] = 0;
+			intensity.val[2] = 0;
+			m_imgrobot.at<Vec3b>(j, i) = intensity;
+		}
+	}  
+  
+	circle(m_imgrobot, Point(robotPixelX, robotPixelY), 5, CV_RGB(255, 125, 125), 2, 8);
+	float dirPtX = m_posRobot.GetX() + 0.5 * cos(m_theta);
+	float dirPtY = m_posRobot.GetY() + 0.5 * sin(m_theta);
+	vector<int> dirPxl = CoordinateToPixel(dirPtX, dirPtY);
+	Point dirPt(dirPxl[0], dirPxl[1]);
+	line(m_imgrobot, Point(robotPixelX, robotPixelY), dirPt, CV_RGB(255, 125, 125), 2, 8);
+	//m_imgshow = m_imgshow + m_imgrobot;
+}
+
+vector<vector<string> >  Robot::GetGroundingInfo(string fileName)
+{
+	vector<vector<string> > res;
+	fstream dataFile(fileName.c_str());
+	string input;
+	int t = 0;
+	while( std::getline( dataFile, input ) ) 
+	{
+		std::cout << input << "\n";
+		vector<string> command;
+		string word;
+		int i = 0;
+		while (i < input.size())
+		{
+			if(input[i] == ',')
+			{
+				command.push_back(word);
+				word = "";
+				i += 2;
+			}
+			else
+			{
+				word.push_back(input[i]);
+				i++;
+			}
+		}
+		command.push_back(word);
+		res.push_back(command);
+
+		t++;
+	}
+	
+	cout << "command size: " << res.size() << endl;
+	m_groundings = res;
+	return res;
+}
+
+#endif

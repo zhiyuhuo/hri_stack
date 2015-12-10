@@ -1,0 +1,7 @@
+#ifndef GEOMETRY_HEADER_H
+#define GEOMETRY_HEADER_H
+
+#include "GeometryR.h"
+#include "GeometryR.cpp"
+
+#endif

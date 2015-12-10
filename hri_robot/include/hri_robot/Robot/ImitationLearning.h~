@@ -1,0 +1,558 @@
+#ifndef IMITATION_LEARNING_H_
+#define IMITATION_LEARNING_H_
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <math.h>
+
+#include <iostream>
+#include <fstream>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include "Header.h"
+
+int Robot::GetUniversalFurnitureFeature()
+{
+	cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n";
+	
+	vector<vector<float> >  allFeature;
+	
+	vector<string> fori = GetRobotPoseOriginalPoseFeature();
+	vector<float> vfOriginalAngle = ConvertOriginalAngleFeatureToVector(fori[2]);
+	vector<float> vfOriginalPose = ConvertOriginalPoseFeatureToVector(fori);
+
+	vector<vector<string> > froom = GetRobotPoseRoomFeature();
+	vector<float> vfRoom = ConvertRoomFeatureToVector(froom);
+	
+	vector<vector<string> > fwall = GetRobotPoseWallFeature();
+	vector<float> vfWall = ConvertWallFeatureToVector(fwall);
+
+	vector<vector<string> > fr2f = GetRobotPoseR2FFeature();
+	vector<float> vfr2f = Convertr2fFeatureToVector(fr2f);
+	
+	vector<vector<string> > ff2r = GetRobotPoseF2RFeature();
+	vector<float> vff2r = Convertf2rFeatureToVector(ff2r);
+	
+	vector<vector<string> > ff2f = GetRobotPoseF2FFeature();
+	vector<float> vff2f = Convertf2fFeatureToVector(ff2f);
+	
+	allFeature.push_back(vfOriginalAngle);
+	allFeature.push_back(vfOriginalPose);
+	allFeature.push_back(vfRoom);
+	allFeature.push_back(vfWall);
+	allFeature.push_back(vfr2f);
+	allFeature.push_back(vff2r);
+	allFeature.push_back(vff2f);
+
+	vector<int> fid = FintInterestingFeature(m_groundings[m_step]);
+	vector<float> feature;
+	for (int i = 0; i < fid.size(); i++)
+	{
+		feature.insert(feature.end(), allFeature[fid[i]].begin(), allFeature[fid[i]].end());
+	}
+	cout << "final feature size: " << feature.size();
+}
+
+vector<string> Robot::GetRobotPoseOriginalPoseFeature()
+{
+	cout << "----------------robot------------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	vector<string> srbe = GetSpatialRelationBetweenEntity(m_originalRobotPose, dimRobot, poseRobot, dimRobot);
+	string angleDiffStr = AngleDiffToText(poseRobot[2], m_originalRobotPose[2]);
+	
+	vector<string> featureStr;
+	featureStr.push_back(srbe[0]);
+	featureStr.push_back(srbe[1]);
+	featureStr.push_back(angleDiffStr);
+	cout << "robot angle: " << angleDiffStr << endl;
+	return featureStr;
+}
+
+vector<vector<string> > Robot::GetRobotPoseRoomFeature()
+{
+	cout << "----------------room-------------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	float wallPara[8][4] = {	{2.4, 8, 9.3, 0.2},
+					{-2.3, 4.67, 0.2, 6.67},
+					{2.4, 1.33, 9.3, 0.2},
+					{7, 4.67, 0.2, 6.67},
+					{0.6, -7.9, 5.6, 0.2},
+					{3.4, -4.82, 0.2, 6.6},
+					{0.6, -1.3, 5.6, 0.2},
+					{-2.2, -4.82, 0.2, 6.6	}};
+	vector<vector<string> > featureStr;
+	for (int i = 0; i < 8; i++)
+	{
+ 		vector<float> poseRoom(3, 0);
+		vector<float> dimRoom(2, 0);
+		poseRoom[0] = wallPara[i][0];
+		poseRoom[1] = wallPara[i][1];
+		poseRoom[2] = PI/2;
+		dimRoom[0] = wallPara[i][2];
+		dimRoom[1] = wallPara[i][3];;
+		vector<string> srbe = GetSpatialRelationBetweenEntity(poseRoom, dimRoom, poseRobot, dimRobot);
+		featureStr.push_back(srbe);
+	}
+	
+	return featureStr;
+}
+
+vector<vector<string> > Robot::GetRobotPoseWallFeature()
+{
+	cout << "----------------wall-------------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	float wallPara[8][4] = {	{2.4, 8, 9.3, 0.2},
+					{-2.3, 4.67, 0.2, 6.67},
+					{2.4, 1.33, 9.3, 0.2},
+					{7, 4.67, 0.2, 6.67},
+					{0.6, -7.9, 5.6, 0.2},
+					{3.4, -4.82, 0.2, 6.6},
+					{0.6, -1.3, 5.6, 0.2},
+					{-2.2, -4.82, 0.2, 6.6	}};
+	vector<vector<string> > featureStr;
+	for (int i = 0; i < 8; i++)
+	{
+ 		vector<float> poseWall(3, 0);
+		vector<float> dimWall(2, 0);
+		poseWall[0] = wallPara[i][0];
+		poseWall[1] = wallPara[i][1];
+		poseWall[2] = PI/2;
+		dimWall[0] = wallPara[i][2];
+		dimWall[1] = wallPara[i][3];
+		vector<string> srbe = GetSpatialRelationBetweenEntity(poseRobot, dimRobot, poseWall, dimWall);
+		vector<float> v1 = GenerateEntityVector(poseRobot[0], poseRobot[1], dimRobot[0], dimRobot[1]);
+		vector<float> v2 = GenerateEntityVector(poseWall[0], poseWall[1], dimWall[0], dimWall[1]);
+		float dist = DistanceBetweenVector(v1, v2);
+		vector<float> h = HistogramOfForcesWithOrientation2(v2, v1, poseRobot[2]);
+		vector<float> dir = HofToDirectionEight(h);
+		if (dist < 2 && dir[0] > 0)
+		{
+			vector<string> srbe2 = GetSpatialRelationBetweenEntity(m_originalRobotPose, dimRobot, poseWall, dimWall);
+			vector<string> feature;
+			feature.push_back(srbe2[0]);
+			feature.push_back(srbe[1]);
+			featureStr.push_back(feature);
+		}
+	}
+	for (int i = 0; i < featureStr.size(); i++)
+	{
+		vector<string> feature = featureStr[i];
+		cout << "feature " << i << ": " << feature[0] << " " << feature[1] << endl;
+	}
+	
+	return featureStr;
+}
+
+vector<vector<string> > Robot::GetRobotPoseR2FFeature()
+{
+	cout << "----------------R2F-------------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	
+	// r2f
+	vector<int> furInVision = FindFurInVision(m_fr);
+	vector<vector<string> > featurer2fStr;
+	for (int i = 1; i < furInVision.size(); i++)
+	{
+		cout << furInVision[i] <<endl;
+		string name = "";
+		float angle, px, py, dimx, dimy;
+		int r = GetFurnitureInfor(furInVision[i], &name, &angle, &px, &py, &dimx, &dimy);
+		printf("fur info: %s, %f, %f, %f, %f, %f\n", name.c_str(), angle, px, py, dimx, dimy);
+		vector<float> poseFur(3, 0);
+		vector<float> dimFur(2, 0);
+		poseFur[0] = px;
+		poseFur[1] = py;
+		poseFur[2] = angle;
+		dimFur[0] = dimx;
+		dimFur[1] = dimy;
+		vector<string> srbe = GetSpatialRelationBetweenEntity(poseFur, dimFur, poseRobot, dimRobot);		
+		vector<string> r2f;
+		r2f.push_back(name);
+		r2f.push_back(srbe[0]);
+		r2f.push_back(srbe[1]);
+		featurer2fStr.push_back(r2f);
+	}
+	return featurer2fStr;
+}
+
+vector<vector<string> > Robot::GetRobotPoseF2RFeature()
+{
+	cout << "----------------F2R------------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	
+	// f2r
+	vector<int> furInVision = FindFurInVision(m_fr);
+	vector<vector<string> > featuref2rStr;
+	for (int i = 1; i < furInVision.size(); i++)
+	{
+		cout << furInVision[i] <<endl;
+		string name = "";
+		float angle, px, py, dimx, dimy;
+		int r = GetFurnitureInfor(furInVision[i], &name, &angle, &px, &py, &dimx, &dimy);
+		printf("fur info: %s, %f, %f, %f, %f, %f\n", name.c_str(), angle, px, py, dimx, dimy);
+		vector<float> poseFur(3, 0);
+		vector<float> dimFur(2, 0);
+		poseFur[0] = px;
+		poseFur[1] = py;
+		poseFur[2] = angle;
+		dimFur[0] = dimx;
+		dimFur[1] = dimy;
+		vector<string> srbe = GetSpatialRelationBetweenEntity(m_originalRobotPose, dimRobot, poseFur, dimFur);
+		vector<string> f2r;
+		f2r.push_back(name);
+		f2r.push_back(srbe[0]);
+		f2r.push_back(srbe[1]);
+		featuref2rStr.push_back(f2r);
+	}
+	
+	return featuref2rStr;
+}
+
+vector<vector<string> > Robot::GetRobotPoseF2FFeature()
+{
+	cout << "----------------F2F-----------------------\n";
+	vector<float> poseRobot(3, 0);
+	poseRobot[0] = m_posRobot.GetX();
+	poseRobot[1] = m_posRobot.GetY();
+	poseRobot[2] = m_theta;
+	printf("robot pose: %f %f %f\n", poseRobot[0], poseRobot[1], poseRobot[2]);
+	vector<float> dimRobot(2, 0.5);
+	
+	// f2f
+	vector<vector<string> > featuref2fStr;
+	vector<int> furInVision = FindFurInVision(m_fr);
+	for (int i = 1; i < furInVision.size(); i++)
+	{
+		for (int j = 1; j < furInVision.size(); j++)
+		{
+			if (i != j)
+			{
+				cout << furInVision[i]  << " " << furInVision[j] <<endl;
+				string name1 = "";
+				float angle, px, py, dimx, dimy;
+				int r1 = GetFurnitureInfor(furInVision[i], &name1, &angle, &px, &py, &dimx, &dimy);
+				printf("fur info: %s, %f, %f, %f, %f, %f\n", name1.c_str(), angle, px, py, dimx, dimy);
+				vector<float> poseFur1(3, 0);
+				vector<float> dimFur1(2, 0);
+				poseFur1[0] = px;
+				poseFur1[1] = py;
+				poseFur1[2] = angle;
+				dimFur1[0] = dimx;
+				dimFur1[1] = dimy;
+				
+				string name2 = "";
+				int r2 = GetFurnitureInfor(furInVision[j], &name2, &angle, &px, &py, &dimx, &dimy);
+				printf("fur info: %s, %f, %f, %f, %f, %f\n", name2.c_str(), angle, px, py, dimx, dimy);
+				vector<float> poseFur2(3, 0);
+				vector<float> dimFur2(2, 0);
+				poseFur2[0] = px;
+				poseFur2[1] = py;
+				poseFur2[2] = angle;
+				dimFur2[0] = dimx;
+				dimFur2[1] = dimy;
+				
+				vector<string> srbe = GetSpatialRelationBetweenEntity(poseFur1, dimFur1, poseFur2, dimFur2);		
+				vector<string> f2f;
+				f2f.push_back(name1);
+				f2f.push_back(name2);
+				f2f.push_back(srbe[0]);
+				f2f.push_back(srbe[1]);
+				featuref2fStr.push_back(f2f);
+			}
+		}
+	}
+	
+	return featuref2fStr;
+}
+
+vector<int> Robot::FindFurInVision(vector<int> furSet)
+{
+	vector<int> res;
+	res.push_back(-1);
+	for (int i = 1; i < furSet.size(); i++)
+	{
+		string name;
+		float angle, px, py, dimx, dimy;
+		int r = GetFurnitureInfor(furSet[i], &name, &angle, &px, &py, &dimx, &dimy);
+		VecPosition posFur(px, py);
+		float dist = (posFur - m_posRobot).GetMagnitude();
+		float dir = (posFur - m_posRobot).GetDirection();
+		float anglediff = DiffAngle(m_theta, dir);
+		
+		printf("%d: %f %f %f\n", furSet[i], dist, dir, anglediff);
+		
+		if (dist < 3 && abs(anglediff) < PI/2)
+		{
+			res.push_back(furSet[i]);
+		}
+	}
+	
+	return res;
+}
+
+vector<string> Robot::GetSpatialRelationBetweenEntity(vector<float> pose1, vector<float> dim1, vector<float> pose2, vector<float> dim2)
+{
+	vector<float> v1 = GenerateEntityVector(pose1[0], pose1[1], dim1[0], dim1[1]);
+	vector<float> v2 = GenerateEntityVector(pose2[0], pose2[1], dim2[0], dim2[1]);
+	
+	//vector<float> h = HistogramOfForcesWithOrientation(v2, v1, pose1[3]);
+	vector<float> h = HistogramOfForcesWithOrientation2(v2, v1, pose1[2]);
+	//vector<float> h = HistogramOfForces(v2, v1);
+	vector<float> dir = HofToDirectionEight(h);
+	//for (int i = 0; i < dir.size(); i++) { cout << i << ": " << dir[i] << " "; } cout << endl;
+	string dirStr = DirectionToTextEight(dir);
+	
+	float dist = DistanceBetweenVector(v1, v2);
+	//cout << "dist: " << dist << endl;
+	string distStr = DistanceToText(dist);
+	//cout << dirStr << " " << distStr << endl;
+	vector<string> res;
+	res.push_back(dirStr);
+	res.push_back(distStr);
+	return res;
+}
+
+int Robot::GetFurnitureInfor(int frid, string* name, float* angle, float* px, float* py, float* dimx, float* dimy)
+{
+	if (frid > 23 || frid < 11)
+	{
+		return -1;
+	}
+	int id = frid - 11;
+	string categorySet[] = {"table", "chair", "chair", "table", "table", "chair", "chair", "table", "table", "table", "couch", "bed"};
+	float angleSet[] = {-1, PI, 0, -1, PI, PI, PI, PI*3/2, -1, PI/2, 3*PI/2, 3*PI/2};
+	float positionSet[12][2] = {{1, 3.0}, 
+				  {1.7, -6.5}, 
+				  {-0.7, -6.5},
+				  {1, -2.2}, 
+				  {6.5, 5.0},
+				  {6.5, 5.6},
+				  {6.5, 4.4}, 
+				  {0.5, -3.8}, 
+				  {-1, 3.0}, 
+				  {0.5, -6.5}, 
+				  {0.5, -3.0}, 
+				  {0, 2.5}};
+	float dimSet[12][2] = {{0.5, 0.5},
+	{0.45, 0.45},
+	{0.45, 0.45},
+	{0.5, 0.5},
+	{0.5, 0.5},
+	{0.45, 0.45},
+	{0.45, 0.45},
+	{0.5, 0.5},
+	{0.5, 0.5},
+	{1.4, 0.7},
+	{2.0, 0.6},
+	{1.2, 2.0}
+	};
+	
+	*name = categorySet[id];
+	*angle = angleSet[id];
+	*px = positionSet[id][0];
+	*py = positionSet[id][1];
+	*dimx = dimSet[id][0];
+	*dimy = dimSet[id][1];
+	return 0;
+}
+
+vector<float> Robot::ConvertOriginalAngleFeatureToVector(string f)
+{
+ 	vector<float> res(8, 0);
+	
+	string anglestrset[8] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front"};
+	int r = FindStrIndex(f, anglestrset, 8);
+	res[r]++;
+	return res;
+}
+
+vector<float> Robot::ConvertOriginalPoseFeatureToVector(vector<string> f)
+{
+	vector<float> res(9*4, 0);
+	
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	
+	int rdir = FindStrIndex(f[0], dirstrset, 9);
+	int rdist = FindStrIndex(f[1], diststrset, 4);
+	res[ rdir * 4 + rdist ]++;
+	
+	return res;
+}
+
+vector<float> Robot::ConvertRoomFeatureToVector(vector<vector<string> > f)
+{
+	vector<float> res(8*9*4, 0);
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	for (int i = 0; i < 8; i++)
+	{
+		vector<string> fd = f[i];
+		int rdir = FindStrIndex(fd[0], dirstrset, 9);
+		int rdist = FindStrIndex(fd[1], diststrset, 4);
+		res[ i*9*4 + rdir*4 + rdist]++;
+	}
+	
+	return res;	
+}
+
+vector<float> Robot::ConvertWallFeatureToVector(vector<vector<string> > f)
+{
+	vector<float> res(9*4, 0);
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	for (int i = 0; i < f.size(); i++)
+	{
+		vector<string> fd = f[i];
+		int rdir = FindStrIndex(fd[0], dirstrset, 9);
+		int rdist = FindStrIndex(fd[1], diststrset, 4);
+		res[ rdir*4 + rdist ]++;
+	}
+	
+	return res;
+}
+
+vector<float> Robot::Convertr2fFeatureToVector(vector<vector<string> > f)
+{
+	vector<float> res(4*9*4, 0);
+	string categorySet[4] = {"table", "chair", "couch", "bed"};
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	for (int i = 0; i < f.size(); i++)
+	{
+		vector<string> fd = f[i];
+		int rcat = FindStrIndex(fd[0], dirstrset, 4);
+		int rdir = FindStrIndex(fd[1], dirstrset, 9);
+		int rdist = FindStrIndex(fd[2], diststrset, 4);
+		res[ rcat*9*4 + rdir*4 + rdist ]++;
+	}
+	return res;	
+}
+
+vector<float> Robot::Convertf2rFeatureToVector(vector<vector<string> > f)
+{
+	vector<float> res(4*9*4, 0);
+	string categorySet[4] = {"table", "chair", "couch", "bed"};
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	for (int i = 0; i < f.size(); i++)
+	{
+		vector<string> fd = f[i];
+		int rcat = FindStrIndex(fd[0], dirstrset, 4);
+		int rdir = FindStrIndex(fd[1], dirstrset, 9);
+		int rdist = FindStrIndex(fd[2], diststrset, 4);
+		res[ rcat*9*4 + rdir*4 + rdist ]++;
+	}
+	return res;	
+}
+
+vector<float> Robot::Convertf2fFeatureToVector(vector<vector<string> > f)
+{
+	vector<float> res(4*4*9*4, 0);
+	string categorySet[4] = {"table", "chair", "couch", "bed"};
+	string dirstrset[9] = {"front", "front-left", "left", "left-back", "back", "back-right", "right", "right-front", "none"};
+	string diststrset[4] = {"coincident", "near", "middle", "far"};
+	for (int i = 0; i < f.size(); i++)
+	{
+		vector<string> fd = f[i];
+		int rcat1 = FindStrIndex(fd[0], dirstrset, 4);
+		int rcat2 = FindStrIndex(fd[1], dirstrset, 4);
+		int rdir = FindStrIndex(fd[2], dirstrset, 9);
+		int rdist = FindStrIndex(fd[3], diststrset, 4);
+		res[ rcat1*4*9*4 + rcat2*9*4 + rdir*4 + rdist ]++;
+	}
+	return res;	
+}
+
+int Robot::FindStrIndex(string a, string arr[], int length)
+{
+	int res;
+	for (int i = 0; i < length; i++)
+	{
+		if (a.compare(arr[i]) == 0)
+		{
+			res = i;
+			break;
+		}
+	}
+	
+	return res;
+}
+
+vector<int> Robot::FintInterestingFeature(vector<string> gd)
+{
+	vector<int> res;
+  
+	string gdList[] = {"living room", "bedroom", "move", "room", "wall", "robot", "table", "chair", "couch", "bed"};
+	string featureType[] = {"angle", "posefst", "room", "wall", "r2f", "f2r", "f2f"};
+	vector<pair<int, vector<string> > > relations;
+	
+	
+	int list[10][7] = {{3}, {3}, {1,2}, {3,4}, {4}, {2}, {5,6,7}, {5,6,7}, {5,6,7}, {5,6,7}};
+	
+	for (int i = 0; i < gd.size(); i++)
+	{
+		cout << gd[i] << " ";
+	}cout << "\n";	
+	
+	for (int i = 0; i < gd.size(); i++)
+	{
+		if (gd[i].compare("N/A") != 0)
+		{
+			int id = FindStrIndex(gd[i], gdList, 10);
+			for (int j = 0; j < 7; j++)
+			{
+				if (list[id][j] != 0)
+				{
+					res.push_back(list[id][j] - 1);
+				}
+			}
+		}
+	}
+
+	sort(res.begin(), res.end()); // lala: 1, 3, 99, 99
+	res.erase(unique(res.begin(), res.end()), res.end()); 
+	for (int i = 0; i < res.size(); i++)
+	{
+		cout << res[i] << " ";
+	}cout << endl;
+	
+	return res;
+	
+}
+
+
+
+
+
+#endif

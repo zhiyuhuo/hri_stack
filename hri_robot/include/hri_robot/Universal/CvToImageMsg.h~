@@ -1,0 +1,47 @@
+#ifndef CVTOIMAGEMSG_H
+#define CVTOIMAGEMSG_H
+
+#include "ros/ros.h"
+#include "stdio.h"
+#include "stdlib.h"
+
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+#include <cv_bridge/CvBridge.h>
+#include <image_transport/image_transport.h>
+#include "sensor_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud2.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+
+#include "hri9/Parsing.h"
+#include "hri9/Perception.h"
+#include "hri9/Universal/Header.h"
+#include "Defines.h"
+
+
+using namespace std;
+
+sensor_msgs::Image CvToImageMsg(IplImage* img)
+{
+	sensor_msgs::Image res;
+	res.height = img->height;
+	res.width = img->width;
+	res.encoding = "bgr8";
+	res.is_bigendian = 0;
+	res.step = img->widthStep;
+	vector<unsigned char> t(img->widthStep * img->height, 0);
+	res.data = vect
+	for (int i = 0; i < img->widthStep * img->height; i++)
+	{
+		res.data[i] = (unsigned char)img->imageData[i];
+	}
+	
+	return res;
+}
+
+#endif

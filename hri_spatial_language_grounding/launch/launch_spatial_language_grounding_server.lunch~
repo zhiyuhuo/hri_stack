@@ -1,0 +1,6 @@
+<launch>
+
+	<node name="part_of_speech" pkg="hri_spatial_language_grounding" type="hri_pos_server.py"                     respawn="true" />
+	<node name="parse"          pkg="hri_spatial_language_grounding" type="hri_spatial_language_grounding_server" respawn="true" />
+
+</launch>

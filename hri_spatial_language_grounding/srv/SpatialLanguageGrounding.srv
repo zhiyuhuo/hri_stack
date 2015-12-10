@@ -1,0 +1,5 @@
+#request constants
+string str
+---
+#respond constants
+string[] strarr

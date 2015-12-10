@@ -1,0 +1,1038 @@
+#ifndef BEHAVIOR_H_
+#define BEHAVIOR_H_
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <math.h>
+
+#include "../CommandProc/Header.h"
+#include "Header.h"
+
+using namespace std;
+
+int Robot::RDTNodeProc(RDTNode node)
+{
+	int res = 0;
+	int nodeSize = node.m_refList.size();
+	//printf("var:%d %s %s %s\n", m_nodeID, node.m_refList[m_nodeID].c_str(), node.m_dirList[m_nodeID].c_str(), node.m_tar.c_str());
+	int r = DscpToCMD(node.m_refList[m_nodeID], node.m_dirList[m_nodeID], node.m_tar);
+	//printf("r: %d\n", r);
+	if (r == 1 )
+	{
+		m_state = "init";
+		if (m_nodeID + 1 < nodeSize && m_ifSuccessful == 0)
+		{
+			m_nodeID++;
+		}
+		else
+		{
+			res = 1;
+		}
+	}
+	return res;
+}
+
+int Robot::DscpToCMD(string ref, string dir, string tar)
+{
+	//reference: non, room, wall, robot, non-shape furniture, table-shape furniture, chair-shape furniture, couch-shape furniture, bed-shape furniture.
+	//direction: front, left, back, right, central, side, between
+	int res = 0;
+	m_currentRef = ref;
+	m_currentDir = dir;
+	m_currentTar = tar;
+	
+	if(ref.compare("move") == 0)
+	{
+		res = MoveCMD(dir, tar);
+	}
+	else if (ref.compare("room") == 0)
+	{
+		res = RoomReferenceCMD(dir, tar);
+	}
+	else if (ref.compare("wall") == 0)
+	{
+		res = WallReferenceCMD(dir, tar);
+	}
+	else if (ref.compare("robot") == 0)
+	{
+		res = RobotReferenceCMD(dir, tar);
+	}
+	else if (ref.compare("table") == 0
+		||ref.compare("chair") == 0
+		||ref.compare("couch") == 0
+		||ref.compare("bed") == 0
+	)
+	{
+		res = FurnitureReferenceCMD(ref, dir, tar);
+	}
+	
+	return res;
+}
+
+int Robot::MoveCMD(string dir, string tar)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_ifSuccessful = 0;
+		m_state = "decide_move_pose";
+	}
+	
+	else if (m_state.compare("decide_move_pose") == 0)
+	{
+		if (dir.compare("front") == 0)
+		{
+			VecPosition posRobot = m_posRobot;
+			double robotTheta = m_theta;
+			VecPosition posTarget(posRobot + VecPosition::GetVecPositionFromPolar(3.0, robotTheta));
+			//VecPosition posTarget = GetFrontPositionPoint();
+			cout << "move front position: " << posTarget.GetX() << " " << posTarget.GetY() << endl;
+			m_moveTarget = posTarget;
+			m_state = "moveto_target";
+		}
+		if (dir.compare("left") == 0)
+		{
+			float robotTheta = m_theta;
+			float turnTarget = robotTheta + PI / 2;
+			if (turnTarget > 2 * PI)
+			{
+				turnTarget -= 2 * PI;
+			}
+			m_turnTarget = turnTarget;	
+			m_state = "turnto_target";
+		}
+		if (dir.compare("back") == 0)
+		{
+			m_state = "stop_action";
+		}
+		if (dir.compare("right") == 0)
+		{
+			float robotTheta = m_theta;
+			float turnTarget = robotTheta - PI / 2;
+			if (turnTarget < 0)
+			{
+				turnTarget += 2 * PI;
+			}
+			m_turnTarget = turnTarget;		
+			m_state = "turnto_target";
+		}
+	}
+	
+	else if (m_state.compare("moveto_target") == 0)
+	{
+		//cout << "Robot Position: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << endl;
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "decide_if_there_is_target";
+		}		
+	}
+	
+	else if (m_state.compare("turnto_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "decide_if_there_is_target";
+		}		
+	}
+	
+	else if (m_state.compare("decide_if_there_is_target") == 0)
+	{
+		if (tar.size() > 0)
+		{
+			m_state = "search_target_nearby";
+		}
+		else
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("search_target_nearby") == 0)
+	{
+		string tarFurniture = tar;
+		if (tar.size() == 0)
+		{
+			tarFurniture = "table";
+		}
+		if (SearchTargetFurnitureNearby(tarFurniture, PI/12))
+		{
+			if (m_ifFindTarget)
+			{
+				m_ifSuccessful = 1;
+				m_state = "decide_moveto_target_pose";
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("stop_action") == 0)
+	{
+		m_state = "end";
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		m_ifSuccessful = 1;
+		res = 1;
+	}
+	
+	return res;
+}
+
+int Robot::RoomReferenceCMD(string dir, string tar)
+{
+	int res = 0;
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_ifSuccessful = 0;
+		m_state = "decide_room_keypoint";
+	}
+	
+	else if (m_state.compare("decide_room_keypoint") == 0)
+	{
+		ShowTaskInfo();
+		FindRoomKeyPoint(dir);
+		m_state = "moveto_fixed_target_pose";
+		
+	}
+	
+	else if (m_state.compare("moveto_fixed_target_pose") == 0)
+	{
+		//printf("Robot pose: %f %f %f\n", m_posRobot.GetX(), m_posRobot.GetY(), m_theta);
+		//printf("Go to pose: %f %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY(), m_turnTarget);
+		if (ToPosAngle(m_moveTarget, m_turnTarget))
+		{
+			m_state = "decide_if_there_is_target";
+		}		
+	}
+	
+	else if (m_state.compare("decide_if_there_is_target") == 0)
+	{
+		if (tar.size() > 0)
+		{
+			m_state = "search_target_nearby";
+		}
+		else
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("search_target_nearby") == 0)
+	{
+		string tarFurniture = tar;
+		if (SearchTargetFurnitureNearby(tarFurniture, PI/12))
+		{
+			if (m_ifFindTarget)
+			{
+				m_ifSuccessful = 1;
+				m_state = "decide_moveto_target_pose";
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("stop_action") == 0)
+	{
+		m_state = "end";
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+		m_ifSuccessful = 1;
+		m_state = "end";
+	}
+	
+	return res;
+}
+
+int Robot::DoorReferenceCMD(string dir, string tar)
+{
+	int res = 0;
+	return res;
+}
+
+int Robot::WallReferenceCMD(string dir, string tar)
+{
+	int res = 0;
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_ifSuccessful = 0;
+		m_state = "decide_room_keypoint";
+	}
+	
+	else if (m_state.compare("decide_room_keypoint") == 0)
+	{
+		ShowTaskInfo();
+		FindWallKeyPoint(dir);
+		m_state = "moveto_fixed_target_pose";
+	}
+	
+	else if (m_state.compare("moveto_fixed_target_pose") == 0)
+	{
+		if (ToPosAngle(m_moveTarget, m_turnTarget))
+		{
+			m_state = "decide_if_there_is_target";
+		}		
+	}
+	
+	else if (m_state.compare("decide_if_there_is_target") == 0)
+	{
+		if (tar.size() > 0)
+		{
+			m_state = "search_target_nearby";
+		}
+		else
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("search_target_nearby") == 0)
+	{
+		string tarFurniture = tar;
+		if (SearchTargetFurnitureNearby(tarFurniture, PI/12))
+		{
+			if (m_ifFindTarget)
+			{
+				m_ifSuccessful = 1;
+				m_state = "decide_moveto_target_pose";
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("stop_action") == 0)
+	{
+		m_state = "end";
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+		m_ifSuccessful = 1;
+		m_state = "end";
+	}
+	
+	return res;
+}
+
+int Robot::RobotReferenceCMD(string dir, string tar)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		m_ifSuccessful = 0;
+		ShowTaskInfo();
+		m_state = "decide_search_start_angle";
+	}
+	
+	else if (m_state.compare("decide_search_start_angle") == 0)
+	{
+		ShowTaskInfo();
+		if (dir.compare("left") == 0)
+		{
+			m_turnTarget = m_theta + PI / 2;
+		}
+		if (dir.compare("right") == 0)
+		{
+			m_turnTarget = m_theta - PI / 2;
+		}
+		m_state = "turn_to_search_start_angle";
+	}
+	
+	else if (m_state.compare("turn_to_search_start_angle") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "search_target_nearby";
+		}
+	}
+	
+	else if (m_state.compare("search_target_nearby") == 0)
+	{
+		string tarFurniture = tar;
+		if (tar.size() == 0)
+		{
+			tarFurniture = "table";
+		}
+		if (SearchTargetFurnitureNearby(tarFurniture, PI/4))
+		{
+			if (m_ifFindTarget)
+			{
+				m_ifSuccessful = 1;
+				m_state = "decide_moveto_target_pose";
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		ShowTaskInfo();
+		res = 1;
+	}
+	
+	return res;
+}
+
+int Robot::FurnitureReferenceCMD(string ref, string dir, string tar)
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		m_ifSuccessful = 0;
+		ShowTaskInfo();
+		m_state = "search_reference";
+	}
+	
+	else if (m_state.compare("search_reference") == 0)
+	{
+		//ShowTaskInfo();
+		if (SearchTargetFurnitureNearby(ref, PI/4))
+		{
+			if (m_ifFindTarget)
+			{
+				m_state = "decide_turnto_view_point_angle";
+				cout << "m_state: " << m_state << endl;
+				m_ifFindTarget = 0;
+			}
+			else
+			{
+				m_state = "end";
+				cout << "m_state: " << m_state << endl;
+				m_ifSuccessful = 0;
+			}
+			//exit(1);
+		}
+	}
+	
+	else if (m_state.compare("decide_turnto_view_point_angle") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = FindViewPoint(m_targetFurniture.m_category, dir, m_moveTarget, m_turnTarget);
+		printf("m_moveTarget: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_view_point";
+	}
+	
+	else if (m_state.compare("turn_to_view_point") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "search_target";			
+		}
+	}
+	
+	else if (m_state.compare("search_target") == 0)
+	{
+		//ShowTaskInfo();
+		if (SearchTargetFurnitureNearby(tar, PI/6))
+		{
+			if (m_ifFindTarget)
+			{
+				printf("m_moveTarget: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+				m_state = "decide_moveto_target_pose";
+				m_ifSuccessful = 1;
+				//m_ifFindTarget = 0;
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		printf("m_moveTarget: %f %f\n", m_moveTarget.GetX(), m_moveTarget.GetY());
+		cout << "m_turnTarget: " << m_turnTarget << endl;
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		ShowTaskInfo();
+		res = 1;
+	}
+	
+	return res;
+}
+
+VecPosition Robot::GetFrontPositionPoint()
+{
+	VecPosition res(0, 0);
+	return res;
+}
+
+int Robot::SearchTargetFurnitureNearby(string tarFurniture, float searchScale)
+{
+	int res = 0;
+	if (m_action.compare("init") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "proceed_perception";		
+		//m_ifSuccessful = 0;
+		m_counter = 0;
+		m_ifFindTarget = 0;
+
+		//cout << "m_action: " << m_action << "show" << endl;
+	}
+	
+	else if (m_action.compare("proceed_perception") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		RecognizeFurniture(tarFurniture);
+		m_action = "decide_turnto_angle_search";
+	}
+	
+	else if (m_action.compare("decide_turnto_angle_search") == 0)
+	{
+		cout << "m_action: " << m_action << " m_counter: " << m_counter <<endl;
+		float turnList[2] = { searchScale, -searchScale*2};
+		m_turnTarget = m_theta + turnList[m_counter];
+		if (m_counter > 1)
+		{
+			//m_action = "end";
+			m_action = "decide_target";
+		}
+		else
+		{
+			m_action = "turn_to_search_angle";
+		}
+		m_counter++;
+		cout << "m_action: " << m_action << endl;
+	}
+	
+	else if (m_action.compare("turn_to_search_angle") == 0)
+	{
+		//cout << "angles" << m_theta << ", " << m_turnTarget << endl;
+		if (ToAngle(m_turnTarget))
+		{
+			m_action = "proceed_perception";
+		}
+	}
+	
+	else if (m_action.compare("decide_target") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		vector<float> confidenceList;
+		vector<float> distList;
+		cout << "m_tarfurnitureList size: " << m_tarfurnitureList.size() << endl;
+		if (m_tarfurnitureList.size() > 0)
+		{
+		  	m_ifFindTarget = 1;
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				confidenceList.push_back(m_furnitureList[i].m_confidence);
+			}
+			for (int i = 0; i < m_tarfurnitureList.size(); i++)
+			{
+				distList.push_back((m_tarfurnitureList[i].m_posGL - m_posRobot).GetMagnitude());
+			}
+			vector<int> confidenceSorted = RankArray(confidenceList);
+			vector<int> distSorted = RankArray(distList);
+
+			int L = m_furnitureList.size();
+			m_moveTarget = m_tarfurnitureList[distSorted[L-1]].m_posGL;
+			m_turnTarget = m_tarfurnitureList[distSorted[L-1]].m_thetaGL;
+			m_targetFurniture = m_tarfurnitureList[distSorted[L-1]];
+		}
+		else
+		{
+			m_ifFindTarget = 0;
+		}
+		m_action = "end";
+	}
+	
+	else if (m_action.compare("end") == 0)
+	{
+		cout << "m_action: " << m_action << endl;
+		m_action = "init";
+		res = 1;
+	}
+	
+	return res;
+}
+
+VecPosition Robot::FindViewPoint(string frCategory, string dir, VecPosition frPos, float frOrientation)
+{
+	VecPosition res(0, 0);
+	printf("m_pose: %f %f %f\n", frPos.GetX(), frPos.GetY(), frOrientation);
+	float deltaAngle = 0;
+	float dmg = 1.5;
+	if (dir.compare("front") == 0)	{	deltaAngle = 0;	}
+	if (dir.compare("left") == 0)	{	deltaAngle = PI / 2;	}
+	if (dir.compare("back") == 0)	{	deltaAngle = PI;	}
+	if (dir.compare("right") == 0)	{	deltaAngle = - PI / 2;	}
+	if (dir.compare("beside") == 0)	{	deltaAngle = 0;	dmg = 0;}
+	
+	float viewAngle = frOrientation + deltaAngle;
+	VecPosition frGlobalPosition = frPos;
+	VecPosition viewPoint = frGlobalPosition + VecPosition::GetVecPositionFromPolar(dmg, viewAngle);
+	res = viewPoint;
+	
+	return res;
+}
+
+int Robot::ShowTaskInfo()
+{
+	ROS_INFO("m_state: %s m_mission: %s m_counter: %d", m_state.c_str(), m_mission.c_str(), m_counter);
+	ROS_INFO("tar: %s ref: %s dir: %s", m_currentTar.c_str(), m_currentRef.c_str(), m_currentDir.c_str());
+	return 1;
+}
+
+int Robot::GoToTargetRoom()
+{
+	int res = 0;
+	
+	if (m_state.compare("init") == 0)
+	{
+		string targetRoom = m_targetRoom;
+		printf("the target room is %s\n", m_targetRoom.c_str());
+		ShowTaskInfo();
+		//m_action = "decide_hallway_pose";
+		m_state = "end";
+	}
+	
+	else if (m_state.compare("decide_hallway_pose") == 0)
+	{
+		VecPosition posRobot = m_posRobot;
+		double robotTheta = m_theta;
+		VecPosition posTarget(posRobot + VecPosition::GetVecPositionFromPolar(1.0, robotTheta));
+		m_moveTarget = posTarget;
+		m_state = "moveto_hallway_pose";
+	}
+	
+	else if (m_state.compare("moveto_hallway_pose") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "decide_roomdoor_pose";
+		}
+	}
+	
+	else if (m_state.compare("decide_roomdoor_pose") == 0)
+	{
+		if (m_targetRoom.compare("bedroom") == 0) //bedroom left
+		{
+			float robotTheta = m_theta;
+			float turnTarget = robotTheta + PI / 2;
+			while (turnTarget > 2 * PI)
+			{
+				turnTarget -= 2 * PI;
+			}
+			m_turnTarget = turnTarget;			
+		}
+		else //living room right
+		{
+			float robotTheta = m_theta;
+			float turnTarget = robotTheta - PI / 2;
+			while (turnTarget < 0)
+			{
+				turnTarget += 2 * PI;
+			}
+			m_turnTarget = turnTarget;			
+		}
+		m_state = "turnto_roomdoor_pose";
+	}
+	
+	else if (m_state.compare("turnto_roomdoor_pose") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "decide_roomentrance_pose";
+		}
+	}
+	
+	else if (m_state.compare("decide_roomentrance_pose") == 0)
+	{
+		VecPosition posRobot = m_posRobot;
+		double robotTheta = m_theta;
+		VecPosition posTarget(posRobot + VecPosition::GetVecPositionFromPolar(1.5, robotTheta));
+		m_moveTarget = posTarget;
+		m_state = "goto_roomentrance_pose";	
+	}
+	
+	else if (m_state.compare("goto_roomentrance_p	//RecognizeTargetObject();ose") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "stop_action";
+		}
+	}
+	
+	else if (m_state.compare("stop_action") == 0)
+	{
+		m_state = "end";
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;	//RecognizeTargetObject();
+	}
+	
+	return res;
+}
+
+int Robot::SearchAndGoToTargetFurniture()
+{
+	int res = 0;
+	if (m_state.compare("init") == 0)
+	{
+		ShowTaskInfo();
+		m_state = "search_target_nearby";
+	}
+	
+	else if (m_state.compare("search_target_nearby") == 0)
+	{
+		if (SearchTargetFurnitureNearby("table", PI/12))
+		{
+			if (m_ifFindTarget)
+			{
+				m_ifSuccessful = 1;
+				m_state = "decide_moveto_target_pose";
+			}
+			else
+			{
+				m_ifSuccessful = 0;
+				m_state = "end";
+			}
+		}
+	}
+	
+	else if (m_state.compare("decide_moveto_target_pose") == 0)
+	{
+		ShowTaskInfo();
+		m_moveTarget = m_moveTarget + (m_posRobot - m_moveTarget).SetMagnitude(1.0);
+		m_turnTarget = (m_moveTarget - m_posRobot).GetDirection();
+		while (m_turnTarget < 0)
+		{
+			m_turnTarget += 2 * PI;
+		}
+		m_state = "turn_to_target";
+	}
+	
+	else if (m_state.compare("turn_to_target") == 0)
+	{
+		if (ToAngle(m_turnTarget))
+		{
+			m_state = "move_to_target";
+		}
+	}
+	
+	else if (m_state.compare("move_to_target") == 0)
+	{
+		if (ToPos(m_moveTarget))
+		{
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		ShowTaskInfo();
+		res = 1;
+	}
+	return res;
+}
+
+int Robot::FetchTargetObject()
+{
+	int res = 0;
+	if (m_state.compare("init") == 0)
+	{
+		m_state = "wait";
+		m_counter = 0;
+	}
+	
+	else if(m_state.compare("wait") == 0)
+	{
+
+		if (m_counter > 100)
+		{
+			m_state = "fetch_object";
+			cout << "Stop Fetching" << endl; //""find nothing. failed..." << endl;
+		}
+		m_counter++;
+	}
+	
+	else if (m_state.compare("fetch_object") == 0)
+	{
+		//printf("Fetch Object\n");
+		string targetObject = m_targetObject;		
+	}
+	else if (m_state.compare("end") == 0)
+	{
+		res = 1;
+	}
+	
+	return res;
+}
+
+VecPosition Robot::FindRoomKeyPoint(string dir)
+{
+	VecPosition res(0, 0);
+	
+	if (m_targetRoom.compare("bedroom") == 0)
+	{
+		if (dir.compare("front") == 0)
+		{
+			m_moveTarget.SetX(-1.5);
+			m_moveTarget.SetY(5);
+			m_turnTarget = PI / 2;
+		}
+		else if (dir.compare("back") == 0)
+		{
+			m_moveTarget.SetX(-1.5);
+			m_moveTarget.SetY(5);
+			m_turnTarget = PI / 2;				
+		}
+		else if (dir.compare("center") == 0)
+		{
+			m_moveTarget.SetX(-1);
+			m_moveTarget.SetY(4.5);
+			m_turnTarget = PI / 2;				
+		}
+	}
+	else if (m_targetRoom.compare("living room") == 0)
+	{
+		if (dir.compare("front") == 0)
+		{
+			m_moveTarget.SetX(-1.5);
+			m_moveTarget.SetY(-5.5);
+			m_turnTarget = PI / 2 * 3;
+		}
+		else if (dir.compare("back") == 0)
+		{
+			m_moveTarget.SetX(-1.5);
+			m_moveTarget.SetY(-5.5);
+			m_turnTarget = PI / 2 * 3;				
+		}
+		else if (dir.compare("center") == 0)
+		{
+			m_moveTarget.SetX(-2);
+			m_moveTarget.SetY(-4.5);
+			m_turnTarget = PI / 2 * 3;				
+		}
+	}
+	
+	res = m_moveTarget;
+	return res;
+}
+
+VecPosition Robot::FindWallKeyPoint(string dir)
+{
+  	VecPosition res(0, 0);
+	float robotAngle = m_theta;
+	float bedroomKeypoints[] = {1, 4.5, -1.5, 6, -4.5, 5,	-1.5, 2};
+	float bedroomAngles[] = {0, PI/2, PI, PI/2};
+	float livingroomKeyoints[] = {-1.5, -4.5, -1.5, -2, -4.5, -5, -1.5, -2};
+	float livingroomAngles[] = {0, PI/2*3, PI, PI/2*3};
+	int frontIndex = 0;
+	frontIndex = (int)(robotAngle / (PI/4));
+	if (frontIndex == 7)
+	{
+		frontIndex = 0;
+	}
+	else
+	{
+		frontIndex = (frontIndex+1) / 2;
+	}
+	string dirSet[] = {"front", "left", "back", "right"};
+	if (dir.compare("beside") == 0)
+	{
+		dir = "front";
+	}
+	int pointIdx = -1;
+	for (int i = 0; i < 4; i++)
+	{
+		if (dir.compare(dirSet[i]) == 0)
+		{
+			pointIdx = frontIndex + i;
+			if (pointIdx >= 4)
+			{
+				pointIdx -= 4;
+			}
+		}
+	}
+	if (m_targetRoom.compare("bedroom") == 0)
+	{
+		m_moveTarget.SetVecPosition(bedroomKeypoints[2*pointIdx], bedroomKeypoints[2*pointIdx+1]);
+		m_turnTarget = bedroomAngles[pointIdx];
+	}
+	else if (m_targetRoom.compare("living room") == 0)
+	{
+		m_moveTarget.SetVecPosition(livingroomKeyoints[2*pointIdx], livingroomKeyoints[2*pointIdx+1]);
+		m_turnTarget = livingroomAngles[pointIdx];
+	}
+	res = m_moveTarget;
+	return res;
+}
+
+
+#endif

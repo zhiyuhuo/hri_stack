@@ -1,0 +1,238 @@
+#ifndef WORLDSTATEFEATURE_H
+#define WORLDSTATEFEATURE_H
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <cmath>
+#include <fstream>
+
+#include "Header.h"
+
+Ent Robot::GetRobotEntity(float x, float y, float theta)
+{
+	Ent res;
+	res.vec = GenerateRobotVector(x, y);
+	res.dir = theta;
+	res.name = "robot";
+	
+	return res;
+}
+
+Ent Robot::GetGoEntity(int frid)
+{
+	Fur f = m_furLib[frid];
+	string name = f.name;
+	vector<float> posedim = f.posedim;
+
+	Ent res;
+	
+	res.vec = GenerateEntityVector(positionSet[id][0], positionSet[id][1], dimSet[id][0], dimSet[id][1]);
+	res.dir = angleSet[id];
+	res.name = categorySet[id];
+
+	return res;
+}
+
+Ent Robot::GetWallEntity(string targetRoom)
+{
+	Ent res;
+	
+	float angleSet[] = {3/2*PI, 0, PI/2, PI, PI/2, PI, 3/2*PI, 0};
+	float wallPara[8][4] = {	{2.4, 8, 9.3, 0.2},
+					{-2.3, 4.67, 0.2, 6.67},
+					{2.4, 1.33, 9.3, 0.2},
+					{7, 4.67, 0.2, 6.67},
+					{0.6, -7.9, 5.6, 0.2},
+					{3.4, -4.82, 0.2, 6.6},
+					{0.6, -1.3, 5.6, 0.2},
+					{-2.2, -4.82, 0.2, 6.6	}};
+	
+	if (targetRoom.compare("bedroom") == 0)
+	{
+		vector<float> walls;
+		for (int i = 0; i < 4; i++)
+		{
+			vector<float> wall = GenerateEntityVector(wallPara[i][0], wallPara[i][1], wallPara[i][2], wallPara[i][3]);
+			walls.insert( walls.end(), wall.begin(), wall.end() );
+		}
+		res.vec = walls;
+		res.dir = -1;
+	}
+	else if (targetRoom.compare("livingroom") == 0)
+	{
+		vector<float> walls;
+		for (int i = 4; i < 8; i++)
+		{
+			vector<float> wall = GenerateEntityVector(wallPara[i][0], wallPara[i][1], wallPara[i][2], wallPara[i][3]);
+			walls.insert( walls.end(), wall.begin(), wall.end() );
+		}
+		res.vec = walls;
+		res.dir = -1;
+	}
+	res.name = "wall";
+
+	return res; 
+}
+
+Ent Robot::GetRoomEntity(string roomName)
+{
+	Ent res;
+	
+	float angleSet[] = {3/2*PI, 0, PI/2, PI, PI/2, PI, 3/2*PI, 0};
+	float wallPara[8][4] = {	{2.4, 8, 9.3, 0.2},
+					{-2.3, 4.67, 0.2, 6.67},
+					{2.4, 1.33, 9.3, 0.2},
+					{7, 4.67, 0.2, 6.67},
+					{0.6, -7.9, 5.6, 0.2},
+					{3.4, -4.82, 0.2, 6.6},
+					{0.6, -1.3, 5.6, 0.2},
+					{-2.2, -4.82, 0.2, 6.6	}};
+	
+	if (roomName.compare("bedroom") == 0)
+	{
+		vector<float> walls;
+		for (int i = 0; i < 4; i++)
+		{
+			vector<float> wall = GenerateEntityVector(wallPara[i][0], wallPara[i][1], wallPara[i][2], wallPara[i][3]);
+			walls.insert( walls.end(), wall.begin(), wall.end() );
+		}
+		res.vec = walls;
+		res.dir = 3/2*PI;
+		res.name = "bedroom";
+	}
+	else if (roomName.compare("livingroom") == 0)
+	{
+		vector<float> walls;
+		for (int i = 4; i < 8; i++)
+		{
+			vector<float> wall = GenerateEntityVector(wallPara[i][0], wallPara[i][1], wallPara[i][2], wallPara[i][3]);
+			walls.insert( walls.end(), wall.begin(), wall.end() );
+		}
+		res.vec = walls;
+		res.dir = 1/2*PI;
+		res.name = "livingroom";
+	}
+
+	return res; 
+}
+
+SpR Robot::GetSpatialRelationB2A(Ent A, Ent B)
+{
+	SpR res;
+	
+	res.nameA = A.name;
+	res.nameB = B.name;
+
+	res.dirhg = HistogramOfForcesWithOrientation(A.vec, B.vec, A.dir);
+
+	vector<float> disthg(100, 0);
+	for (int i = 0; i < A.vec.size()/2; i++)
+	{
+		for (int j = 0; j < B.vec.size()/2; j++)
+		{
+			float dist = sqrt( pow(A.vec[2*i]-B.vec[2*j], 2) + pow(A.vec[2*i+1]-B.vec[2*j+1], 2) );
+			int k = dist / 0.1;
+			if (k < disthg.size())
+			{
+				disthg[k]++;
+			}
+		}
+	}
+	
+	for (int i = 0; i < disthg.size(); i++)
+	{
+		disthg[i] /= A.vec.size()/2 * B.vec.size()/2;
+	}
+	res.disthg = disthg;
+
+	return res;
+}
+
+float Robot::GetDiffBetweenBetweenTwoSpatialFeature(vector<float> dirhg1, vector<float> disthg1, vector<float> dirhg2, vector<float> disthg2)
+{
+	float res = 1;
+	//normalize data
+	float totaldirhg1 = 0; 
+	float totaldisthg1 = 0;
+	float totaldirhg2 = 0;
+	float totaldisthg2 = 0;
+	
+	for (int i = 0; i < dirhg1.size(); i++)
+	{
+		totaldirhg1 += dirhg1[i];
+		totaldirhg2 += dirhg2[i];
+	}
+	
+	for (int i = 0; i < disthg1.size(); i++)
+	{
+		totaldisthg1 += disthg1[i];
+		totaldisthg2 += disthg2[i];
+	}
+	
+	for (int i = 0; i < dirhg1.size(); i++)
+	{
+		dirhg1[i] /= totaldirhg1;
+		dirhg2[i] /= totaldirhg2;
+	}
+	
+	for (int i = 0; i < disthg1.size(); i++)
+	{
+		disthg1[i] /= totaldisthg1;
+		disthg2[i] /= totaldisthg2;
+	}
+	
+	float diffdir = 0;
+	float diffdist = 0;
+	for (int i = 0; i < dirhg1.size(); i++)
+	{
+		diffdir += abs(dirhg1[i] - dirhg2[i]);
+	}
+	
+	for (int i = 0; i < disthg1.size(); i++)
+	{
+		diffdist += abs(disthg1[i] - disthg2[i]);
+	}
+	
+	diffdir /= 2;
+	diffdist /= 2;
+	
+	res = sqrt ( pow(diffdir, 2) + pow(diffdist, 2) ) / sqrt(2);
+	return res;
+}
+
+vector<Ent> Robot::GetVisiableEntities()
+{
+	vector<Ent> res;
+	//OR
+	Ent OR = GetRobotEntity(m_originalRobotPose[0], m_originalRobotPose[1], m_originalRobotPose[2]);
+	OR.name = "OR";
+	res.push_back(OR);
+	
+	//CR
+	Ent CR = GetRobotEntity(m_posRobot.GetX(), m_posRobot.GetY(), m_theta);
+	CR.name = "CR";
+	res.push_back(CR);
+	
+	//Wall
+	res.push_back(GetWallEntity(m_targetRoom));
+	
+	//room
+	res.push_back(GetRoomEntity("bedroom"));
+	res.push_back(GetRoomEntity("livingroom"));
+	
+	//Furniture
+	for (int i = 0; i < m_fr.size(); i++)
+	{
+		if (m_fr[i] > 0)
+		{
+			res.push_back(GetGoEntity(m_fr[i]));
+		}
+	}
+	
+	//Furniture Pairs
+	
+	return res;
+}
+
+#endif
