@@ -39,7 +39,7 @@ namespace gazebo
 		void tiltCallback(const std_msgs::Float64::ConstPtr& msg)
 		{
 			//ROS_INFO("I heard: [%f]", msg->data);
-			inputAngle = msg->data * PI / 180;
+			inputAngle = msg->data;
 		}
 		
 		void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
@@ -49,7 +49,7 @@ namespace gazebo
 			this->model = _parent;
 			gazeboROS = GazeboRosPtr ( new GazeboRos ( _parent, _sdf, "KinectTilt" ) );
 			joint = gazeboROS->getJoint ( model, "tiltJoint", "kinect_joint" );
-			joint->SetMaxForce ( 0, 0.0001 );
+			joint->SetMaxForce ( 0, 0.1 );
 // 			Listen to the update event. This event is broadcast every
 // 			simulation iteration.
 			this->updateConnection = event::Events::ConnectWorldUpdateBegin(
@@ -74,20 +74,24 @@ namespace gazebo
 // 		Called by the model update start event
 		void OnUpdate(const common::UpdateInfo & /*_info*/)
 		{
-			if (tiltAngle < -inputAngle - 0.002)
-			{
-				tiltAngle += 0.001;			
-				joint->SetPosition(0, tiltAngle);
+			tiltAngle = joint->GetAngle(0).Degree();
+			if (tiltAngle < -inputAngle - 0.5)
+			{		
+				joint->SetVelocity(0, 0.25);
 			}
-			else if (tiltAngle > -inputAngle + 0.002)
+			else if (tiltAngle > -inputAngle + 0.5)
 			{
-				tiltAngle -= 0.001;			
-				joint->SetPosition(0, tiltAngle);
+				joint->SetVelocity(0, -0.25);
 			}
-			//cout << joint->GetAngle(0) << " " << joint->GetAngle(1) << " " << joint->GetAngle(2) << endl;
+			else
+			{
+				joint->SetVelocity(0, 0);
+			}
+//			cout << joint->GetAngle(0).Degree() << endl;
 
 			std_msgs::Float64 curtiltMsg;
-			curtiltMsg.data= tiltAngle * 180 / PI;
+// 			curtiltMsg.data = tiltAngle * 180 / PI;
+			curtiltMsg.data = joint->GetAngle(0).Degree();
 			pub.publish(curtiltMsg);
 			ros::spinOnce();
 		}
