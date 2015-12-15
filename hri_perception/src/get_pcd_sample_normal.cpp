@@ -42,13 +42,16 @@ void save_pc_norm(string fileName, pcl::PointCloud<pcl::PointXYZ> cloud, pcl::Po
 	myfile.open (fileName.c_str());
 	for (size_t i = 0; i < cloud.points.size (); ++i)
 	{
-		myfile << cloud.points[i].x << " " 
-			<< cloud.points[i].y << " " 
-			<< cloud.points[i].z << " " 
-			<< normals.points[i].normal_x << " " 
-			<< normals.points[i].normal_y << " " 
-		        << normals.points[i].normal_z << " " 
-			<< "\n";
+		if (!isnan(normals.points[i].normal_x) && !isnan(normals.points[i].normal_y) && !isnan(normals.points[i].normal_z))
+		{
+			myfile << cloud.points[i].x << " " 
+				<< cloud.points[i].y << " " 
+				<< cloud.points[i].z << " " 
+				<< normals.points[i].normal_x << " " 
+				<< normals.points[i].normal_y << " " 
+				<< normals.points[i].normal_z << " " 
+				<< "\n";	
+		}
 	}
 	myfile.close();
 }

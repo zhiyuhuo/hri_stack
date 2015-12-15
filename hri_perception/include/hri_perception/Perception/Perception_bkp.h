@@ -42,20 +42,14 @@ public:
 public:
 	Mat m_imgScene;
 	vector<float> m_pt;
-	map<string, FurnitureDetector> m_voxelDetector;
+	map<string, vector<float> > m_voxelDetector;
 	vector<Ent> m_GOList;
 	
 public: 
-	FurnitureDetector ReadOneFurnitureDetector(string rootDir, string name);
-  	int ReadVoxelDetectors(string rootDir);
+  	int ReadVoxelDetector(string folderName);
 	int ImportKinectData(Mat imgRGB, vector<float> pts);
 	int Process();
-	Ent GenerateEnt(SE g);
-	
-private:
-	vector<vector<float> > LoadVectorVectorFloat(string fileName);
-	vector<float> LoadVectorFloat(string fileName);
-	float LoadFloat(string fileName);
+	Ent GenerateEnt(GO g);
 };
 
 Perception::Perception()
@@ -68,22 +62,22 @@ Perception::~Perception()
   
 }
 
-FurnitureDetector Perception::ReadOneFurnitureDetector(string rootDir, string name)
-{
-	FurnitureDetector res;
-	res.sv = LoadVectorVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/supportvectors.txt");
-	
-	
-	return res;
-}
-
-int Perception::ReadVoxelDetectors(string rootDir)
+int Perception::ReadVoxelDetector(string folderName)
 {	
 	int res = 0;
-	
-	FurnitureDetector fd;
-	fd = ReadOneFurnitureDetector(rootDir, "low_table");
-	
+	vector<float> f;
+	f = ReadFloatVectorFile(folderName + "/V/table-low.v");
+	m_voxelDetector["table-low"] = f;
+	f = ReadFloatVectorFile(folderName + "/V/table-high.v");
+	m_voxelDetector["table-high"] = f;
+	f = ReadFloatVectorFile(folderName + "/V/chair-front.v");
+	m_voxelDetector["chair-front"] = f;
+	f = ReadFloatVectorFile(folderName + "/V/chair-back.v");
+	m_voxelDetector["chair-back"] = f;
+	f = ReadFloatVectorFile(folderName + "/V/bed.v");
+	m_voxelDetector["bed"] = f;
+	f = ReadFloatVectorFile(folderName + "/V/couch-front.v");
+	m_voxelDetector["couch-front"] = f;
 	
 	return res;
 }
@@ -161,9 +155,9 @@ int Perception::Process()
 			}
 
 			///Furniture recognition start
-			SE g;
+			GO g;
 			g.ImportPt(targetIndex, m_pt);
-			//g.ProceedData(m_voxelDetector);
+			g.ProceedData(m_voxelDetector);
 			///Furniture recognition end
 			
 			//cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
@@ -181,7 +175,7 @@ int Perception::Process()
 	return res;
 }
 
-Ent Perception::GenerateEnt(SE g)
+Ent Perception::GenerateEnt(S g)
 {
 	Ent en;
 	
@@ -210,75 +204,6 @@ Ent Perception::GenerateEnt(SE g)
 	//delete map;
 	en.vec = vec;
 	return en;
-}
-
-vector<vector<float> > Perception::LoadVectorVectorFloat(string fileName)
-{
-	vector<vector<float> > res;
-
-	string line;
-	ifstream fs (fileName.c_str());
-	cout << fileName << endl;
-	if (fs.is_open())
-	{
-		int k = 0;
-		while (fs.good())
-		{
-			vector<float> vf;
-			getline(fs,line);
-			cout << "line: " << k << ": " << line << endl;
-			string s = "";
-			int t = 0;
-			char c;
-			float f;
-			while (t < line.size())
-			{
-				c = line[t];
-				if (c == ',')
-				{
-					f = atof(s.c_str());
-					vf.push_back(f);
-					s = "";
-				}
-				else
-				{
-					s.push_back(c);
-				}
-				t++;
-			}
-			f = atof(s.c_str());
-			vf.push_back(f);
-			
-			if (line.size() > 0)
-			{
-				res.push_back(vf);
-			}
-			k++;
-		}
-		
-		cout << res.size() << " " << res[0].size() << " " << res[res.size()-1].size() << endl;
-		fs.close();
-	}
-	else
-	{
-		cout << "Unable to open file" << endl;
-	}
-	
-	return res;
-}
-
-vector<float> Perception::LoadVectorFloat(string fileName)
-{
-	vector<float> res;
-	
-	return res;
-}
-
-float Perception::LoadFloat(string fileName)
-{
-	float res;
-	
-	return res;
 }
 
 #endif

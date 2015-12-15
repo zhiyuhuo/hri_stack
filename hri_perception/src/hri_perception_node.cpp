@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	hri_perception::Env envMsg;
 	
 	string furnitureDctFolder = "/home/hri/hri_DATA";
-	_perception.ReadVoxelDetector(furnitureDctFolder);
+	_perception.ReadVoxelDetectors(furnitureDctFolder);
 	
 	// PreProcessing
 	printf("start robot...\n");
