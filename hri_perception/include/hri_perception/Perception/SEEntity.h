@@ -10,19 +10,31 @@
 #include <time.h>
 #include <vector>
 
+#include <boost/thread/thread.hpp>
+// #include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/common/common_headers.h>
+// #include <pcl/visualization/pcl_visualizer.h>
+// #include <pcl/console/parse.h>
+
 #include "../Universal/Header.h"
 
 
 using namespace std;
 
 struct FurnitureDetector{
+  
 	string name;
 	vector<vector<float> > sv;
 	vector<float> a;
 	float b;
 	vector<float> l;
-	vector<float> s;
+	vector<float> sf;
 	vector<float> sh;
+	
+	float sigma;
 };
 
 class SE
@@ -48,16 +60,25 @@ public:
 	void ImportPt(vector<float> pt);
 	
 public:
-	void ProceedData(map<string, FurnitureDetector> voxelDetector);
-	string Classify(map<string, FurnitureDetector> voxelDetector);
-
+	void ProceedData(map<string, FurnitureDetector> detectors);
+	
 	vector<float> GetPtCentroid(vector<float> pt);
 	vector<float> GetAdjustCentroidPt(vector<float> pt, vector<float> centroid);
+	vector<float> BuildDHFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
+	float GetTilt(float nx, float ny, float nz);
+	
+	string Classify(vector<float> feature, map<string, FurnitureDetector> detectors);
+
+        float LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model);
+	float KernelRBF(vector<float> u, vector<float> v, float sigma);
 	
 };
 
 SE::SE()
-{}
+{
+	m_name = "";
+	m_dir = -1;
+}
 SE::~SE()
 {}	
 
@@ -82,19 +103,60 @@ void SE::ImportPt(vector<float> pt)
 	//cout << "points number: " << m_pt.size() << endl;
 }
 
-void SE::ProceedData(map<string, FurnitureDetector> voxelDetector)
+void SE::ProceedData(map<string, FurnitureDetector> detectors)
 {
+	//load sample
   	m_centroid = GetPtCentroid(m_pt);
 	m_acpt = GetAdjustCentroidPt(m_pt, m_centroid);  
 	
-	//cout << "orientation: " << m_dir << endl;
-}
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudin(new pcl::PointCloud<pcl::PointXYZ> ());
+	cloudin->width    = m_acpt.size()/3;
+	cloudin->height   = 1;
+	cloudin->is_dense = false;
+	cloudin->points.resize (cloudin->width * cloudin->height);
+	
+	for (int i = 0; i < m_acpt.size()/3; i++)
+	{
+		cloudin->points[i].x = m_acpt[3*i];
+		cloudin->points[i].y = m_acpt[3*i+1];
+		cloudin->points[i].z = m_acpt[3*i+2];
+	}
 
-string SE::Classify(map<string, FurnitureDetector> voxelDetector)
-{
-	string name;
-
-	return name;
+	
+	//voxelize pc
+	pcl::VoxelGrid<pcl::PointXYZ> sor;
+	sor.setInputCloud (cloudin);
+	sor.setLeafSize (0.02f, 0.02f, 0.02f);
+	sor.filter (*cloudin);
+	
+	pcl::PointCloud<pcl::PointXYZ> cloud = *cloudin;
+	
+	//get normal
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+	ne.setInputCloud (cloudin);
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+	ne.setSearchMethod (tree);
+	pcl::PointCloud<pcl::Normal>::Ptr normalsin (new pcl::PointCloud<pcl::Normal>);
+	ne.setRadiusSearch (0.03);
+	ne.compute (*normalsin);	
+	pcl::PointCloud<pcl::Normal> normals = *normalsin; 
+	
+	//get feature
+	vector<float> feature = BuildDHFeature(cloud, normals);
+	
+	//classify get the name of the sample;
+	m_rawnameStr = Classify(feature, detectors);
+	m_name = "";
+	int i = 0;
+	char c = m_rawnameStr[i];
+	while (i < m_rawnameStr.size() && c != '_')
+	{
+		m_name.push_back(c);
+		c = m_rawnameStr[++i];
+	}
+	
+	//get the direction of the sample;
+	m_dir = -1;
 }
 
 vector<float> SE::GetPtCentroid(vector<float> pt)
@@ -145,9 +207,124 @@ vector<float> SE::GetAdjustCentroidPt(vector<float> pt, vector<float> centroid)
 	return res;
 }
 
+vector<float> SE::BuildDHFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals)
+{
+	vector<float> res(100, -1);
+	
+	vector<float> M(100, 0);
+	vector<float> T(100, 0);
+	
+	float F = 0.1;
+	int ID, D, H;
+	float tilt;
+	for (int i = 0; i < normals.width; i++)
+	{
+		if (!isnan(normals.points[i].normal_x) && !isnan(normals.points[i].normal_y) && !isnan(normals.points[i].normal_z))
+		{
+			tilt = GetTilt(normals.points[i].normal_x, normals.points[i].normal_y, normals.points[i].normal_z);
+			D = (int)(sqrt(cloud.points[i].x * cloud.points[i].x + cloud.points[i].y * cloud.points[i].y) / F);
+			H = (int)(cloud.points[i].z / F);
+			if (D >= 0 && D < 10 && H > 0 && H < 10)
+			{
+				ID = D + H * 10;
+				M[ID] += tilt;
+				T[ID] ++;
+			}
+		}
+	}
+	
+	for (int i = 0; i < res.size(); i++)
+	{
+		if (T[i] > 0)
+		{
+			res[i] = M[i] / T[i];
+		}
+	}
+	
+	return res;
+}
+
+float SE::GetTilt(float nx, float ny, float nz)
+{
+	return fabs(nz) / sqrt(nx*nx + ny*ny + nz*nz);
+}
+
+string SE::Classify(vector<float> feature, map<string, FurnitureDetector> detectors)
+{
+	string name = "unknown";
+	map<string, FurnitureDetector>::iterator iter;
+	for (iter = detectors.begin(); iter != detectors.end(); ++iter)
+	{
+		string keystr = iter->first;
+		FurnitureDetector dct = iter->second;
+		
+		float r = LogisticClassifyOneSample(feature, dct);
+// 		cout << keystr << ": " << r << endl;
+		
+		if (r > 0)
+		{
+			name = keystr;
+			break;
+		}
+	}
+	
+	return name;
+}
+
+float SE::LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model)
+{
+	float res;
+	//cout << model.name << endl;
+	vector<float> sample(feature.size(), 0);
+	for (int i = 0; i < sample.size(); i++)
+	{
+		sample[i] = (feature[i] + model.sh[i]) * model.sf[i];
+	}  
+	  
+	float r = 0;
+	for (int i = 0; i < model.sv.size(); i++)
+	{
+		if (i == 0)
+		{
+			vector<float> sv = model.sv[i];
+// 			for (int k = 0; k < sv.size(); k++)
+// 			{
+// 				cout << "_" << k << " " << feature[k] << "   " << sample[k] << "   " << sv[k] << endl;
+// 			}
+		}
+		float kval = KernelRBF(sample, model.sv[i], model.sigma);
+		//cout << i << " " << kval << endl;
+		r += (-1) * model.a[i] * kval;
+	}
+	
+	r -= model.b;
+	res = (r>0)?1:-1;
+	
+	return res;
+}
 
 
-
+float SE::KernelRBF(vector<float> u, vector<float> v, float sigma)
+{	
+	float res;
+    
+        vector<float> d2vec(u.size(), 0);
+	float d2sum = 0;
+	for (int i = 0; i < u.size(); i++)
+	{
+		d2vec[i] = (u[i] - v[i]) * (u[i] - v[i]);
+	}
+	for (int i = 0; i < d2vec.size(); i++)
+	{
+		d2sum += d2vec[i];
+	}
+	
+	d2sum = pow(sqrt(d2sum), 2);
+	
+	res = exp( -1/(2*sigma*sigma) * d2sum);
+	
+	return res;
+}
 
 #endif
 

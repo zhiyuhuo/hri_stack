@@ -40,15 +40,15 @@ public:
 	~Perception();
   
 public:
-	Mat m_imgScene;
+	cv::Mat m_imgScene;
 	vector<float> m_pt;
-	map<string, FurnitureDetector> m_voxelDetector;
+	map<string, FurnitureDetector> m_detectorSet;
 	vector<Ent> m_GOList;
 	
 public: 
 	FurnitureDetector ReadOneFurnitureDetector(string rootDir, string name);
-  	int ReadVoxelDetectors(string rootDir);
-	int ImportKinectData(Mat imgRGB, vector<float> pts);
+  	int ReadDetectors(string rootDir);
+	int ImportKinectData(cv::Mat imgRGB, vector<float> pts);
 	int Process();
 	Ent GenerateEnt(SE g);
 	
@@ -60,7 +60,7 @@ private:
 
 Perception::Perception()
 {
-	m_imgScene = Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
+	m_imgScene = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
 }
 
 Perception::~Perception()
@@ -71,24 +71,38 @@ Perception::~Perception()
 FurnitureDetector Perception::ReadOneFurnitureDetector(string rootDir, string name)
 {
 	FurnitureDetector res;
+	res.name = name;
 	res.sv = LoadVectorVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/supportvectors.txt");
-	
-	
+	res.a = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/alpha.txt");
+	res.b = LoadFloat(rootDir + "/FurnitureModelsForRos/" + name + "/bias.txt");
+	res.l = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/group.txt");
+	res.sf = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/scalefactor.txt");
+	res.sh = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/shift.txt");
+	res.sigma = LoadFloat(rootDir + "/FurnitureModelsForRos/" + name + "/sigma.txt");
 	return res;
 }
 
-int Perception::ReadVoxelDetectors(string rootDir)
+int Perception::ReadDetectors(string rootDir)
 {	
 	int res = 0;
 	
 	FurnitureDetector fd;
-	fd = ReadOneFurnitureDetector(rootDir, "low_table");
+	fd = ReadOneFurnitureDetector(rootDir, "table_low");
+	m_detectorSet["table_low"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "table_high");
+	m_detectorSet["table_high"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "chair");
+	m_detectorSet["chair"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "couch");
+	m_detectorSet["couch"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "bed");
+	m_detectorSet["bed"] = fd;
 	
 	
 	return res;
 }
 
-int Perception::ImportKinectData(Mat imgRGB, vector<float> pts)
+int Perception::ImportKinectData(cv::Mat imgRGB, vector<float> pts)
 {
 	int res = 0;
 	memcpy(m_imgScene.data, imgRGB.data, IMG_SIZE3);
@@ -101,16 +115,16 @@ int Perception::Process()
 	m_GOList.clear();
   
 	int res = 0;
-	Mat localMap = Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
-	Mat labelLocalMap = Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
+	cv::Mat localMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
+	cv::Mat labelLocalMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
 	
 	
 	BuildLocalMap(m_pt, localMap);
 	BwLabel(localMap, labelLocalMap);
 	SetBwMapBackgroundZero(labelLocalMap);
 	
-	imshow("LocalMap", localMap);
-	waitKey(1);
+	cv::imshow("LocalMap", localMap);
+	cv::waitKey(1);
 
 	//Find the number of blobs
 	int Num = 0;
@@ -139,6 +153,7 @@ int Perception::Process()
 		float area = blobToProcess[n] * (LOCALMAP_RESOLUTION * LOCALMAP_RESOLUTION);
 		if (area > 0.1)
 		{
+			cout << "sample: " << n << endl;
 			vector<int> targetIndex;
 			for (int i = 0; i < IMG_SIZE; i++)
 			{
@@ -161,12 +176,14 @@ int Perception::Process()
 			}
 
 			///Furniture recognition start
+			
 			SE g;
 			g.ImportPt(targetIndex, m_pt);
-			//g.ProceedData(m_voxelDetector);
+			g.ProceedData(m_detectorSet);
+			
 			///Furniture recognition end
 			
-			//cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
+			cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
 			if (g.m_centroid[0] < LOCALMAP_X/2-1 && g.m_centroid[0] > -LOCALMAP_X/2+1 && g.m_centroid[1] > 0.5 && g.m_centroid[1] < LOCALMAP_Y-1)
 			{
 			
@@ -226,7 +243,7 @@ vector<vector<float> > Perception::LoadVectorVectorFloat(string fileName)
 		{
 			vector<float> vf;
 			getline(fs,line);
-			cout << "line: " << k << ": " << line << endl;
+			//cout << "line: " << k << ": " << line << endl;
 			string s = "";
 			int t = 0;
 			char c;
@@ -269,15 +286,69 @@ vector<vector<float> > Perception::LoadVectorVectorFloat(string fileName)
 
 vector<float> Perception::LoadVectorFloat(string fileName)
 {
+	cout << fileName << endl;
+  
 	vector<float> res;
 	
+	char c;
+	float f;
+	string s = "";
+	FILE *file;
+	file = fopen(fileName.c_str(), "r");
+	if (file) 
+	{
+		while ((c = getc(file)) != EOF)
+		{
+			if (c == 45 || c == 46 || (c >= 48 && c < 58))
+			{
+				s.push_back(c);
+			}
+			else
+			{
+				f = atof(s.c_str());
+				//cout << f << endl;
+				res.push_back(f);
+				s = "";
+			}
+		}
+
+		fclose(file);
+	}	
+
+	cout << res.size() << endl;
 	return res;
 }
 
 float Perception::LoadFloat(string fileName)
 {
+	cout << fileName << endl;
+  
 	float res;
 	
+	char c;
+	string s = "";
+	FILE *file;
+	file = fopen(fileName.c_str(), "r");
+	if (file) 
+	{
+		while ((c = getc(file)) != EOF)
+		{
+			if (c == 45 || c == 46 || (c >= 48 && c < 58))
+			{
+				s.push_back(c);
+			}
+			else
+			{
+				res = atof(s.c_str());
+				cout << "float:" << res << endl;
+				s = "";
+				break;
+			}
+		}
+
+		fclose(file);
+	}	
+
 	return res;
 }
 

@@ -78,7 +78,7 @@ void BuildLocalMap(vector<float> points, IplImage* localMap)
 	
 }
 
-void BuildLocalMap(vector<float> points, Mat localMap)
+void BuildLocalMap(vector<float> points, cv::Mat localMap)
 {
 	int width = localMap.cols;
 	int height = localMap.rows;

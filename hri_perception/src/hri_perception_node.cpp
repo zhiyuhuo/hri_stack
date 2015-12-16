@@ -37,7 +37,6 @@
 #define IMG_SIZE3 640*480*3
 
 using namespace std;
-using namespace cv;
 
 //sensors
 float curTiltAngle;
@@ -46,8 +45,8 @@ float cameraHeight;
 vector<float> rawPoints;
 float posX, posY, posTheta;
 bool ifGetPointCloud = false;
-Mat imgRGB;
-Mat imgDepth;
+cv::Mat imgRGB;
+cv::Mat imgDepth;
 
 Perception _perception;
 
@@ -62,12 +61,12 @@ int main(int argc, char **argv)
 	curTiltAngle = -20;
 	tiltAngle = -20;
 	cameraHeight = 1.105;
-	imgRGB = Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
-	imgDepth = Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC1);
+	imgRGB = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
+	imgDepth = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC1);
 	vector<float> tp(IMG_SIZE3, 0);
 	rawPoints = tp;
   
-	printf("");
+	//printf("");
 	ros::init(argc, argv, "hri_perception");
 	ros::NodeHandle n;
 	
@@ -96,7 +95,7 @@ int main(int argc, char **argv)
 	hri_perception::Env envMsg;
 	
 	string furnitureDctFolder = "/home/hri/hri_DATA";
-	_perception.ReadVoxelDetectors(furnitureDctFolder);
+	_perception.ReadDetectors(furnitureDctFolder);
 	
 	// PreProcessing
 	printf("start robot...\n");
@@ -122,7 +121,6 @@ int main(int argc, char **argv)
 	cout << "robot loop start..." << endl;
 	while (ros::ok())
 	{	
-		cout << -curTiltAngle << endl;
 		vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
 		
 		_perception.ImportKinectData(imgRGB, pts);
@@ -131,8 +129,6 @@ int main(int argc, char **argv)
 		envMsg = BuildEnvMsg();
 		envPub.publish(envMsg);
 		
-		imshow("Depth", imgDepth);
-		waitKey(1);	
 		ros::spinOnce();
 		loopRate.sleep();
 	}
@@ -186,6 +182,9 @@ void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg)
 		}
 
 	}
+	
+	cv::imshow("Depth", imgDepth);
+	cv::waitKey(1);	
 
 	rawPoints = xyzRaw;
 	ifGetPointCloud = true;

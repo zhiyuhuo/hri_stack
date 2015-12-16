@@ -17,7 +17,6 @@
 #include "Header.h"
 
 using namespace std;
-using namespace cv;
 
 void BwLabel(IplImage* I, IplImage* Ilabel)
 {	
@@ -40,7 +39,7 @@ void BwLabel(IplImage* I, IplImage* Ilabel)
 
 }
 
-void BwLabel(Mat I, Mat Ilabel)
+void BwLabel(cv::Mat I, cv::Mat Ilabel)
 {	
 	int width = I.cols;
 	int height = I.rows;
@@ -61,7 +60,7 @@ void BwLabel(Mat I, Mat Ilabel)
 
 }
 
-void SetBwMapBackgroundZero(Mat localMapLabel)
+void SetBwMapBackgroundZero(cv::Mat localMapLabel)
 {
 	int width = localMapLabel.cols;
 	int height = localMapLabel.rows;

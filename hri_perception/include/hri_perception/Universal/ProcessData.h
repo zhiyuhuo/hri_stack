@@ -19,7 +19,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace std;
-using namespace cv;
 
 vector<float> ReadPointCloud(int name, int sequence)
 {
