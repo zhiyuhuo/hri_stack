@@ -47,7 +47,6 @@ int Robot::RunCommand(vector<string> cmd)
 		}
 		else
 		{
-			//float r2 = GreedySearchTarget(m_currentDct);
 			float r2 = IterateltSearchTarget(m_currentDct);
 			cout << "r2 = " << r2 << endl;
 			if (r2 < 0)

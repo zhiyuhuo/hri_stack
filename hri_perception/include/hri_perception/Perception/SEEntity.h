@@ -33,6 +33,7 @@ struct FurnitureDetector{
 	vector<float> l;
 	vector<float> sf;
 	vector<float> sh;
+	vector<float> anglew;
 	
 	float sigma;
 };
@@ -64,14 +65,18 @@ public:
 	
 	vector<float> GetPtCentroid(vector<float> pt);
 	vector<float> GetAdjustCentroidPt(vector<float> pt, vector<float> centroid);
-	vector<float> BuildDHFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
-	float GetTilt(float nx, float ny, float nz);
 	
+	//classification
+	vector<float> BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
+	float GetTilt(float nx, float ny, float nz);	
 	string Classify(vector<float> feature, map<string, FurnitureDetector> detectors);
-
         float LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model);
 	float KernelRBF(vector<float> u, vector<float> v, float sigma);
 	
+	//orientation 
+	float GetDir(float nx, float ny, float nz);
+	vector<float> BuildDHAngleFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
+	float GetOrientation(vector<float> feature, FurnitureDetector detector);
 };
 
 SE::SE()
@@ -142,10 +147,10 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 	pcl::PointCloud<pcl::Normal> normals = *normalsin; 
 	
 	//get feature
-	vector<float> feature = BuildDHFeature(cloud, normals);
+	vector<float> featureTilt = BuildDHTiltFeature(cloud, normals);
 	
-	//classify get the name of the sample;
-	m_rawnameStr = Classify(feature, detectors);
+	//////////////classify get the name of the sample;
+	m_rawnameStr = Classify(featureTilt, detectors);
 	m_name = "";
 	int i = 0;
 	char c = m_rawnameStr[i];
@@ -155,8 +160,9 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 		c = m_rawnameStr[++i];
 	}
 	
-	//get the direction of the sample;
-	m_dir = -1;
+	//////////////get the direction of the sample;
+	vector<float> featureAngle = BuildDHAngleFeature(cloud, normals);
+	m_dir = GetOrientation(featureAngle, detectors[m_rawnameStr]);
 }
 
 vector<float> SE::GetPtCentroid(vector<float> pt)
@@ -207,7 +213,7 @@ vector<float> SE::GetAdjustCentroidPt(vector<float> pt, vector<float> centroid)
 	return res;
 }
 
-vector<float> SE::BuildDHFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals)
+vector<float> SE::BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals)
 {
 	vector<float> res(100, -1);
 	
@@ -322,6 +328,104 @@ float SE::KernelRBF(vector<float> u, vector<float> v, float sigma)
 	d2sum = pow(sqrt(d2sum), 2);
 	
 	res = exp( -1/(2*sigma*sigma) * d2sum);
+	
+	return res;
+}
+
+float SE::GetDir(float nx, float ny, float nz)
+{
+	float th = atan2(ny, nx);
+	if (th < 0)
+	{
+		th += 2 * PI;
+	}
+	
+	return th;
+}
+
+vector<float> SE::BuildDHAngleFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals)
+{
+	vector<float> res(100, -1);
+	
+	vector<float> X(100, 0);
+	vector<float> Y(100, 0);
+	vector<float> M(100, 0);
+	vector<float> T(100, 0);
+	
+	float F = 0.1;
+	int ID, D, H;
+	float th;
+	for (int i = 0; i < normals.width; i++)
+	{
+		if (!isnan(normals.points[i].normal_x) && !isnan(normals.points[i].normal_y) && !isnan(normals.points[i].normal_z))
+		{
+			if (GetTilt(normals.points[i].normal_x, normals.points[i].normal_y, normals.points[i].normal_z) < 0.5)
+			{
+				th = GetDir(normals.points[i].normal_x, normals.points[i].normal_y, normals.points[i].normal_z);
+				float signth = normals.points[i].normal_x * ( -cloud.points[i].x) + normals.points[i].normal_y * (-cloud.points[i].y); 
+				if (signth < 0)
+				{
+					th = th - PI;
+				}
+				if (th < 0)
+				{
+					th += 2 * PI;
+				}
+				
+				D = (int)(sqrt(cloud.points[i].x * cloud.points[i].x + cloud.points[i].y * cloud.points[i].y) / F);
+				H = (int)(cloud.points[i].z / F);
+				if (D >= 0 && D < 10 && H > 0 && H < 10)
+				{
+					ID = D + H * 10;
+					X[ID] += cos(th);
+					Y[ID] += sin(th);
+					T[ID] ++;
+				}
+			}
+		}
+	}
+	
+	for (int i = 0; i < res.size(); i++)
+	{
+		if (T[i] > 0)
+		{
+			M[i] = atan2(Y[i] / T[i], X[i] / T[i]);
+			if (M[i] < 0)
+			{
+				M[i] += 2 * PI;
+			}
+			res[i] = M[i];
+		}
+	}
+	
+	return res;
+}
+
+float SE::GetOrientation(vector<float> feature, FurnitureDetector detector)
+{
+	float res = -1;
+	
+	cout << detector.anglew.size() << endl;
+	if (detector.anglew.size() > 0)
+	{
+	  	float angle = 0;
+		float w = 0;
+	  
+		int i;
+		for (i = 0; i < detector.anglew.size(); i++)
+		{
+			cout << i << ":    " << feature[i] << ",   " << detector.anglew[i] << endl;
+			if (detector.anglew[i] > 0.5 && feature[i] > 0)
+			{
+				angle += feature[i] * detector.anglew[i];
+				w += detector.anglew[i];
+			}
+		}
+		
+		angle /= w;
+		res = angle;
+	}
+	
 	
 	return res;
 }

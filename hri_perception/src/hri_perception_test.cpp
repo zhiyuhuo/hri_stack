@@ -62,6 +62,7 @@ FurnitureDetector ReadOneFurnitureDetector(string rootDir, string name)
 	res.sf = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/scalefactor.txt");
 	res.sh = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/shift.txt");
 	res.sigma = LoadFloat(rootDir + "/FurnitureModelsForRos/" + name + "/sigma.txt");
+	res.anglew = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/anglew.txt");
 	return res;
 }
 
@@ -70,16 +71,16 @@ int ReadDetectors(string rootDir)
 	int res = 0;
 	
 	FurnitureDetector fd;
-	fd = ReadOneFurnitureDetector(rootDir, "low_table");
-	detectorSet["low_table"] = fd;
-// 	fd = ReadOneFurnitureDetector(rootDir, "high_table");
-// 	detectorSet["high_table"] = fd;
-// 	fd = ReadOneFurnitureDetector(rootDir, "chair");
-// 	detectorSet["chair"] = fd;
-// 	fd = ReadOneFurnitureDetector(rootDir, "couch");
-// 	detectorSet["couch"] = fd;
-// 	fd = ReadOneFurnitureDetector(rootDir, "bed");
-// 	detectorSet["bed"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "table_low");
+	detectorSet["table_low"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "table_high");
+	detectorSet["table_high"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "chair");
+	detectorSet["chair"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "couch");
+	detectorSet["couch"] = fd;
+	fd = ReadOneFurnitureDetector(rootDir, "bed");
+	detectorSet["bed"] = fd;
 	
 	
 	return res;
@@ -91,24 +92,24 @@ int RecognizeOneSample(vector<int> index, vector<float> pt)
 	SE s;
 	s.ImportPt(index, pt);
 	s.ProceedData(detectorSet);	
-// 	cout << s.m_name << ", " << s.m_dir << ", " << index.size() << ", " << s.size() << ", " << s.m_centroid[0] << " " << s.m_centroid[1] << endl;
+	cout << s.m_name << ", " << s.m_dir << ", " << s.m_centroid[0] << " " << s.m_centroid[1] << endl;
 	return 0;
 }
 
 int TestAparmentData()
 {	
-// 	int i = 0;
-// 	int j = 0;
-// 	char indexNameStr[50] = {};
-// 	sprintf(indexNameStr, "/home/hri/HRI-Proj-Lib/Furniture/Raw/%d/index-%d-%d", i, i, j);
-// 	char ptNameStr[50] = {};
-// 	sprintf(ptNameStr, "/home/hri/HRI-Proj-Lib/Furniture/Raw/%d/pt-%d-%d", i, i, j);
-// 	cout << i << "-" << j << " " << indexNameStr << endl;
-// 	vector<int> index = ReadIntVectorFile10(indexNameStr);
-// 	vector<float> pt = ReadFloatVectorFile10(ptNameStr);
-// 	RecognizeOneSample(index, pt);
+	int i = 1;
+	int j = 0;
+	char indexNameStr[50] = {};
+	sprintf(indexNameStr, "/home/hri/HRI-Proj-Lib/Furniture/Raw/%d/index-%d-%d", i, i, j);
+	char ptNameStr[50] = {};
+	sprintf(ptNameStr, "/home/hri/HRI-Proj-Lib/Furniture/Raw/%d/pt-%d-%d", i, i, j);
+	cout << i << "-" << j << " " << indexNameStr << endl;
+	vector<int> index = ReadIntVectorFile10(indexNameStr);
+	vector<float> pt = ReadFloatVectorFile10(ptNameStr);
+	RecognizeOneSample(index, pt);
 
-	int FNUM[8] = {32,24,36,24,36,32,24,24};
+/*	int FNUM[8] = {32,24,36,24,36,32,24,24};
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < FNUM[i]; j++)
@@ -123,7 +124,7 @@ int TestAparmentData()
 			vector<float> pt = ReadFloatVectorFile10(ptNameStr);
 			RecognizeOneSample(index, pt);
 		}
-	}	
+	}*/	
 	
 	return 0;
 }
@@ -177,7 +178,8 @@ vector<vector<float> > LoadVectorVectorFloat(string fileName)
 	}
 	else
 	{
-		cout << "Unable to open file" << endl;
+		cout << fileName << " - cannot open" << endl;
+		return res;
 	}
 	
 	return res;
@@ -212,7 +214,12 @@ vector<float> LoadVectorFloat(string fileName)
 		}
 
 		fclose(file);
-	}	
+	}
+	else
+	{
+		cout << fileName << " - cannot open" << endl;
+		return res;
+	}
 
 	cout << res.size() << endl;
 	return res;
@@ -246,7 +253,12 @@ float LoadFloat(string fileName)
 		}
 
 		fclose(file);
-	}	
+	}
+	else
+	{
+		cout << fileName << " - cannot open" << endl;
+		return res;
+	}
 
 	return res;
 }

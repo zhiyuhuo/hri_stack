@@ -79,6 +79,7 @@ FurnitureDetector Perception::ReadOneFurnitureDetector(string rootDir, string na
 	res.sf = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/scalefactor.txt");
 	res.sh = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/shift.txt");
 	res.sigma = LoadFloat(rootDir + "/FurnitureModelsForRos/" + name + "/sigma.txt");
+	res.anglew = LoadVectorFloat(rootDir + "/FurnitureModelsForRos/" + name + "/anglew.txt");
 	return res;
 }
 
@@ -278,7 +279,8 @@ vector<vector<float> > Perception::LoadVectorVectorFloat(string fileName)
 	}
 	else
 	{
-		cout << "Unable to open file" << endl;
+		cout << fileName << " - cannot open" << endl;
+		return res;
 	}
 	
 	return res;
@@ -313,7 +315,12 @@ vector<float> Perception::LoadVectorFloat(string fileName)
 		}
 
 		fclose(file);
-	}	
+	}
+	else
+	{
+		cout << fileName << " - cannot open" << endl;
+		return res;
+	}
 
 	cout << res.size() << endl;
 	return res;
@@ -347,7 +354,12 @@ float Perception::LoadFloat(string fileName)
 		}
 
 		fclose(file);
-	}	
+	}
+	else
+	{
+		cout << fileName << " - cannot open" << endl;
+		return res;
+	}
 
 	return res;
 }
