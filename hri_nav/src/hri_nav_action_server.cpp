@@ -46,6 +46,9 @@ using namespace std;
 float posX, posY, posTheta;
 geometry_msgs::Twist speedMsg;
 
+//planner
+Planner planner;
+
 void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
 
 
@@ -96,7 +99,7 @@ int main(int argc, char **argv)
 	}
 	
 	
-	Planner planner;
+
 	planner.PathPlanning();
 	exit(1);
 	

@@ -122,7 +122,9 @@ vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, 
 		u += ii;
 		v += jj;
 		
-		cout << u << " " << v << endl;
+		//cout << u << " " << v << endl;
+		VecPosition pm = PixelToVecPosition(u, v);
+		res.push_back(pm)
 	}
 	
 
