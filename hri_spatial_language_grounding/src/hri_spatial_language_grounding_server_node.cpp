@@ -53,7 +53,7 @@ vector<string> generate_resp(ParseToGround _parser)
  	return res;
 }
 
-bool grounding(hri_spatial_language_grounding::SpatialLanguageGrounding::Request  &req, hri_spatial_language_grounding::SpatialLanguageGrounding::Response &res)
+bool Grounding(hri_spatial_language_grounding::SpatialLanguageGrounding::Request  &req, hri_spatial_language_grounding::SpatialLanguageGrounding::Response &res)
 {
 	ParseToGround _parser;
 	string spatialCommandStr = req.str;
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "hri_spatial_language_grounding_server_node");
 	ros::NodeHandle n;
 
-	ros::ServiceServer service = n.advertiseService("hri_spatial_language_grounding", grounding);
+	ros::ServiceServer service = n.advertiseService("hri_spatial_language_grounding", Grounding);
 	ROS_INFO("Ready to ground spatial language.");
 	ros::spin();
 

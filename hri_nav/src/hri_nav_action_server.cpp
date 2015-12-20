@@ -9,13 +9,17 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "std_msgs/String.h"
+#include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/LaserScan.h>
-#include "geometry_msgs/Twist.h"
-#include "nav_msgs/Odometry.h"
-#include "p2os_msgs/MotorState.h"
-#include "p2os_msgs/SonarArray.h"
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <p2os_msgs/MotorState.h>
+#include <p2os_msgs/SonarArray.h>
+#include <nav_msgs/SetMap.h>
+#include <nav_msgs/GetPlan.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -46,10 +50,13 @@ using namespace std;
 float posX, posY, posTheta;
 geometry_msgs::Twist speedMsg;
 
-//planner
 Planner planner;
 
+//planner
+
 void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
+bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response &res);
+bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res);
 
 
 int main(int argc, char **argv)
@@ -98,10 +105,8 @@ int main(int argc, char **argv)
 		#endif
 	}
 	
-	
-
-	planner.PathPlanning();
-	exit(1);
+	ros::ServiceServer serviceSetMap = n.advertiseService("nav_set_map", SetMapCallback);
+	ros::ServiceServer serviceGetPlan = n.advertiseService("nav_get_plan", GetPlanCallback);
 	
 		
 	ros::Rate loopRate(30);
@@ -147,5 +152,17 @@ void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg)
 	posX = x;
 	posY = y;
 	posTheta = th;
+}
+
+bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response &res)
+{
+	
+	return true;
+}
+
+
+bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res)
+{
+	return true;
 }
 

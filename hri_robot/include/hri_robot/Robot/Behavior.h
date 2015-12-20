@@ -81,7 +81,8 @@ int Robot::RunCommand(vector<string> cmd)
 	
 	else if (m_state.compare("move_to_targert") == 0)
 	{
-		if (ToPosAngle(m_moveTarget, m_turnTarget))
+		int r = ToPosAngle(m_moveTarget, m_turnTarget);
+		if (r > 0)
 		{
 			//m_state = "navigation";
 			Perception();
