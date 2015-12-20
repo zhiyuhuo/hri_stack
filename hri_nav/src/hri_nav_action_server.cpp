@@ -19,7 +19,7 @@
 #include <nav_msgs/SetMap.h>
 #include <nav_msgs/GetPlan.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/Pose.h>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -46,116 +46,47 @@
 
 using namespace std;
 
-//sensors
-float posX, posY, posTheta;
-geometry_msgs::Twist speedMsg;
-
-Planner planner;
+Planner _planner;
 
 //planner
-
-void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
 bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response &res);
 bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res);
 
 
 int main(int argc, char **argv)
-{
-	// initialization global variables
-	posX = 0;
-	posY = 0;
-	posTheta = 0;
-  
+{ 
 	//printf("");
 	ros::init(argc, argv, "hri_nav");
 	ros::NodeHandle n;
 	
-	// subscribed topics
-
-	#ifdef GAZEBO
-	ros::Subscriber poseSub = n.subscribe("hri_robot/odom", 1000, ListenCallbackPose);
-	#else
-	ros::Subscriber poseSub = n.subscribe("/pose", 1000, ListenCallbackPose);
-	#endif
-	
-	#ifdef GAZEBO
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("hri_robot/cmd_vel", 10);
-	#else
-	ros::Publisher motorstatePub = n.advertise<p2os_msgs::MotorState>("/cmd_motor_state", 10);
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
-	#endif
-	
-	// Define messages
-	p2os_msgs::MotorState motorMsg;
-	geometry_msgs::Twist speedMsg;
-	
-	// PreProcessing
-	printf("start robot...\n");
-	for (int i = 0; i < 5; i++) // preprocess to fix the tilt
-	{
-		struct timespec timeOut,remains;
-		timeOut.tv_sec = 0;
-		timeOut.tv_nsec = 500000000; // 50 milliseconds 
-		nanosleep(&timeOut, &remains);
-		printf("%d\n",4-i);	
-		motorMsg.state = (int)1;
-		
-		#ifndef GAZEBO
-		motorstatePub.publish(motorMsg);
-		#endif
-	}
+	cout << "start nav service..." << endl;	
 	
 	ros::ServiceServer serviceSetMap = n.advertiseService("nav_set_map", SetMapCallback);
 	ros::ServiceServer serviceGetPlan = n.advertiseService("nav_get_plan", GetPlanCallback);
 	
-		
-	ros::Rate loopRate(30);
-	cout << "robot loop start..." << endl;
-	while (ros::ok())
-	{	
-		
-		
-		speedPub.publish(speedMsg);		
-		
-		ros::spinOnce();
-		loopRate.sleep();
-	}
+	ros::spin();
 	  
 	return 0;
 }
 
-void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg)
-{
-	float x, y, qx, qy, qz, qw, th;
-
-	x = msg->pose.pose.position.x;
-	y = msg->pose.pose.position.y;
-	qx = msg->pose.pose.orientation.x;
-	qy = msg->pose.pose.orientation.y;
-	qz = msg->pose.pose.orientation.z;
-	qw = msg->pose.pose.orientation.w;
-	float rotz = atan2(2*qw*qz, 1-2*qz*qz);
-	th = rotz;
-
-	while (th < 0)
-	{
-		th += 2*PI;
-	}
-	
-	while (th > 2*PI)
-	{
-		th -= 2*PI;
-	}
-	
-	//cout << x << ", " << y << ", " << th << endl;
-
-	posX = x;
-	posY = y;
-	posTheta = th;
-}
-
 bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response &res)
 {
+	double mapResolution = (double)req.map.info.resolution;
+	long mapWidth = req.map.info.width;
+	long mapHeight = req.map.info.height;
+	geometry_msgs::Pose mapOrigin = req.map.info.origin;
+	vector<uint8_t> mapData(mapWidth*mapHeight);
+	for (int i = 0; i < mapWidth*mapHeight; i++)
+	{
+		mapData[i] = req.map.data[i];
+	}
+	
+	VecPosition origin(mapOrigin.position.x, mapOrigin.position.y);
+	_planner.SetMap(mapWidth, mapHeight, mapResolution, origin, mapData);
+	
+	geometry_msgs::Pose initPose = req.initial_pose.pose.pose;
+	
+	res.success = true;
 	
 	return true;
 }
@@ -163,6 +94,11 @@ bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response 
 
 bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res)
 {
+	VecPosition posStart(req.start.pose.position.x, req.start.pose.position.y);
+	VecPosition posTarget(req.start.goal.position.x, req.goal.pose.position.y);
+	
+	vector<VecPosition> steps = _planner.GetPlan(posStart, posTarget);
+	
 	return true;
 }
 
