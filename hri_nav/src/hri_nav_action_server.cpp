@@ -95,9 +95,18 @@ bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response 
 bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res)
 {
 	VecPosition posStart(req.start.pose.position.x, req.start.pose.position.y);
-	VecPosition posTarget(req.start.goal.position.x, req.goal.pose.position.y);
+	VecPosition posTarget(req.goal.pose.position.x, req.goal.pose.position.y);
 	
-	vector<VecPosition> steps = _planner.GetPlan(posStart, posTarget);
+	vector<VecPosition> stepsVecP = _planner.GetPlan(posStart, posTarget);
+	
+	
+	for (int i = 0; i < stepsVecP.size(); i++)
+	{
+		geometry_msgs::PoseStamped posestamped;
+		posestamped.pose.position.x = stepsVecP[i].GetX();
+		posestamped.pose.position.y = stepsVecP[i].GetY();
+		res.plan.poses.push_back(posestamped);
+	}
 	
 	return true;
 }
