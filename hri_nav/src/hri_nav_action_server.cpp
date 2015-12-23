@@ -58,7 +58,12 @@ int main(int argc, char **argv)
 	ros::ServiceServer serviceSetMap = n.advertiseService("nav_set_map", SetMapCallback);
 	ros::ServiceServer serviceGetPlan = n.advertiseService("nav_get_plan", GetPlanCallback);
 	
-	ros::spin();
+	while(ros::ok())
+	{
+		cv::imshow("nav map", _planner.m_map);
+		cv::waitKey(1);
+		ros::spinOnce();
+	}
 	  
 	return 0;
 }

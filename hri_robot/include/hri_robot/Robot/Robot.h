@@ -102,11 +102,19 @@ public: // robot state variables
 	VecPosition m_moveTarget;
 	float m_turnTarget;
 	ros::Publisher m_speedPub;
+	int SetRobotVelocity();
 	
 public: // robot navigation
+	int m_path;
+	vector<VecPosition> m_pathPoints;
 	ros::Subscriber m_poseSub;
 	void poseCallback(const nav_msgs::OdometryConstPtr& msg);
-
+	ros::ServiceClient m_setMapClient; 
+	ros::ServiceClient m_getPlanClient;
+	vector<uint8_t> m_occupiedMap;
+	int SetOccupiedMap(int width, int height, double resolution, double originX, double originY);
+	vector<VecPosition> CallForPathPlan(VecPosition posStart, VecPosition posTarget);
+	
 public:	//robot basic action
 	int ToPos(VecPosition posTarget);
 	int ToAngle(float angleTarget);
@@ -211,17 +219,23 @@ Robot::Robot()
 	{
 		int argc = 0;
 		char** argv = NULL;
-		ros::init(argc,argv,"kinect_tilt",ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+		ros::init(argc,argv,"hri_robot_node",ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
 	}
 	
 	this->m_robot_namespace_ = "";
 	m_nh = new ros::NodeHandle(this->m_robot_namespace_);
 	
+	//sub and pub
 	m_poseSub = m_nh->subscribe("/hri_robot/odom", 1000, &Robot::poseCallback, this);
 	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
 	m_speedPub = m_nh->advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
 	
+	//clients
 	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
+	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
+	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
+	
+	//Get Le
 	GetLEList("/home/hri/hri_DATA/Map");
 }
 

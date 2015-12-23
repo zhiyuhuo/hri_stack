@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include <vector>
 
+#include "geometry_msgs/Twist.h"
 #include "Header.h"
 
 int Robot::ToAngle(float angleTarget)
@@ -212,6 +213,17 @@ int Robot::ToPositionAvoidObstacles(VecPosition posTarget)
 	}
 	
 	return res;
+}
+
+int Robot::SetRobotVelocity()
+{
+	double L = 2;
+	double A = 2;
+	geometry_msgs::Twist speedMsg;
+	speedMsg.linear.x = m_linearSpeed * L;
+	speedMsg.angular.z = -m_angularSpeed * A;
+	m_speedPub.publish(speedMsg);
+	return 0;
 }
 	
 #endif

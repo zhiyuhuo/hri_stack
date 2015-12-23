@@ -10,6 +10,8 @@
 
 #include "Header.h"
 
+using namespace std;
+
 void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 {
 	float x, y, qx, qy, qz, qw, theta;
@@ -37,7 +39,78 @@ void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 	m_posRobot.SetY(y);
 	m_theta = theta;	
 	
-	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
+	//cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
+}
+
+int Robot::SetOccupiedMap(int width, int height, double resolution, double originX, double originY)
+{
+	fill(m_occupiedMap.begin(), m_occupiedMap.end(), 0);
+	m_occupiedMap.resize(width*height, 0);
+  
+	for (int n = 0; n < m_entities.size(); n++)
+	{
+		Ent ent = m_entities[n];
+		int u, v;
+		for (int i = 0; i < ent.vec.size() / 2; i++)
+		{
+			u = (int)((ent.vec[2*i] - originX) / resolution);
+			v = (int)((ent.vec[2*i+1] - originY) / resolution);
+			m_occupiedMap[u + v * width] = 255;
+		}
+	}
+	
+	nav_msgs::SetMap srvSetMap;
+	srvSetMap.request.map.info.resolution = resolution; 
+	srvSetMap.request.map.info.width = width; 
+	srvSetMap.request.map.info.height = height; 
+	srvSetMap.request.map.info.origin.position.x = originX;
+	srvSetMap.request.map.info.origin.position.y = originY;
+	
+	for (int i = 0; i < m_occupiedMap.size(); i++)
+	{
+		srvSetMap.request.map.data.push_back(m_occupiedMap[i]);
+	}
+	srvSetMap.request.initial_pose.pose.pose.position.x = m_posRobot.GetX();
+	srvSetMap.request.initial_pose.pose.pose.position.y = m_posRobot.GetY();
+	
+	if (m_setMapClient.call(srvSetMap))
+	{
+		ROS_INFO("Res: %d", (int)srvSetMap.response.success);
+	}
+	else
+	{
+		ROS_ERROR("Failed to call set map");
+		return -1;
+	}
+	
+	return 1;
+}
+
+vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition posTarget)
+{
+	nav_msgs::GetPlan srvGetPlan;
+	srvGetPlan.request.start.pose.position.x = posStart.GetX(); 
+	srvGetPlan.request.start.pose.position.y = posStart.GetY(); 
+	srvGetPlan.request.goal.pose.position.x = posTarget.GetX(); 
+	srvGetPlan.request.goal.pose.position.y = posTarget.GetY(); 
+	
+	vector<VecPosition> res;
+	if (m_getPlanClient.call(srvGetPlan))
+	{
+		for (int i = 0; i < srvGetPlan.response.plan.poses.size(); i++)
+		{
+			VecPosition step(srvGetPlan.response.plan.poses[i].pose.position.x,
+					srvGetPlan.response.plan.poses[i].pose.position.y);
+			res.push_back(step);
+			cout << step.GetX() << " " << step.GetY() << endl;
+		}
+	}
+	else
+	{
+		ROS_ERROR("Failed to call service get path");
+	}		
+	
+	return res;
 }
 
 #endif

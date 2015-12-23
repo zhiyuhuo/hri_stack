@@ -57,7 +57,8 @@ int Robot::RunCommand(vector<string> cmd)
 			{
 				if (r2 > m_currentScore || r2 > 0.7)
 				{
-					m_state = "move_to_targert";
+					m_state = "plan_path";
+// 					m_state = "directly_to_targert";
 				}
 				else
 				{
@@ -79,19 +80,55 @@ int Robot::RunCommand(vector<string> cmd)
 		}
 	}
 	
+	else if (m_state.compare("plan_path") == 0)
+	{
+		Perception();
+		m_entities = GetVisiableEntities();
+		SetOccupiedMap(400, 400, 0.25, -50, -50);
+		m_pathPoints.clear();
+		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+		m_path = 0;
+		m_state = "move_to_targert";
+	}
+	
 	else if (m_state.compare("move_to_targert") == 0)
 	{
-		int r = ToPosAngle(m_moveTarget, m_turnTarget);
-		if (r > 0)
+		if (m_path < m_pathPoints.size())
 		{
-			//m_state = "navigation";
-			Perception();
+			if (ToPos(m_pathPoints[m_path])) 
+			{
+				cout << ++m_path << endl;
+			}
+			SetRobotVelocity();
+		}
+		else if (m_path == m_pathPoints.size())
+		{
+			if (ToAngle(m_turnTarget)) 
+			{
+				cout << ++m_path << endl;
+			}
+			SetRobotVelocity();
+		}
+		else if (m_path > m_pathPoints.size())
+		{	
 			m_state = "end";
 		}
 	}
 	
+	else if (m_state.compare("directly_to_targert") == 0)
+	{
+		if (ToPosAngle(m_moveTarget, m_turnTarget) > 0) 
+		{
+			m_state = "end";
+		}
+		SetRobotVelocity();
+	}
+	
 	else if (m_state.compare("end") == 0)
 	{
+		m_linearSpeed = 0;
+		m_angularSpeed = 0;
+		SetRobotVelocity();
 		res = 1;
 	}
 	

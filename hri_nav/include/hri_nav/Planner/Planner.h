@@ -68,7 +68,7 @@ private:
 
 Planner::Planner()
 {	
-  
+	m_map = cv::Mat::zeros(400, 400, CV_8UC1);
 }
 
 Planner::~Planner()

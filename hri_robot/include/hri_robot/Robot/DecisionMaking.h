@@ -11,16 +11,13 @@
 
 int Robot::RunNode()
 {
-	m_spatialCommand = "the mug is on the table on the right in the bedroom";
-	AskGroundingService(m_spatialCommand);
-	ShowRobotCmdInfo();
-	geometry_msgs::Twist msg;
-	msg.angular.z = 0.1;
-	m_speedPub.publish(msg);
+// 	m_spatialCommand = "the mug is on the table on the right in the bedroom";
+// 	AskGroundingService(m_spatialCommand);
+// 	ShowRobotCmdInfo();
+
 	while (ros::ok())
 	{
-	  	msg.angular.z = 0.1;
-		m_speedPub.publish(msg);
+		Test();
 		ros::spinOnce();
 	}
 }
@@ -95,54 +92,43 @@ int Robot::DecisionMaking()
 
 int Robot::Test()
 {
-	m_targetRoom = "livingroom";
-  	vector<string> cmdVec;
-	cmdVec.push_back("non");
-	cmdVec.push_back("non");
-	cmdVec.push_back("wall");
-	cmdVec.push_back("front");
-	cmdVec.push_back("non");
-	
 	if (m_mission.compare("init") == 0)
 	{
-		m_mission = "search";
-		m_posRobotLast = m_posRobot;
-		m_action = "init";
+// 		Perception();
+// 		vector<float> originalRobotPose;
+// 		originalRobotPose.push_back(m_posRobot.GetX());
+// 		originalRobotPose.push_back(m_posRobot.GetY());
+// 		originalRobotPose.push_back(m_theta);
+// 		m_originalRobotPose = originalRobotPose;
+// 		m_entities = GetVisiableEntities();
+		SetOccupiedMap(400, 400, 0.25, -50, -50);
+		VecPosition posTarget(2,-1);
+		m_pathPoints.clear();
+		m_pathPoints = CallForPathPlan(m_posRobot, posTarget);
+		m_path = 0;
+		m_mission = "run";
 	}
 	
-	else if (m_mission.compare("search") == 0)
+	else if (m_mission.compare("run") == 0)
 	{
-		int r = 1;
-		//r = SearchSpin();
-		if (r == 1)
+		int r = ToPos(m_pathPoints[m_path]); 
+		SetRobotVelocity();
+		if (r == 1) 
 		{
-			//cout << " m_pathLength: " << m_pathLength << endl;
-			m_mission = "follow_command";
+			cout << ++m_path << endl;
+		}
+		if (m_path > m_pathPoints.size())
+		{
+			m_mission = "stop";
 		}
 	}
 	
-	else if (m_mission.compare("follow_command") == 0)
+	else if (m_mission.compare("stop") == 0)
 	{
-		int r = 0;
-		//r = FollowCommand(cmdVec);
-		r = RunCommand(cmdVec);
-		if (r == 1)
-		{
-			//cout << " m_pathLength: " << m_pathLength << endl;
-			cout << "Finished" << endl;
-			cout << "Final Robot Pose: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
-			m_mission = "end";
-		}
+	  
 	}
 	
-	else if (m_mission.compare("end") == 0)
-	{
-		exit(1);
-		m_mission = "end";
-	}
 	
-	m_pathLength += (m_posRobot - m_posRobotLast).GetMagnitude();
-	m_posRobotLast = m_posRobot;
 	return 0;
 }
 
