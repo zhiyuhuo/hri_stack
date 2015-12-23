@@ -34,12 +34,6 @@
 #include "../Universal/Header.h"
 #include "../Geometry/Header.h"
 
-// #define NAVMAPX 400
-// #define NAVMAPY 400
-// #define NAVINTERVAL 0.25
-// #define NAVOFFSETX NAVMAPX/2
-// #define NAVOFFSETY NAVMAPY/2
-
 using namespace std;
 
 class Planner{
@@ -111,9 +105,8 @@ int Planner::SetMap(int width, int height, double resolution, VecPosition origin
 }
 
 vector<VecPosition> Planner::GetPlan(VecPosition posStart, VecPosition posTarget)
-{
-	
-	return AstarSearchPath(m_map, posStart, posStart);
+{	
+	return AstarSearchPath(m_map, posStart, posTarget);
 }
 
 vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, VecPosition posTarget)
@@ -129,7 +122,7 @@ vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, 
 	double costMin = distMax;
 	int S = 1;
 	
-	cout << uvS[0] << " " << uvS[1] << " " << uvT[0] << " " << uvT[1] << endl;
+	//cout << uvS[0] << " " << uvS[1] << " " << uvT[0] << " " << uvT[1] << endl;
 	
 	while (u != uvT[0] || v != uvT[1])
 	{
@@ -155,7 +148,15 @@ vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, 
 		
 		//cout << u << " " << v << endl;
 		VecPosition pm = PixelToVecPosition(u, v);
-		res.push_back(pm);
+		if (pm.GetDistanceTo(posTarget) > m_resolution * sqrt(2))
+		{
+			res.push_back(pm);
+		}
+		else
+		{
+			res.push_back(posTarget);
+			break;
+		}
 	}
 	
 

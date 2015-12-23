@@ -34,12 +34,6 @@
 
 #define GAZEBO
 
-// #define IMG_WIDTH 640
-// #define IMG_HEIGHT 480
-// #define IMG_SIZE 640*480
-// #define IMG_SIZE3 640*480*3
-// #define PI 3.1416
-
 #include "hri_nav/Universal/Header.h"
 #include "hri_nav/Planner/Header.h"
 #include "hri_nav/Geometry/Header.h"
