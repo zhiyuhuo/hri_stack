@@ -40,17 +40,22 @@ def load_rdt_content_dic():
         dic[keyword] = contents[0]
     return dic
         
-def compute_structure_energy(grounding, rdtrelationprobdic):
+def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
     keywordset = [];
     for i in range(0, len(grounding)-1):
         for j in range(0, len(grounding)-1):
             if i != j:
                 keywordset.append(grounding[i] + '-' + grounding[j])
     #print keywordset
+    relations = {}
     for k in keywordset:
         probs = rdtrelationprobdic[k]
+        maxprobindex = probs.index(max(probs))
         print probs
         print probs.index(max(probs))
+        relations[k] = relationtypes[maxprobindex]
+        
+def arrange_groundings(relations):
     
         
 if __name__ == '__main__':
@@ -58,6 +63,6 @@ if __name__ == '__main__':
     relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
     rdtrelationprobdic = load_rdt_relation_prob_dic()
     rdtcontentlist = load_rdt_content_dic()
-    compute_structure_energy(grounding, rdtrelationprobdic)
+    compute_grounding_relations(grounding, rdtrelationprobdic)
     print 'program finished.'
     
