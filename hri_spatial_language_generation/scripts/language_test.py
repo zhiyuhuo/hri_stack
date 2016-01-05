@@ -35,7 +35,7 @@ def load_rdt_content_dic():
         keyword = line[0:keyposition[1]-1];
         Lprob = len(contents) - 1
         contents = contents[0: Lprob]
-        #print keyword
+        print keyword
         #print contents[0]
         dic[keyword] = contents[0]
     return dic
@@ -54,15 +54,51 @@ def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
         print probs
         print probs.index(max(probs))
         relations[k] = relationtypes[maxprobindex]
+    return relations
         
-def arrange_groundings(relations):
+def arrange_groundings(grounding, relations):
+    sentence = grounding
+    for k in relations.keys():
+        ws = re.split(r'-', k)
+        print ws
+        w1 = ws[0]
+        w2 = ws[1]
+        arrange_one_grounding(w1, w2, sentence, relations[k])
+        print sentence
+    
+def arrange_one_grounding(w1, w2, s, r):
+    if r == 'parent_left':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
+    if r == 'parent_right':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
+    if r == 'child_left':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
+    if r == 'child_right':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
+    if r == 'sibling_left':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
+    if r == 'sibling_left':
+        s.remove(w2)
+        i1 = s.index(w1)
+        s.insert(i1-1,w2)
     
         
 if __name__ == '__main__':
-    grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non' 'non_non_table']
+    grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
     relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
     rdtrelationprobdic = load_rdt_relation_prob_dic()
     rdtcontentlist = load_rdt_content_dic()
-    compute_grounding_relations(grounding, rdtrelationprobdic)
+    relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
+    arrange_groundings(grounding, relations)
     print 'program finished.'
     
