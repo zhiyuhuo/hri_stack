@@ -49,22 +49,41 @@ def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
     #print keywordset
     relations = {}
     for k in keywordset:
-        probs = rdtrelationprobdic[k]
-        maxprobindex = probs.index(max(probs))
-        print probs
-        print probs.index(max(probs))
-        relations[k] = relationtypes[maxprobindex]
+        if rdtrelationprobdic.get(k):
+            probs = rdtrelationprobdic[k]
+            maxprobindex = probs.index(max(probs))
+            print probs
+            print probs.index(max(probs))
+            relations[k] = relationtypes[maxprobindex]
     return relations
         
 def arrange_groundings(grounding, relations):
     sentence = grounding
     for k in relations.keys():
-        ws = re.split(r'-', k)
-        print ws
-        w1 = ws[0]
-        w2 = ws[1]
-        arrange_one_grounding(w1, w2, sentence, relations[k])
-        print sentence
+        if 'parent' in k:
+            ws = re.split(r'-', k)
+            print ws
+            print sentence
+            w1 = ws[0]
+            w2 = ws[1]
+            arrange_one_grounding(w1, w2, sentence, relations[k])
+    for k in relations.keys():
+        if 'sibling' in k:
+            ws = re.split(r'-', k)
+            print ws
+            print sentence
+            w1 = ws[0]
+            w2 = ws[1]
+            arrange_one_grounding(w1, w2, sentence, relations[k])
+    for k in relations.keys():
+        if 'child' in k:
+            ws = re.split(r'-', k)
+            print ws
+            print sentence
+            w1 = ws[0]
+            w2 = ws[1]
+            arrange_one_grounding(w1, w2, sentence, relations[k])
+    print sentence
     
 def arrange_one_grounding(w1, w2, s, r):
     if r == 'parent_left':
