@@ -5,9 +5,8 @@ from std_msgs.msg import String
 import re
 import numpy as np
   
-def load_rdt_relation_prob_dic():
-    matfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
-    with open(matfilname, 'r') as myfile:
+def load_rdt_relation_prob_dic(dicfilname):
+    with open(dicfilname, 'r') as myfile:
         data = myfile.readlines()
     dic = {}
     for line in data:
@@ -23,21 +22,17 @@ def load_rdt_relation_prob_dic():
 	dic[keyword] = probs
     return dic
   
-def load_rdt_content_dic():
-    dicfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
+def load_rdt_content_dic(dicfilename):
     with open(dicfilename, 'r') as myfile:
         data = myfile.readlines()
     dic = {}
     for line in data:
         keyposition = re.search(r'^(.*):', line).span()
-        datastr = line[keyposition[1]+1:]
-        contents = re.split(r',+', datastr)
         keyword = line[0:keyposition[1]-1];
-        Lprob = len(contents) - 1
-        contents = contents[0: Lprob]
-        print keyword
-        #print contents[0]
-        dic[keyword] = contents[0]
+        text = line[keyposition[1]+1:len(line)-1]
+        #print keyword
+        #print text
+        dic[keyword] = text
     return dic
         
 def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
@@ -52,8 +47,8 @@ def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
         if rdtrelationprobdic.get(k):
             probs = rdtrelationprobdic[k]
             maxprobindex = probs.index(max(probs))
-            print probs
-            print probs.index(max(probs))
+            #print probs
+            #print probs.index(max(probs))
             relations[k] = relationtypes[maxprobindex]
     return relations
         
@@ -84,6 +79,7 @@ def arrange_groundings(grounding, relations):
             w2 = ws[1]
             arrange_one_grounding(w1, w2, sentence, relations[k])
     print sentence
+    return sentence
     
 def arrange_one_grounding(w1, w2, s, r):
     if r == 'parent_left':
@@ -110,14 +106,27 @@ def arrange_one_grounding(w1, w2, s, r):
         s.remove(w2)
         i1 = s.index(w1)
         s.insert(i1-1,w2)
-    
+        
+def edit_grounding_text(sentence, rdtcontentdic):
+    text = ''
+    for i in range(len(sentence)):
+       clause = rdtcontentdic[sentence[i]]
+       print clause
+       text = text + ' ' + clause
+    print text
         
 if __name__ == '__main__':
+    rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
+    rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
+  
     grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
     relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
-    rdtrelationprobdic = load_rdt_relation_prob_dic()
-    rdtcontentlist = load_rdt_content_dic()
+    
+    rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
+    rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
     relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
-    arrange_groundings(grounding, relations)
+    sentence = arrange_groundings(grounding, relations)
+    
+    edit_grounding_text(sentence, rdtcontentdic) 
     print 'program finished.'
     
