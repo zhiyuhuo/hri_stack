@@ -83,17 +83,38 @@ def edit_grounding_text(sentence, rdtcontentdic):
        print clause
        text = text + ' ' + clause
     print text
-        
-if __name__ == '__main__':
-    #rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
-    #rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
-  
-    #grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
-    #relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
     
-    #rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
-    #rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
-    #relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
+def build_grounding_tree(grounding, relations):
+    nodelist = [None] * 5
+    for i in range(len(grounding)):
+        nodelist[i] = Node(grounding[i]);
+
+    for i in range(len(nodelist)):
+        for j in range(len(nodelist)):
+	    if i != j:
+	        keyword = nodelist[i].rdt + '-' + nodelist[j].rdt
+	        if keyword in relations.keys():
+	            nodelist[i].insert_node(nodelist[j], relations[keyword])
+    
+    return nodelist
+  
+def inorder_traversal_tree(nodelist)
+    
+    
+if __name__ == '__main__':
+    rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
+    rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
+  
+    grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
+    relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
+    
+    rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
+    rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
+    relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
+    
+    print relations
+    
+    build_grounding_tree(grounding, relations)
      
     print 'program finished.'
     

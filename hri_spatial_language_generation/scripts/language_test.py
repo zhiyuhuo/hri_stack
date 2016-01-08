@@ -54,30 +54,31 @@ def compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes):
         
 def arrange_groundings(grounding, relations):
     sentence = grounding
+    print sentence
     for k in relations.keys():
-        if 'parent' in k:
+        if 'sibling' in relations[k]:
+            ws = re.split(r'-', k)
+            print [k, relations[k]]
+            print sentence
+            w1 = ws[0]
+            w2 = ws[1]
+            arrange_one_grounding(w1, w2, sentence, relations[k])
+    for k in relations.keys():
+        if 'parent' in relations[k]:
             ws = re.split(r'-', k)
             print ws
             print sentence
             w1 = ws[0]
             w2 = ws[1]
             arrange_one_grounding(w1, w2, sentence, relations[k])
-    for k in relations.keys():
-        if 'sibling' in k:
-            ws = re.split(r'-', k)
-            print ws
-            print sentence
-            w1 = ws[0]
-            w2 = ws[1]
-            arrange_one_grounding(w1, w2, sentence, relations[k])
-    for k in relations.keys():
-        if 'child' in k:
-            ws = re.split(r'-', k)
-            print ws
-            print sentence
-            w1 = ws[0]
-            w2 = ws[1]
-            arrange_one_grounding(w1, w2, sentence, relations[k])
+    #for k in relations.keys():
+        #if 'child' in k:
+            #ws = re.split(r'-', k)
+            #print ws
+            #print sentence
+            #w1 = ws[0]
+            #w2 = ws[1]
+            #arrange_one_grounding(w1, w2, sentence, relations[k])
     print sentence
     return sentence
     
@@ -89,11 +90,11 @@ def arrange_one_grounding(w1, w2, s, r):
     if r == 'parent_right':
         s.remove(w2)
         i1 = s.index(w1)
-        s.insert(i1-1,w2)
+        s.insert(i1+1,w2)
     if r == 'child_left':
         s.remove(w2)
         i1 = s.index(w1)
-        s.insert(i1-1,w2)
+        s.insert(i1+1,w2)
     if r == 'child_right':
         s.remove(w2)
         i1 = s.index(w1)
@@ -105,13 +106,12 @@ def arrange_one_grounding(w1, w2, s, r):
     if r == 'sibling_left':
         s.remove(w2)
         i1 = s.index(w1)
-        s.insert(i1-1,w2)
+        s.insert(i1+1,w2)
         
 def edit_grounding_text(sentence, rdtcontentdic):
     text = ''
     for i in range(len(sentence)):
        clause = rdtcontentdic[sentence[i]]
-       print clause
        text = text + ' ' + clause
     print text
         
