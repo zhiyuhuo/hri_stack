@@ -14,6 +14,7 @@ class Node:
         self.child_left = None
         self.child_right = None
         self.rdt = rdt
+        self.ps = False
 
     def insert_node(self, nd, pose):
         if pose == "parent_left":
@@ -84,7 +85,7 @@ def edit_grounding_text(sentence, rdtcontentdic):
        text = text + ' ' + clause
     print text
     
-def build_grounding_tree(grounding, relations):
+def build_grounding_graph(grounding, relations):
     nodelist = [None] * 5
     for i in range(len(grounding)):
         nodelist[i] = Node(grounding[i]);
@@ -98,8 +99,47 @@ def build_grounding_tree(grounding, relations):
     
     return nodelist
   
-def inorder_traversal_tree(nodelist)
-    
+def inorder_traversal_graph(nodelist):
+    nodemark = [False] * len(nodelist)
+    sentence = []
+    for n in nodelist:
+        if n.parent == None and n.sibling_left == None:
+	    nd = n
+	    break
+
+    print sentence
+    if nd.sibling_left != None:
+        nd = nd.sibling_left
+        if nd.ps == False:
+            nd.ps = True
+            sentence.append(nd.rdt)
+            print sentence
+    else:
+        if nd.child_left != None:
+	    nd = nd.child_right
+            if nd.ps == False:
+                nd.ps = True
+                sentence.append(nd.rdt)
+                print sentence
+	else:
+            if nd.ps == False:
+                nd.ps = True
+                sentence.append(nd.rdt)
+                print sentence
+	    if nd.child_right != None:
+	        nd = ne.sibling_right
+	        if nd.ps == False:
+                    nd.ps = True
+                    sentence.append(nd.rdt)
+                    print sentence
+            else: 
+                if nd.sibling_right != None:
+		    if nd.ps == False:
+                        nd.ps = True
+                        sentence.append(nd.rdt)
+                        print sentence
+                if nd.parent != None:
+                    nd = nd.parent
     
 if __name__ == '__main__':
     rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
@@ -114,7 +154,7 @@ if __name__ == '__main__':
     
     print relations
     
-    build_grounding_tree(grounding, relations)
-     
+    graph = build_grounding_graph(grounding, relations)
+    inorder_traversal_graph(graph)
     print 'program finished.'
     
