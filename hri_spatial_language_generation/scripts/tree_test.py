@@ -94,14 +94,6 @@ if __name__ == '__main__':
     #rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
     #rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
     #relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
-    
-    n1 = Node('chair_beside_non')
-    n2 = Node('non_non_table')
-    n1.insert_node(n2, 'parent_right')
-    print n1
-    print n1.child_left
-    print n2
-    print n2.parent
      
     print 'program finished.'
     
