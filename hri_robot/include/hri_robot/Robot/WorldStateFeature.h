@@ -64,6 +64,9 @@ Ent Robot::GetLE(string fullfname, string lename)
 	res.dir = -1;
 	if (myfile.is_open())
 	{
+		float xc = 0;
+		float yc = 0;
+		float ct = 0;
 		while ( getline (myfile,line) )
 		{
 			string strx = "";
@@ -94,7 +97,12 @@ Ent Robot::GetLE(string fullfname, string lename)
 			y = (float)atof(stry.c_str());
 			res.vec.push_back(x);
 			res.vec.push_back(y);
+			xc += x;
+			yc += y;
+			ct ++;
 		}
+		res.x = xc / ct;
+		res.y = yc / ct;
 		myfile.close();
 	}
 	return res;

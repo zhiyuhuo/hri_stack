@@ -39,7 +39,7 @@ void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 	m_posRobot.SetY(y);
 	m_theta = theta;	
 	
-	//cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
+// 	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
 }
 
 int Robot::SetOccupiedMap(int width, int height, double resolution, double originX, double originY)

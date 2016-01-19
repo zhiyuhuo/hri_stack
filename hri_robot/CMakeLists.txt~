@@ -151,10 +151,6 @@ target_link_libraries(hri_robot_node
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(control
-  ${catkin_LIBRARIES}
-)
-
 #############
 ## Install ##
 #############

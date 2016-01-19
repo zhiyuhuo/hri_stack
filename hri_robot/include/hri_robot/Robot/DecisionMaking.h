@@ -20,6 +20,8 @@ int Robot::RunNode()
 		Test();
 		ros::spinOnce();
 	}
+	
+	return 0;
 }
 
 int Robot::DecisionMaking()
@@ -145,6 +147,74 @@ int Robot::TestRead()
 	vector<Dct> dctSet = ReadDetector(cmdVec);
 	
 	return 0;
+}
+
+int Robot::KeyboardControl()
+{
+	int res = 0;
+	
+	while (ros::ok())
+	{
+		imshow("grid map", m_imgOccupancy);
+		char c = waitKey(1);
+		
+		if (m_mission.compare("init") == 0)
+		{
+			m_mission = "receive_keyboard_action";
+		}
+
+
+		else if (m_mission.compare("receive_keyboard_action") == 0)
+		{
+			switch (c)
+			{
+				case 'w':	
+				{	
+					m_linearSpeed = 0.1; 
+					m_angularSpeed = 0;	
+					break;
+				}
+				case 'a':	
+				{	
+					m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.2;	 
+					break;
+				}
+				case 'd':	
+				{			  
+					m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.2);	 
+					break;
+				  
+				}
+				case 's':	
+				{	
+					m_linearSpeed = 0; 
+					m_angularSpeed = 0;		
+					break;
+				}
+				case 'x':
+				{	
+					m_linearSpeed = -0.1; 
+					m_angularSpeed = 0;	 
+					break;			  
+				}
+				case 'c':
+				{	
+					Perception();
+					m_entities = GetVisiableEntities();
+					cout << "The entities in the map: " << endl;
+					for (int i = 0; i < m_entities.size(); i++)
+					{
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << endl;
+ 					}
+					break;			  
+				}
+			}
+		}	
+		SetRobotVelocity();
+		
+		ros::spinOnce();
+	}
+	return res;
 }
 
 

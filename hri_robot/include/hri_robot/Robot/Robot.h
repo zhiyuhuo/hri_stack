@@ -187,11 +187,13 @@ public:	//robot behavior
 	//Robot Strategy 
 	VecPosition m_posRobotLast;
 	float m_pathLength;
+	int ConnectToServer();
 	int RunNode();
 	int DecisionMaking();
 	int Test();
 	int TestRead();
 	int UpdatePerception();
+	int KeyboardControl();
 	
 };
 
@@ -206,6 +208,10 @@ Robot::Robot()
 	m_state = "init";	//temporally out of use
 	m_mission = "init";
 	
+	m_originalRobotPose.push_back(0);
+	m_originalRobotPose.push_back(0);
+	m_originalRobotPose.push_back(PI / 2);
+	
 	m_posRobot.SetX(0);
 	m_posRobot.SetY(0);
 	m_theta = PI / 2;
@@ -214,6 +220,9 @@ Robot::Robot()
 	m_imgOccupancy = Mat::zeros(200, 200, CV_8UC1);
 	m_pathLength = 0;
 	m_spatialCommand = "";
+	
+	//Get Le
+	GetLEList("/home/hri/hri_DATA/Map");
 	
 	if (!ros::isInitialized())
 	{
@@ -235,13 +244,36 @@ Robot::Robot()
 	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
 	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
 	
-	//Get Le
-	GetLEList("/home/hri/hri_DATA/Map");
 }
 
 Robot::~Robot()
 {
+
+}
+
+int Robot::ConnectToServer()
+{
+	if (!ros::isInitialized())
+	{
+		int argc = 0;
+		char** argv = NULL;
+		ros::init(argc,argv,"hri_robot_node",ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+	}
 	
+	this->m_robot_namespace_ = "";
+	m_nh = new ros::NodeHandle(this->m_robot_namespace_);
+	
+	//sub and pub
+	m_poseSub = m_nh->subscribe("/hri_robot/odom", 1000, &Robot::poseCallback, this);
+	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
+	m_speedPub = m_nh->advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
+	
+	//clients
+	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
+	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
+	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
+	
+	return 1;
 }
 
 vector<float> Robot::LocalToGlobal(float lx, float ly, float lth)

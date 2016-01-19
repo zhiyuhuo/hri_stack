@@ -162,7 +162,7 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 	
 	//////////////get the direction of the sample;
 	vector<float> featureAngle = BuildDHAngleFeature(cloud, normals);
-	m_dir = GetOrientation(featureAngle, detectors[m_rawnameStr]);
+	//m_dir = GetOrientation(featureAngle, detectors[m_rawnameStr]);
 }
 
 vector<float> SE::GetPtCentroid(vector<float> pt)

@@ -111,7 +111,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		tempEntList.push_back(ent);
 	}
 	
-	cout << "ent num: " << tempEntList.size() << endl;
+// 	cout << "ent num: " << tempEntList.size() << endl;
 	m_tempSEList = tempEntList;
 }
 

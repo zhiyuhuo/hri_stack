@@ -149,12 +149,13 @@ int Perception::Process()
 	
 	//Generate Furniture Samples and Add them to Robot Vars.
 	int ct = 0;
+	cout << "Processing Data...: " << endl;
 	for (int n = 1; n <= Num; n++)
 	{	
 		float area = blobToProcess[n] * (LOCALMAP_RESOLUTION * LOCALMAP_RESOLUTION);
 		if (area > 0.1)
 		{
-			cout << "sample: " << n << endl;
+// 			cout << " -sample: " << n << "     ";
 			vector<int> targetIndex;
 			for (int i = 0; i < IMG_SIZE; i++)
 			{
@@ -184,14 +185,18 @@ int Perception::Process()
 			
 			///Furniture recognition end
 			
-			cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
+			//cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
 			if (g.m_centroid[0] < LOCALMAP_X/2-1 && g.m_centroid[0] > -LOCALMAP_X/2+1 && g.m_centroid[1] > 0.5 && g.m_centroid[1] < LOCALMAP_Y-1)
 			{
 			
 				Ent en = GenerateEnt(g);
-				cout << en.name << "	" << en.x << ", " << en.y << endl;
+				cout << en.name << "	" << en.x << ", " << en.y << " - " << en.vec.size()/2 << endl;
 				m_GOList.push_back(en);	
 				res++;
+			}
+			else
+			{
+				cout << endl;
 			}
 		}
 	}
