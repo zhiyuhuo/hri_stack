@@ -100,12 +100,27 @@ def build_grounding_graph(grounding, relations):
     return nodelist
   
 def inorder_traversal_graph(nodelist):
-    nodemark = [False] * len(nodelist)
     sentence = []
     for n in nodelist:
-        if n.parent == None and n.sibling_left == None:
-	    nd = n
-	    break
+        nd = n
+        print nd
+        print nd.rdt
+        if nd.parent != None:
+	    print nd.parent.rdt
+	if nd.sibling_left != None:
+            print nd.sibling_left.rdt
+        if nd.sibling_right != None:
+            print nd.sibling_right.rdt
+        if nd.child_left != None:
+            print nd.child_left.rdt
+        if nd.child_right != None:
+            print nd.child_right.rdt
+        print nd.ps
+        #if n.parent == None and n.sibling_left == None:
+	    #nd = n
+	    #break
+	  
+    return
 
     print sentence
     if nd.sibling_left != None:

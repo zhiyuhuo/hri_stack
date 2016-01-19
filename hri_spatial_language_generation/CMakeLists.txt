@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospack
   rospy
   std_msgs	
+  hri_robot
 )
 
 ## System dependencies are found with CMake's conventions
@@ -100,7 +101,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_spatial_language_grounding
- CATKIN_DEPENDS roscpp rospack rospy std_msgs
+ CATKIN_DEPENDS roscpp rospack rospy std_msgs hri_robot
 #  DEPENDS system_lib
 
 )

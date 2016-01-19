@@ -2,7 +2,7 @@
 <package>
   <name>hri_spatial_language_generation</name>
   <version>0.0.0</version>
-  <description>The hri_spatial_language_grounding package</description>
+  <description>The hri_spatial_language_generation package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -44,12 +44,10 @@
   <build_depend>rospack</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rospack</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
