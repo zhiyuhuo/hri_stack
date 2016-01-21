@@ -15,9 +15,11 @@ int Robot::RunNode()
 // 	AskGroundingService(m_spatialCommand);
 // 	ShowRobotCmdInfo();
 
+// 	Test();
+  
 	while (ros::ok())
 	{
-		Test();
+		KeyboardControl();
 		ros::spinOnce();
 	}
 	
@@ -93,6 +95,12 @@ int Robot::DecisionMaking()
 }
 
 int Robot::Test()
+{
+	map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+	GenerateStaticDescription(dcts);
+}
+
+int Robot::TestPathGeneration()
 {
 	if (m_mission.compare("init") == 0)
 	{
@@ -207,6 +215,11 @@ int Robot::KeyboardControl()
 						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << endl;
  					}
 					break;			  
+				}
+				case 'g':
+				{
+					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+					GenerateStaticDescription(dcts);
 				}
 			}
 		}	

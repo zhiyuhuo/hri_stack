@@ -191,12 +191,15 @@ public:	//Robot Strategy
 	int RunNode();
 	int DecisionMaking();
 	int Test();
+	int TestPathGeneration();
 	int TestRead();
 	int UpdatePerception();
 	int KeyboardControl();
 	
 public:	//Path Generation (Generate RDT from Path)
-	
+	map<string, vector<Dct> > LoadGroundingTypesList();
+	int GenerateStaticDescription(map<string, vector<Dct> > dctMap);
+	float ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations);
   
   
 };
@@ -227,26 +230,6 @@ Robot::Robot()
 	
 	//Get Le
 	GetLEList("/home/hri/hri_DATA/Map");
-	
-	if (!ros::isInitialized())
-	{
-		int argc = 0;
-		char** argv = NULL;
-		ros::init(argc,argv,"hri_robot_node",ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
-	}
-	
-	this->m_robot_namespace_ = "";
-	m_nh = new ros::NodeHandle(this->m_robot_namespace_);
-	
-	//sub and pub
-	m_poseSub = m_nh->subscribe("/hri_robot/odom", 1000, &Robot::poseCallback, this);
-	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
-	m_speedPub = m_nh->advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
-	
-	//clients
-	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
-	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
-	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
 	
 }
 
