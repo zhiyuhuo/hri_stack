@@ -13,7 +13,11 @@
   <url type="website">http://ros.org/wiki/hri_stack</url>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>freenect_camera</run_depend>
-  <run_depend>freenect_launch</run_depend>
+  <run_depend>hri_gazebo_platform</run_depend>
+  <run_depend>hri_nav</run_depend>
+  <run_depend>hri_perception</run_depend>
+  <run_depend>hri_hri_spatial_language_grounding</run_depend>
+  <run_depend>hri_robot</run_depend>
+  <run_depend>hri_android_to_robot</run_depend>
 
 </package>
