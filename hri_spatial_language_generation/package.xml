@@ -49,7 +49,6 @@
   <run_depend>rospack</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>hri_robot</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

@@ -9,5 +9,6 @@
 #include "RDTProcess.h"
 #include "Navigation.h"
 #include "DecisionMaking.h"
+#include "PathGeneration.h"
 
 #endif

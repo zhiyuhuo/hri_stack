@@ -159,7 +159,7 @@ public:	//robot behavior
 	string m_state;
 	string m_mission;
 	
-	//Robot Behavior
+public:	//Robot Behavior
 	float m_currentScore;
 	vector<Dct> m_currentDct;
 	int RunCommand(vector<string> cmd);
@@ -171,7 +171,7 @@ public:	//robot behavior
 	float IterateltSearchTarget(vector<Dct> decisionSpatialRelations);
 	vector<vector<Ent> > ListEntitiesSetCombination(vector<string> requiredEntsNames, vector<Ent> myEnts);
 	
-	//World State Feature
+public:	//World State Feature
 	vector<Ent> m_entities;
 	Ent GetRobotEntity(float x, float y, float theta);
 	vector<Ent> m_LEList;
@@ -184,7 +184,7 @@ public:	//robot behavior
 	vector<float> DistanceWeights(vector<float> hd);
 	vector<Ent> GetVisiableEntities();
 	
-	//Robot Strategy 
+public:	//Robot Strategy 
 	VecPosition m_posRobotLast;
 	float m_pathLength;
 	int ConnectToServer();
@@ -195,6 +195,10 @@ public:	//robot behavior
 	int UpdatePerception();
 	int KeyboardControl();
 	
+public:	//Path Generation (Generate RDT from Path)
+	
+  
+  
 };
 
 Robot::Robot()

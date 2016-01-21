@@ -9,8 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospack
   rospy
   std_msgs	
-  hri_robot
 )
+
+find_package(hri_robot REQUIRED) 
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -99,9 +100,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES hri_spatial_language_grounding
- CATKIN_DEPENDS roscpp rospack rospy std_msgs hri_robot
+ CATKIN_DEPENDS roscpp rospack rospy std_msgs
 #  DEPENDS system_lib
 
 )
@@ -117,6 +118,8 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
 )
 
+include_directories(${hri_robot_INCLUDE_DIRS})
+
 ## Declare a C++ library
 # add_library(hri_spatial_language_grounding
 #   src/${PROJECT_NAME}/hri_spatial_language_grounding.cpp
@@ -128,16 +131,16 @@ include_directories(include
 # add_dependencies(hri_spatial_language_grounding ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(hri_spatial_language_grounding_node src/hri_spatial_language_grounding_node.cpp)
+add_executable(hri_spatial_language_generation_node src/hri_spatial_language_generation_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(hri_spatial_language_grounding_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hri_spatial_language_grounding_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(hri_spatial_language_generation_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
