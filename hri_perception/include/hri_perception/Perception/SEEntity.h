@@ -76,11 +76,13 @@ public:
 	//orientation 
 	float GetDir(float nx, float ny, float nz);
 	vector<float> BuildDHAngleFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
+	float GetChairOrientation(vector<float> feature, FurnitureDetector detector);
 	float GetOrientation(vector<float> feature, FurnitureDetector detector);
 };
 
 SE::SE()
 {
+	m_highestHeight = 0;
 	m_name = "";
 	m_dir = -1;
 }
@@ -120,11 +122,16 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 	cloudin->is_dense = false;
 	cloudin->points.resize (cloudin->width * cloudin->height);
 	
+	m_highestHeight = 0;
 	for (int i = 0; i < m_acpt.size()/3; i++)
 	{
 		cloudin->points[i].x = m_acpt[3*i];
 		cloudin->points[i].y = m_acpt[3*i+1];
 		cloudin->points[i].z = m_acpt[3*i+2];
+		if (m_acpt[3*i+2] > m_highestHeight)
+		{
+			m_highestHeight = m_acpt[3*i+2];
+		}
 	}
 
 	
@@ -162,7 +169,11 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 	
 	//////////////get the direction of the sample;
 	vector<float> featureAngle = BuildDHAngleFeature(cloud, normals);
-	//m_dir = GetOrientation(featureAngle, detectors[m_rawnameStr]);
+	
+	if (m_name.find("chair") >= 0 || m_name.find("couch") >= 0)
+	{
+		m_dir = GetChairOrientation(featureAngle, detectors[m_rawnameStr]);
+	}
 }
 
 vector<float> SE::GetPtCentroid(vector<float> pt)
@@ -267,7 +278,7 @@ string SE::Classify(vector<float> feature, map<string, FurnitureDetector> detect
 		float r = LogisticClassifyOneSample(feature, dct);
 // 		cout << keystr << ": " << r << endl;
 		
-		if (r > 0)
+		if (r > 0 && m_highestHeight < 1.0)
 		{
 			name = keystr;
 			break;
@@ -396,6 +407,32 @@ vector<float> SE::BuildDHAngleFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl:
 			}
 			res[i] = M[i];
 		}
+	}
+	
+	return res;
+}
+
+float SE::GetChairOrientation(vector<float> feature, FurnitureDetector detector)
+{
+	float res = -1;
+	if (detector.anglew.size() > 0)
+	{
+	  	float angle = 0;
+		float w = 0;
+	  
+		int i;
+		for (i = 0; i < detector.anglew.size(); i++)
+		{
+// 			cout << i << ":    " << feature[i] << ",   " << detector.anglew[i] << endl;
+			if ( i > 50 && i%10 < 55 && detector.anglew[i] > 0.5 && feature[i] > 0)
+			{
+				angle += feature[i] * detector.anglew[i];
+				w += detector.anglew[i];
+			}
+		}
+		
+		angle /= w;
+		res = angle;
 	}
 	
 	return res;

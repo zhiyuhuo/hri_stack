@@ -70,8 +70,8 @@ int Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 	{
 		if (it->first.find("move") >= 0)
 		{
-			cout << it->first << "\n";
 			float score = ScoreStatenToOneGrounding(it->second);
+			cout << it->first << ":   " << score << endl;
 		}
 	}
 	return 0;
@@ -142,7 +142,7 @@ float Robot::ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations)
 			m_entities[i].name = "CR";
 		}
 	}
-	cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
+// 	cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
 	
 	float respmin = 1;
 	for (int i = 0; i < decisionSpatialRelations.size(); i++)
@@ -168,7 +168,7 @@ float Robot::ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations)
 					B = m_entities[j];
 				}
 			}	
-			cout << A.name << " " << A.vec.size()/2 << ", " << B.name << " " << B.vec.size()/2 << endl;
+// 			cout << A.name << " " << A.vec.size()/2 << ", " << B.name << " " << B.vec.size()/2 << endl;
 			spAB = GetSpatialRelationB2A(A, B);			
 			
 		}

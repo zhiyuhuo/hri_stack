@@ -190,7 +190,7 @@ int Perception::Process()
 			{
 			
 				Ent en = GenerateEnt(g);
-				cout << en.name << "	" << en.x << ", " << en.y << " - " << en.vec.size()/2 << endl;
+				cout << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << endl;
 				m_GOList.push_back(en);	
 				res++;
 			}
