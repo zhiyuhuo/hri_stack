@@ -199,7 +199,7 @@ public:	//Robot Strategy
 public:	//Path Generation (Generate RDT from Path)
 	map<string, vector<Dct> > LoadGroundingTypesList();
 	int GenerateStaticDescription(map<string, vector<Dct> > dctMap);
-	float ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations);
+	float ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations);
   
   
 };

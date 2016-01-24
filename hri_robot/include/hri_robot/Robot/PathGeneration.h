@@ -68,17 +68,29 @@ int Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 {
 	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
 	{
-		if (it->first.find("move") >= 0)
+		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)
 		{
-			float score = ScoreStatenToOneGrounding(it->second);
-			cout << it->first << ":   " << score << endl;
+			cout << "-" << it->first << ":" << endl;
+			float score = ScoreStateToOneGrounding(it->second);
+			cout << "   The score is:    " << score << endl;
 		}
 	}
 	return 0;
 }
 
-float Robot::ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations)
+float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)
 {
+	vector<Dct>::iterator it;
+	for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
+	{
+		if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
+		  || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
+		)
+		{
+			decisionSpatialRelations.erase(it);
+		}
+	}
+  
 	float res = 1;
 	float res2 = 0;
 	//decide if there is enough entities to make decision
@@ -117,7 +129,7 @@ float Robot::ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations)
 	{
 		if (matchVector[i] == 0)
 		{
-			cout << "entity " << requiredEntitiesNames[i] << " is not observed" << endl;
+			cout << "   entity " << requiredEntitiesNames[i] << " is not observed" << endl;
 			res = 0;
 			return res;
 		}
@@ -174,7 +186,7 @@ float Robot::ScoreStatenToOneGrounding(vector<Dct> decisionSpatialRelations)
 		}
 		
 		float dctResponse = GetResponseOfADetector(spAB, dct);
-		cout << dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
+		cout << "   " <<  dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
 
 		if (dctResponse < respmin)
 		{
