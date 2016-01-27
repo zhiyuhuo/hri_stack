@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::ServiceClient client = n.serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
 	hri_spatial_language_grounding::SpatialLanguageGrounding srv;
-	srv.request.str = "go to the bedroom, the mug is on the table on the right";
+	srv.request.str = "the mug is on the table on the right in the bedroom";
 	
 	if (client.call(srv))
 	{

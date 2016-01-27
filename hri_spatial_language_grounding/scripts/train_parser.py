@@ -449,7 +449,7 @@ def raw_to_xml(cmdstr, filename):
 
 if __name__ == '__main__':
     cmdstr = "the fork will be on the table to the right"
-    filename = "/home/hri/hri_DATA/template_indoor.xml"
+    filename = "/home/hri/hri_DATA/Fixedunique149.xml"
     chunker = chunk_word(cmdstr)
     ##tree = raw_to_xml(cmdstr, filename)
     ##tree.draw()
