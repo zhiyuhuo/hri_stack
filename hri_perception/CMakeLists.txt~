@@ -14,16 +14,27 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  message_generation
 )
 
 find_package(PCL 1.2 REQUIRED)
 
+add_message_files(
+  FILES
+  Env.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_perception2015a
-#  CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs
+ CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
-)
+)	
 
 include_directories(include
   ${catkin_INCLUDE_DIRS}
@@ -43,5 +54,8 @@ target_link_libraries (cloud_viewer ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIB
 
 #add_executable (hri_perception_node src/hri_perception_node.cpp)
 #target_link_libraries (hri_perception_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+
+add_executable (get_pcd_sample_normal src/get_pcd_sample_normal.cpp)
+target_link_libraries (get_pcd_sample_normal ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
 
 

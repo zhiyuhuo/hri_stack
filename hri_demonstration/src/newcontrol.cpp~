@@ -21,9 +21,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "hri_demonstration/Universal/Header.h"
-#include "hri_demonstration/Geometry/Header.h"
-#include "hri_demonstration/Robot/Header.h"
+#include "hri_pbd5/Universal/Header.h"
+#include "hri_pbd5/Geometry/Header.h"
+#include "hri_pbd5/Robot/Header.h"
 
 //#define SPATIALCOMMAND
 
