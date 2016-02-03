@@ -20,5 +20,7 @@
   <run_depend>hri_hri_spatial_language_generation</run_depend>
   <run_depend>hri_robot</run_depend>
   <run_depend>hri_android_to_robot</run_depend>
+  <run_depend>hri_demonstration</run_depend>
+  <run_depend>p2os</run_depend>
 
 </package>

@@ -1,0 +1,534 @@
+#ifndef HUMANCONTROL_H
+#define HUMANCONTROL_H
+
+#include "stdio.h"
+#include "stdlib.h"
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <sys/stat.h>
+
+#include "Header.h"
+
+int Robot::KeyBoardAction()
+{
+	int res;
+	Perception(); 
+	ExploreMap();
+	ShowRobotPose();	
+	m_imgshow = m_imgshow + m_imglattice;
+	imshow("imgshow", m_imgshow);
+	char c = waitKey(1);
+// 	//cout << m_mission << endl;
+	if (m_mission.compare("init") == 0)
+	{
+		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> g = m_groundings[m_step];
+		m_cmdRec.push_back(g);
+			
+		for (int i = 0; i < g.size(); i++)
+		{
+			cout << g[i] << " ";
+		}
+		cout << "\n";
+		cout << "m_step: " << m_step << "\n";
+		m_step++;
+		m_mission = "receive_keyboard_action";
+		m_posRobotLast = m_posRobot;
+	}
+
+
+	else if (m_mission.compare("receive_keyboard_action") == 0)
+	{
+		switch (c)
+		{
+			case 'w':	{	m_linearSpeed = 0.3; m_angularSpeed = 0;	m_mission = "record_static"; break;}
+			case 'a':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.5;	m_mission = "record_static"; break;}
+			case 'd':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.5);	m_mission = "record_static"; break;}
+			case 's':	{	m_linearSpeed = 0; m_angularSpeed = 0;		m_mission = "record_static"; break;}
+			case 'x':	{	m_linearSpeed = -0.2; m_angularSpeed = 0;	m_mission = "record_static"; break;}
+			case ',':	{	m_mission = "search_wide"; break;}
+			case '.':	{	m_mission = "search_spin"; break;}
+			case 'r':	{	m_linearSpeed = 0; m_angularSpeed = 0;	m_mission = "record_experiment_data";	break;}
+			case 'f':	{	m_mission = "save_data_to_file";	break;}
+		}
+		m_pathLength += (m_posRobot - m_posRobotLast).GetMagnitude();
+		m_posRobotLast = m_posRobot;
+		string key(1, c);
+		m_key = key;
+	}
+	
+	else if (m_mission.compare("search_wide") == 0)
+	{
+		if (m_state.compare("init") == 0)
+		{
+			float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+			vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+			m_poseRec.push_back(poseRec);
+			m_frRec.push_back(m_fr);
+			vector<string> tStr(1, m_key);
+			m_cmdRec.push_back(tStr);
+		  
+			m_action = "init";
+			m_state = "search";
+		}
+		
+		else if (m_state.compare("search") == 0)
+		{
+			if (SearchWide() == 1)
+			{
+				 m_state = "end";
+			}			
+		}
+		
+		else if (m_state.compare("end") == 0)
+		{
+			m_state = "init";
+			m_mission = "receive_keyboard_action";		
+		}
+	}
+	
+	else if (m_mission.compare("search_spin") == 0)
+	{
+		if (m_state.compare("init") == 0)
+		{
+			float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+			vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+			m_poseRec.push_back(poseRec);
+			m_frRec.push_back(m_fr);
+			vector<string> tStr(1, m_key);
+			m_cmdRec.push_back(tStr);
+			m_action = "init";
+			m_state = "search";
+		}
+		
+		else if (m_state.compare("search") == 0)
+		{
+			if (SearchSpin() == 1)
+			{
+				 m_state = "end";
+			}			
+		}
+		
+		else if (m_state.compare("end") == 0)
+		{
+			m_state = "init";
+			m_mission = "receive_keyboard_action";		
+		}
+	}
+
+	else if (m_mission.compare("record_static") == 0)
+	{
+	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> tStr(1, m_key);
+		m_cmdRec.push_back(tStr);
+		
+		for (int i = 0; i < m_fr.size(); i++)
+		{
+			if (m_fr[i] > 0)
+			{
+				cout << m_fr[i] << " ";
+				Fur f = m_furLib[m_fr[i]];
+				cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
+			}
+		}
+		cout << "____________________________________________________" << endl;
+		//cout << "m_pathLength: " << m_pathLength << endl;
+		m_posRobotLast = m_posRobot;
+		
+		m_mission = "receive_keyboard_action";
+	}
+	
+	else if (m_mission.compare("record_experiment_data") == 0)
+	{
+	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> tStr(1, m_key);
+		m_cmdRec.push_back(tStr);
+		
+		if (m_step < m_groundings.size())
+		{
+			vector<string> g = m_groundings[m_step];
+			m_poseRec.push_back(poseRec);
+			m_frRec.push_back(m_fr);
+			m_cmdRec.push_back(g);
+				
+			for (int i = 0; i < g.size(); i++)
+			{
+				cout << g[i] << " ";
+			}
+			cout << "\n";	
+			cout << "m_step: " << m_step << "\n";
+		}
+		else
+		{
+			cout << "m_step: " << m_step << "\n";
+			cout << "PLZ finish\n";
+		}
+		
+		m_step ++;
+		m_mission = "receive_keyboard_action";
+	}
+	
+	else if (m_mission.compare("save_data_to_file") == 0)
+	{	
+	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> tStr(1, m_key);
+		m_cmdRec.push_back(tStr);	
+		string mainDirStr = "/home/hri/HRI_Doc/Human Demo Rec 2/";
+		
+		time_t _tm =time(NULL );
+		struct tm * curtime = localtime ( &_tm );
+		string timeStr = asctime(curtime);
+		timeStr = timeStr.substr(0, 24);
+		string timeDir = mainDirStr + m_cmdID + "/" + timeStr + "/";
+		mkdir(timeDir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	  
+		string cmdfilename = mainDirStr + m_cmdID + "/" + timeStr + "/cmd - " + m_cmdID + ".out";
+		ofstream cmdfile(cmdfilename.c_str());
+		for (int n = 0; n < m_cmdRec.size(); n++)
+		{
+			vector<string> cmdSet = m_cmdRec[n];
+			for(int i = 0; i < cmdSet.size(); i++)
+			{
+				cmdfile << cmdSet[i] << " ";
+			}
+			cmdfile << endl;
+		}
+		cmdfile.close();
+
+		string posefilename = mainDirStr + m_cmdID + "/" + timeStr + "/pose - " + m_cmdID + ".out";
+		ofstream posefile(posefilename.c_str());
+		for (int n = 0; n < m_poseRec.size(); n++)
+		{
+			vector<float> poseSet = m_poseRec[n];
+			for(int i = 0; i < poseSet.size(); i++)
+			{
+				posefile << poseSet[i] << " ";
+			}
+			posefile << endl;
+		}
+		posefile.close();
+	
+		string frfilename = mainDirStr + m_cmdID + "/" + timeStr + "/fr - " + m_cmdID + ".out";
+		ofstream frfile(frfilename.c_str());
+		for (int n = 0; n < m_frRec.size(); n++)
+		{
+			vector<int> frSet = m_frRec[n];
+			for(int i = 0; i < frSet.size(); i++)
+			{
+				frfile << frSet[i] << " ";
+			}
+			frfile << endl;
+		}
+		frfile.close();
+
+		m_mission = "end";
+	}
+	
+	else if (m_mission.compare("end") == 0)
+	{
+		m_mission = "end";
+		exit(0);
+	}
+	
+	return res;
+}
+
+
+int Robot::KeyBoardControl()
+{
+	int res;
+	Perception(); 
+	ExploreMap();
+	ShowRobotPose();	
+	m_imgshow = m_imgshow + m_imglattice;
+	imshow("imgshow", m_imgshow);
+	char c = waitKey(1);
+// 	//cout << m_mission << endl;
+	if (m_mission.compare("init") == 0)
+	{
+		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> g(1, "o");
+		m_cmdRec.push_back(g);
+			
+		for (int i = 0; i < g.size(); i++)
+		{
+			cout << g[i] << " ";
+		}
+		cout << "\n";
+		cout << "m_step: " << m_step << "\n";
+		m_step++;
+		m_mission = "receive_keyboard_action";
+		m_posRobotLast = m_posRobot;
+	}
+
+
+	else if (m_mission.compare("receive_keyboard_action") == 0)
+	{
+		switch (c)
+		{
+			case 'w':	{	m_linearSpeed = 0.3; m_angularSpeed = 0;	 break;}
+			case 'a':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.5;	 break;}
+			case 'd':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.5);	 break;}
+			case 's':	{	m_linearSpeed = 0; m_angularSpeed = 0;		 break;}
+			case 'x':	{	m_linearSpeed = -0.2; m_angularSpeed = 0;	 break;}
+			case 'f':	{	m_mission = "save_data_to_file";	break;}
+		}
+
+		float dist = (m_posRobot - m_posRobotLast).GetMagnitude();
+		float rot = m_theta - m_thetaLast;
+		while (rot > PI) {	rot -= 2 * PI;	}
+		while (rot < -PI) {	rot += 2 * PI;	}
+		
+		if (dist > 0.25 || abs(rot) > PI / 6 )
+		{
+			float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+			vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+			m_poseRec.push_back(poseRec);
+			m_frRec.push_back(m_fr);
+			vector<string> g(1, "o");
+			m_cmdRec.push_back(g);
+			for (int i = 0; i < m_fr.size(); i++)
+			{
+				if (m_fr[i] > 0)
+				{
+					cout << m_fr[i] << " ";
+					Fur f = m_furLib[m_fr[i]];
+					cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
+				}
+			}
+			cout << "------\n";
+			
+			m_posRobotLast = m_posRobot;
+			m_thetaLast = m_theta;
+		}
+		
+	}
+	
+	else if (m_mission.compare("save_data_to_file") == 0)
+	{	
+		string mainDirStr = "/home/hri/HRI_Doc/Human Demo Rec 3/";
+		
+		time_t _tm =time(NULL );
+		struct tm * curtime = localtime ( &_tm );
+		string timeStr = asctime(curtime);
+		timeStr = timeStr.substr(0, 24);
+		string timeDir = mainDirStr + m_cmdID + "/" + timeStr + "/";
+		mkdir(timeDir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	  
+		string cmdfilename = mainDirStr + m_cmdID + "/" + timeStr + "/cmd - " + m_cmdID + ".out";
+		ofstream cmdfile(cmdfilename.c_str());
+		for (int n = 0; n < m_cmdRec.size(); n++)
+		{
+			vector<string> cmdSet = m_cmdRec[n];
+			for(int i = 0; i < cmdSet.size(); i++)
+			{
+				cmdfile << cmdSet[i] << " ";
+			}
+			cmdfile << endl;
+		}
+		cmdfile.close();
+
+		string posefilename = mainDirStr + m_cmdID + "/" + timeStr + "/pose - " + m_cmdID + ".out";
+		ofstream posefile(posefilename.c_str());
+		for (int n = 0; n < m_poseRec.size(); n++)
+		{
+			vector<float> poseSet = m_poseRec[n];
+			for(int i = 0; i < poseSet.size(); i++)
+			{
+				posefile << poseSet[i] << " ";
+			}
+			posefile << endl;
+		}
+		posefile.close();
+	
+		string frfilename = mainDirStr + m_cmdID + "/" + timeStr + "/fr - " + m_cmdID + ".out";
+		ofstream frfile(frfilename.c_str());
+		for (int n = 0; n < m_frRec.size(); n++)
+		{
+			vector<int> frSet = m_frRec[n];
+			for(int i = 0; i < frSet.size(); i++)
+			{
+				frfile << frSet[i] << " ";
+			}
+			frfile << endl;
+		}
+		frfile.close();
+
+		m_mission = "end";
+	}
+	
+	else if (m_mission.compare("end") == 0)
+	{
+		m_mission = "end";
+		exit(0);
+	}
+	
+	return res;
+}
+
+int Robot::PathRec()
+{
+	int res;
+	Perception(); 
+	ExploreMap();
+	ShowRobotPose();	
+	m_imgshow = m_imgshow + m_imglattice;
+	imshow("imgshow", m_imgshow);
+	char c = waitKey(1);
+// 	//cout << m_mission << endl;
+	if (m_mission.compare("init") == 0)
+	{
+		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+		m_poseRec.push_back(poseRec);
+		m_frRec.push_back(m_fr);
+		vector<string> g(1, "o");
+		m_cmdRec.push_back(g);
+			
+		for (int i = 0; i < g.size(); i++)
+		{
+			cout << g[i] << " ";
+		}
+		cout << "\n";
+		cout << "m_step: " << m_step << "\n";
+		m_step++;
+		m_mission = "receive_keyboard_action";
+		m_posRobotLast = m_posRobot;
+	}
+
+
+	else if (m_mission.compare("receive_keyboard_action") == 0)
+	{
+		switch (c)
+		{
+			case 'w':	{	m_linearSpeed = 0.3; m_angularSpeed = 0;	 break;}
+			case 'a':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.5;	 break;}
+			case 'd':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.5);	 break;}
+			case 's':	{	m_linearSpeed = 0; m_angularSpeed = 0;		 break;}
+			case 'x':	{	m_linearSpeed = -0.2; m_angularSpeed = 0;	 break;}
+			case 'f':	{	m_mission = "save_data_to_file";	break;}
+		}
+
+		float dist = (m_posRobot - m_posRobotLast).GetMagnitude();
+		float rot = m_theta - m_thetaLast;
+		while (rot > PI) {	rot -= 2 * PI;	}
+		while (rot < -PI) {	rot += 2 * PI;	}
+		
+		if (dist > 0.25 || abs(rot) > PI / 6 )
+		{
+			float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
+			vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
+			m_poseRec.push_back(poseRec);
+			m_frRec.push_back(m_fr);
+			vector<string> g(1, "o");
+			m_cmdRec.push_back(g);
+			for (int i = 0; i < m_fr.size(); i++)
+			{
+				if (m_fr[i] > 0)
+				{
+					cout << m_fr[i] << " ";
+					Fur f = m_furLib[m_fr[i]];
+					cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
+				}
+			}
+			cout << "------\n";
+			
+			m_posRobotLast = m_posRobot;
+			m_thetaLast = m_theta;
+		}
+		
+	}
+	
+	else if (m_mission.compare("save_data_to_file") == 0)
+	{	
+		string mainDirStr = "/home/hri/HRI_Doc/Path Rec/";
+		
+		time_t _tm =time(NULL );
+		struct tm * curtime = localtime ( &_tm );
+		string timeStr = asctime(curtime);
+		timeStr = timeStr.substr(0, 24);
+		string timeDir = mainDirStr + m_cmdID + "/" + timeStr + "/";
+		mkdir(timeDir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	  
+		string cmdfilename = mainDirStr + m_cmdID + "/" + timeStr + "/cmd - " + m_cmdID + ".out";
+		ofstream cmdfile(cmdfilename.c_str());
+		for (int n = 0; n < m_cmdRec.size(); n++)
+		{
+			vector<string> cmdSet = m_cmdRec[n];
+			for(int i = 0; i < cmdSet.size(); i++)
+			{
+				cmdfile << cmdSet[i] << " ";
+			}
+			cmdfile << endl;
+		}
+		cmdfile.close();
+
+		string posefilename = mainDirStr + m_cmdID + "/" + timeStr + "/pose - " + m_cmdID + ".out";
+		ofstream posefile(posefilename.c_str());
+		for (int n = 0; n < m_poseRec.size(); n++)
+		{
+			vector<float> poseSet = m_poseRec[n];
+			for(int i = 0; i < poseSet.size(); i++)
+			{
+				posefile << poseSet[i] << " ";
+			}
+			posefile << endl;
+		}
+		posefile.close();
+	
+		string frfilename = mainDirStr + m_cmdID + "/" + timeStr + "/fr - " + m_cmdID + ".out";
+		ofstream frfile(frfilename.c_str());
+		for (int n = 0; n < m_frRec.size(); n++)
+		{
+			vector<int> frSet = m_frRec[n];
+			for(int i = 0; i < frSet.size(); i++)
+			{
+				frfile << frSet[i] << " ";
+			}
+			frfile << endl;
+		}
+		frfile.close();
+
+		m_mission = "end";
+	}
+	
+	else if (m_mission.compare("end") == 0)
+	{
+		m_mission = "end";
+		exit(0);
+	}
+	
+	return res;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
