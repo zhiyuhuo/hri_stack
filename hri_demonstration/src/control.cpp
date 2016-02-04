@@ -21,9 +21,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "hri_pbd5/Universal/Header.h"
-#include "hri_pbd5/Geometry/Header.h"
-#include "hri_pbd5/Robot/Header.h"
+#include "hri_demonstration/Universal/Header.h"
+#include "hri_demonstration/Geometry/Header.h"
+#include "hri_demonstration/Robot/Header.h"
 
 //#define SPATIALCOMMAND
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	{
 		string strID(argv[1]);
 		_robot.m_cmdID = strID;
-		string name = "/home/hri/HRI_Doc/Human Demo Rec 2/grounding - " + strID + ".txt";
+		string name = "/home/hri/hri_DATA/pbd/Human Demo Rec 2/grounding - " + strID + ".txt";
 		groundingFileName.assign(name);	
 		cout << groundingFileName << endl;
 	}
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	_robot.GetGroundingInfo(groundingFileName);
 	cout << "robot loop start..." << endl;
 	
-	_robot.ReadGOInformation("/home/hri/HRI_Doc/trainer.world");
+	_robot.ReadGOInformation("/home/hri/hri_DATA/pbd/trainer.world");
 	//exit(1);
 	
 	while (ros::ok() && ifTerminated == 0)

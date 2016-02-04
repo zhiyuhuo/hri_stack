@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	{
 		string strID(argv[1]);
 		_robot.m_cmdID = strID;
-		string name = "/home/hri/HRI_Doc/Human Demo Rec 3/grounding - " + strID + ".txt";
+		string name = "/home/hri/hri_DATA/pbd/Human Demo Rec 3/grounding - " + strID + ".txt";
 		groundingFileName.assign(name);	
 		cout << groundingFileName << endl;
 	}
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		cout << "no file name!!\n";
 		return 0;
 	}
-	_robot.ReadGOInformation("/home/hri/HRI_Doc/endtoend.world");
+	_robot.ReadGOInformation("/home/hri/hri_DATA/pbd/endtoend.world");
 	
 	while (ros::ok() && ifTerminated == 0)
 	{	

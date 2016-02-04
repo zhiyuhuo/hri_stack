@@ -1,0 +1,4 @@
+<launch>
+	<arg name="grounding" /> 
+	<node name="stageros" pkg="stage_ros" type="stageros" args="/home/hri/hri_DATA/pbd/endtoend.world" />
+</launch>

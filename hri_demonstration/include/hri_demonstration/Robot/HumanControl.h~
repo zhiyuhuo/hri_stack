@@ -180,14 +180,13 @@ int Robot::KeyBoardAction()
 	
 	else if (m_mission.compare("save_data_to_file") == 0)
 	{	
-		cout << "start to save to file...\n";
 	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
 		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
 		m_poseRec.push_back(poseRec);
 		m_frRec.push_back(m_fr);
 		vector<string> tStr(1, m_key);
 		m_cmdRec.push_back(tStr);	
-		string mainDirStr = m_storeDir;
+		string mainDirStr = "/home/hri/HRI_Doc/Human Demo Rec 2/";
 		
 		time_t _tm =time(NULL );
 		struct tm * curtime = localtime ( &_tm );
@@ -197,7 +196,6 @@ int Robot::KeyBoardAction()
 		mkdir(timeDir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	  
 		string cmdfilename = mainDirStr + m_cmdID + "/" + timeStr + "/cmd - " + m_cmdID + ".out";
-		cout << "CMD FILE:	" << cmdfilename << endl;
 		ofstream cmdfile(cmdfilename.c_str());
 		for (int n = 0; n < m_cmdRec.size(); n++)
 		{
@@ -212,7 +210,6 @@ int Robot::KeyBoardAction()
 
 		string posefilename = mainDirStr + m_cmdID + "/" + timeStr + "/pose - " + m_cmdID + ".out";
 		ofstream posefile(posefilename.c_str());
-		cout << "POSE FILE:	" << posefilename << endl;
 		for (int n = 0; n < m_poseRec.size(); n++)
 		{
 			vector<float> poseSet = m_poseRec[n];
@@ -226,7 +223,6 @@ int Robot::KeyBoardAction()
 	
 		string frfilename = mainDirStr + m_cmdID + "/" + timeStr + "/fr - " + m_cmdID + ".out";
 		ofstream frfile(frfilename.c_str());
-		cout << "FR FILE:	" << frfilename << endl;
 		for (int n = 0; n < m_frRec.size(); n++)
 		{
 			vector<int> frSet = m_frRec[n];
@@ -326,7 +322,7 @@ int Robot::KeyBoardControl()
 	
 	else if (m_mission.compare("save_data_to_file") == 0)
 	{	
-		string mainDirStr = m_storeDir;
+		string mainDirStr = "/home/hri/HRI_Doc/Human Demo Rec 3/";
 		
 		time_t _tm =time(NULL );
 		struct tm * curtime = localtime ( &_tm );
