@@ -225,6 +225,8 @@ Robot::Robot()
 	m_pathLength = 0;
 	
 	m_fr.push_back(-1);
+	m_fr.push_back(201);
+	m_fr.push_back(202);
 }
 
 Robot::~Robot()
