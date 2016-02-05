@@ -4,7 +4,7 @@
 
 	  <gui>
 	    <camera name="user_camera">
-	      <pose>12 0 10 0 0.5 3.14</pose>
+	      <pose>12 0 8 0 0.5 3.14</pose>
 	    </camera>
 	  </gui>
 
@@ -84,6 +84,11 @@
 		<include>
 			<uri>model://hri_woodchair</uri>
 			<pose>-1.25 -6 0 0 0 1.5708</pose>
+		</include>
+
+		<include>
+			<uri>model://plastic_cup</uri>
+			<pose>-1.25 -5 1 0 0 0</pose>
 		</include>
 
 	</world>

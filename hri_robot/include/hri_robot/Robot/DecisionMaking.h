@@ -157,7 +157,7 @@ int Robot::TestRead()
 	return 0;
 }
 
-int Robot::KeyboardControl()
+int Robot::KeyboardControlForLanguageGeneration()
 {
 	int res = 0;
 	

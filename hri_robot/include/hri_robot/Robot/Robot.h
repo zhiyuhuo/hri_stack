@@ -194,7 +194,7 @@ public:	//Robot Strategy
 	int TestPathGeneration();
 	int TestRead();
 	int UpdatePerception();
-	int KeyboardControl();
+	int KeyboardControlForLanguageGeneration();
 	
 public:	//Path Generation (Generate RDT from Path)
 	map<string, vector<Dct> > LoadGroundingTypesList();

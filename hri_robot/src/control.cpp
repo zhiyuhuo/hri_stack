@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 	//
 	Robot _robot;
 	_robot.ConnectToServer();
-	_robot.KeyboardControl();
+	_robot.KeyboardControlForLanguageGeneration();
 
 	return 0;
 }

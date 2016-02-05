@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hri_spatial_language_grounding)
+project(hri_language_generation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs	
   message_generation
 )
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -53,9 +55,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  FILES
-  SpatialLanguageGrounding.srv
-  PartOfSpeech.srv
+   FILES
+   GenerateSpatialLanguage.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -67,8 +68,8 @@ add_service_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  std_msgs
+   DEPENDENCIES
+   std_msgs
 )
 
 ################################################
@@ -101,7 +102,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+# INCLUDE_DIRS include
 #  LIBRARIES hri_spatial_language_grounding
  CATKIN_DEPENDS roscpp rospack rospy std_msgs message_runtime
 #  DEPENDS system_lib
@@ -130,22 +131,12 @@ include_directories(include
 # add_dependencies(hri_spatial_language_grounding ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(hri_spatial_language_grounding_node src/hri_spatial_language_grounding_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(hri_spatial_language_grounding_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hri_spatial_language_grounding_node
-#   ${catkin_LIBRARIES}
-# )
-
-add_executable(hri_spatial_language_grounding_server src/hri_spatial_language_grounding_server_node.cpp)
-target_link_libraries(hri_spatial_language_grounding_server ${catkin_LIBRARIES})
-
-add_executable(client_test src/client_test.cpp)
-target_link_libraries(client_test ${catkin_LIBRARIES})
 
 #############
 ## Install ##
