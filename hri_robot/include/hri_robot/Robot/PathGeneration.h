@@ -64,8 +64,9 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 	return res;
 }
 
-int Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
+vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 {
+	vector<string> res;
 	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
 	{
 		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)
@@ -73,9 +74,14 @@ int Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 			cout << "-" << it->first << ":" << endl;
 			float score = ScoreStateToOneGrounding(it->second);
 			cout << "   The score is:    " << score << endl;
+			if (score > 0.01)
+			{
+				res.push_back(it->first);
+			}
+			  
 		}
 	}
-	return 0;
+	return res;
 }
 
 float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)

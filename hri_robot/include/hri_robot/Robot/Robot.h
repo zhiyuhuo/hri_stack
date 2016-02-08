@@ -197,10 +197,10 @@ public:	//Robot Strategy
 	int KeyboardControlForLanguageGeneration();
 	
 public:	//Path Generation (Generate RDT from Path)
+  	ros::ServiceClient m_generatingLanguageClient; 
 	map<string, vector<Dct> > LoadGroundingTypesList();
-	int GenerateStaticDescription(map<string, vector<Dct> > dctMap);
+	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations);
-  
   
 };
 
@@ -257,6 +257,7 @@ int Robot::ConnectToServer()
 	
 	//clients
 	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
+	m_generatingLanguageClient = m_nh->serviceClient<hri_language_generation::GenerateSpatialLanguage>("hri_language_generation");
 	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
 	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
 	

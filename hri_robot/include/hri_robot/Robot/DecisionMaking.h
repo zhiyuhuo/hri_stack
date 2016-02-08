@@ -9,6 +9,8 @@
 
 #include "Header.h"
 
+#include "hri_language_generation/GenerateSpatialLanguage.h"
+
 int Robot::RunNode()
 {
 // 	m_spatialCommand = "the mug is on the table on the right in the bedroom";
@@ -160,6 +162,7 @@ int Robot::TestRead()
 int Robot::KeyboardControlForLanguageGeneration()
 {
 	int res = 0;
+	m_targetObject = "mug";
 	
 	while (ros::ok())
 	{
@@ -219,7 +222,26 @@ int Robot::KeyboardControlForLanguageGeneration()
 				case 'g':
 				{
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
-					GenerateStaticDescription(dcts);
+					vector<string> dscpset = GenerateStaticDescription(dcts);
+					hri_language_generation::GenerateSpatialLanguage srv;
+					/*
+					srv.request.str = "the mug is on the table on the right in the bedroom";
+					
+					if (client.call(srv))
+					{
+						//vector<string> gds;
+						int L = srv.response.strarr.size();
+						for (int i = 0; i < L; i++)
+						{
+							cout << (string)srv.response.strarr[i] << endl;
+						}
+					}
+					else
+					{
+						ROS_ERROR("Failed to call service SpatialLanguageGrounding");
+						return 1;
+					}*/
+					
 				}
 			}
 		}	
