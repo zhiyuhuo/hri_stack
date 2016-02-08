@@ -141,11 +141,11 @@ include_directories(include
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(hri_spatial_language_grounding_server src/hri_spatial_language_grounding_server_node.cpp)
-target_link_libraries(hri_spatial_language_grounding_server ${catkin_LIBRARIES})
+#add_executable(hri_spatial_language_grounding_server src/hri_spatial_language_grounding_server_node.cpp)
+#target_link_libraries(hri_spatial_language_grounding_server ${catkin_LIBRARIES})
 
-add_executable(client_test src/client_test.cpp)
-target_link_libraries(client_test ${catkin_LIBRARIES})
+#add_executable(client_test src/client_test.cpp)
+#target_link_libraries(client_test ${catkin_LIBRARIES})
 
 #############
 ## Install ##

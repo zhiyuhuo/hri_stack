@@ -5,338 +5,229 @@
 #include "stdlib.h"
 #include <vector>
 #include <cmath>
+#include <fstream>
 
 #include "Header.h"
 
+int Robot::RunNode()
+{
+// 	m_spatialCommand = "the mug is on the table on the right in the bedroom";
+// 	AskGroundingService(m_spatialCommand);
+// 	ShowRobotCmdInfo();
+
+// 	Test();
+  
+	while (ros::ok())
+	{
+		KeyboardControl();
+		ros::spinOnce();
+	}
+	
+	return 0;
+}
+
 int Robot::DecisionMaking()
 {
-	if (GetAbsoluteTime() - m_absoluteStartTime > 100000)
-	{
-		m_mission = "record_experiment_data";
-	}
+	m_targetRoom = "livingroom";
+	m_targetObject = "mug";
 	
 	if (m_mission.compare("init") == 0)
 	{
-		//m_mission = "go_to_target_room";
-		m_mission = "run_rdt_node";
-		m_state = "init";
+		m_posRobotLast = m_posRobot;
+		m_action = "init";
+		m_step = 0;
+		
+		vector<string> cmdVec = m_groundings[m_step];
+		cout << "-----------------------------------------:\n";
+		for (int i = 0; i < cmdVec.size(); i++)	{	cout << cmdVec[i] << " ";	}	cout << endl;
+		
+		m_mission = "follow_command";
 	}
 	
-	else if (m_mission.compare("go_to_target_room") == 0)
+	else if (m_mission.compare("follow_command") == 0)
 	{
-		if (GoToTargetRoom())
+		int r = 0;
+		vector<string> cmdVec = m_groundings[m_step];
+		r = RunCommand(cmdVec);
+		if (r == 1)
 		{
-			m_mission = "run_rdt_node";
-			m_state = "init";
+			//cout << " m_pathLength: " << m_pathLength << endl;
+			//cout << "Finished" << endl;
+			cout << "Final Robot Pose For This RDT: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
+			m_mission = "jump_to_next";
 		}
 	}
 	
-	else if (m_mission.compare("run_rdt_node") == 0)
+	else if (m_mission.compare("jump_to_next") == 0)
 	{
-		if (m_RDTNodeChain.size() > 0)
+		if (m_step == m_groundings.size()-1)
 		{
-			if (RDTNodeProc(m_RDTNodeChain[0]))
-			{
-				m_RDTNodeChain.erase(m_RDTNodeChain.begin());
-				m_state = "init";
-			}
-		}
-		else 
-		{
-			m_mission = "goto_nearest_table";
-			m_state = "init";
-		}
-	}
-	
-	else if (m_mission.compare("goto_nearest_table") == 0)
-	{
-		if (SearchAndGoToTargetFurniture())
-		{
+			cout << "mission finished pose: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
+			cout << "mission accomplished!" << endl;
 			m_mission = "end";
 		}
-	}
-	
-	else if (m_mission.compare("fetch_object") == 0)	
-	{
-		if (FetchTargetObject())
+		else
 		{
-			m_mission = "end";
+		      m_step++;	
+		      m_move = "init";
+		      m_action = "init";
+		      m_state = "init";
+		      m_currentDct.clear();
+		      m_currentScore = 0;
+		      m_entities.clear();
+		      
+		      vector<string> cmdVec = m_groundings[m_step];
+		      for (int i = 0; i < cmdVec.size(); i++)	{	cout << cmdVec[i] << " ";	}	cout << endl;
+		      m_mission = "follow_command";
 		}
-	}
-	
-	else if (m_mission.compare("record_experiment_data") == 0)
-	{
-		m_mission = "end";
 	}
 	
 	else if (m_mission.compare("end") == 0)
 	{
-		return 1;
+		m_mission = "end";
 	}
-	ShowRobotState();
-	return 0;
+	
+	imshow("grid map", m_imgOccupancy);
+	waitKey(1);
+	m_pathLength += (m_posRobot - m_posRobotLast).GetMagnitude();
+	m_posRobotLast = m_posRobot;
+	return 0;	
 }
 
 int Robot::Test()
 {
-	int res;
-	ShowRobotPose();	
-	m_imgshow = m_imgshow + m_imglattice;
-	imshow("imgshow", m_imgshow);
-	char c = waitKey(1);
+	map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+	GenerateStaticDescription(dcts);
+}
+
+int Robot::TestPathGeneration()
+{
 	if (m_mission.compare("init") == 0)
 	{
-		m_originalRobotPose.clear();
-		m_originalRobotPose.push_back(m_posRobot.GetX());
-		m_originalRobotPose.push_back(m_posRobot.GetY());
-		m_originalRobotPose.push_back(m_theta);
+// 		Perception();
+// 		vector<float> originalRobotPose;
+// 		originalRobotPose.push_back(m_posRobot.GetX());
+// 		originalRobotPose.push_back(m_posRobot.GetY());
+// 		originalRobotPose.push_back(m_theta);
+// 		m_originalRobotPose = originalRobotPose;
+// 		m_entities = GetVisiableEntities();
+		SetOccupiedMap(400, 400, 0.25, -50, -50);
+		VecPosition posTarget(2,-1);
+		m_pathPoints.clear();
+		m_pathPoints = CallForPathPlan(m_posRobot, posTarget);
+		m_path = 0;
 		m_mission = "run";
-		
 	}
+	
 	else if (m_mission.compare("run") == 0)
 	{
-		Perception();
-		GetUniversalFurnitureFeature();
+		int r = ToPos(m_pathPoints[m_path]); 
+		SetRobotVelocity();
+		if (r == 1) 
+		{
+			cout << ++m_path << endl;
+		}
+		if (m_path > m_pathPoints.size())
+		{
+			m_mission = "stop";
+		}
 	}
+	
+	else if (m_mission.compare("stop") == 0)
+	{
+	  
+	}
+	
+	
 	return 0;
 }
 
-int Robot::HumanMove(float x, float y, float theta)
+int Robot::TestRead()
 {
-	m_moveTarget.SetVecPosition(x, y);
-	m_turnTarget = theta;
-	int r = ToPosAngle(m_moveTarget, m_turnTarget);
-	return r;
+	m_targetRoom = "livingroom";
+  	vector<string> cmdVec;
+	cmdVec.push_back("non");
+	cmdVec.push_back("non");
+	cmdVec.push_back("move");
+	cmdVec.push_back("front");
+	cmdVec.push_back("non");
+	
+	vector<Dct> dctSet = ReadDetector(cmdVec);
+	
+	return 0;
 }
 
-int Robot::KeyBoardAction()
+int Robot::KeyboardControlForLanguageGeneration()
 {
-	int res;
-	ShowRobotPose();	
-	m_imgshow = m_imgshow + m_imglattice;
-	imshow("imgshow", m_imgshow);
-	char c = waitKey(1);
-	if (m_mission.compare("init") == 0)
+	int res = 0;
+	
+	while (ros::ok())
 	{
-		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
-		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
-		m_poseRec.push_back(poseRec);
-		m_frRec.push_back(m_fr);
-		vector<string> g = m_groundings[m_step];
-		m_cmdRec.push_back(g);
-			
-		for (int i = 0; i < g.size(); i++)
-		{
-			cout << g[i] << " ";
-		}
-		cout << "\n";
-		cout << "m_step: " << m_step << "\n";
-		m_step++;
-		m_mission = "receive_keyboard_action";
-	}
-
-
-	else if (m_mission.compare("receive_keyboard_action") == 0)
-	{
-		switch (c)
-		{
-			case 'w':	{	m_linearSpeed = 0.3; m_angularSpeed = 0;	m_mission = "record_static"; break;}
-			case 'a':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.5;	m_mission = "record_static"; break;}
-			case 'd':	{	m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.5);	m_mission = "record_static"; break;}
-			case 's':	{	m_linearSpeed = 0; m_angularSpeed = 0;		m_mission = "record_static"; break;}
-			case 'x':	{	m_linearSpeed = -0.2; m_angularSpeed = 0;	m_mission = "record_static"; break;}
-			case 'c':	{	Perception(); ExploreMap();	m_mission = "record_static"; break;}
-			case 'r':	{	m_linearSpeed = 0; m_angularSpeed = 0;	m_mission = "record_experiment_data";	break;}
-			case 'f':	{	m_mission = "save_data_to_file";	break;}
-		}
-		string key(1, c);
-		m_key = key;
-	}
-
-	else if (m_mission.compare("record_static") == 0)
-	{
-	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
-		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
-		m_poseRec.push_back(poseRec);
-		m_frRec.push_back(m_fr);
-		vector<string> tStr(1, m_key);
-		m_cmdRec.push_back(tStr);
+		imshow("grid map", m_imgOccupancy);
+		char c = waitKey(1);
 		
-		m_mission = "receive_keyboard_action";
-	}
-	
-	else if (m_mission.compare("record_experiment_data") == 0)
-	{
-	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
-		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
-		m_poseRec.push_back(poseRec);
-		m_frRec.push_back(m_fr);
-		vector<string> tStr(1, m_key);
-		m_cmdRec.push_back(tStr);
-		
-		if (m_step < m_groundings.size())
+		if (m_mission.compare("init") == 0)
 		{
-			vector<string> g = m_groundings[m_step];
-			m_poseRec.push_back(poseRec);
-			m_frRec.push_back(m_fr);
-			m_cmdRec.push_back(g);
-				
-			for (int i = 0; i < g.size(); i++)
-			{
-				cout << g[i] << " ";
-			}cout << "\n";	
-			cout << "m_step: " << m_step << "\n";
+			m_mission = "receive_keyboard_action";
 		}
-		else
-		{
-			cout << "m_step: " << m_step << "\n";
-			cout << "PLZ finish\n";
-		}
-		
-		m_step ++;
-		m_mission = "receive_keyboard_action";
-	}
-	
-	else if (m_mission.compare("save_data_to_file") == 0)
-	{	
-	  	float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
-		vector<float> poseRec( poseRecArr, poseRecArr + sizeof(poseRecArr)/sizeof(float) );
-		m_poseRec.push_back(poseRec);
-		m_frRec.push_back(m_fr);
-		vector<string> tStr(1, m_key);
-		m_cmdRec.push_back(tStr);	  
-	  
-		string cmdfilename = "/home/hri/HRI_Doc/Imitation/" + m_cmdID + "/cmd - " + m_cmdID + ".out";
-		ofstream cmdfile(cmdfilename.c_str());
-		for (int n = 0; n < m_cmdRec.size(); n++)
-		{
-			vector<string> cmdSet = m_cmdRec[n];
-			for(int i = 0; i < cmdSet.size(); i++)
-			{
-				cmdfile << cmdSet[i] << " ";
-			}
-			cmdfile << endl;
-		}
-		cmdfile.close();
 
-		string posefilename = "/home/hri/HRI_Doc/Imitation/"+ m_cmdID + "/pose - " + m_cmdID + ".out";
-		ofstream posefile(posefilename.c_str());
-		for (int n = 0; n < m_poseRec.size(); n++)
-		{
-			vector<float> poseSet = m_poseRec[n];
-			for(int i = 0; i < poseSet.size(); i++)
-			{
-				posefile << poseSet[i] << " ";
-			}
-			posefile << endl;
-		}
-		posefile.close();
-	
-		string frfilename = "/home/hri/HRI_Doc/Imitation/"+ m_cmdID + "/fr - " + m_cmdID + ".out";
-		ofstream frfile(frfilename.c_str());
-		for (int n = 0; n < m_frRec.size(); n++)
-		{
-			vector<int> frSet = m_frRec[n];
-			for(int i = 0; i < frSet.size(); i++)
-			{
-				frfile << frSet[i] << " ";
-			}
-			frfile << endl;
-		}
-		frfile.close();
 
-		m_mission = "end";
+		else if (m_mission.compare("receive_keyboard_action") == 0)
+		{
+			switch (c)
+			{
+				case 'w':	
+				{	
+					m_linearSpeed = 0.1; 
+					m_angularSpeed = 0;	
+					break;
+				}
+				case 'a':	
+				{	
+					m_angularSpeed = (m_linearSpeed >= 0? 1:-1) * 0.2;	 
+					break;
+				}
+				case 'd':	
+				{			  
+					m_angularSpeed = (m_linearSpeed >= 0? 1:-1)*(-0.2);	 
+					break;
+				  
+				}
+				case 's':	
+				{	
+					m_linearSpeed = 0; 
+					m_angularSpeed = 0;		
+					break;
+				}
+				case 'x':
+				{	
+					m_linearSpeed = -0.1; 
+					m_angularSpeed = 0;	 
+					break;			  
+				}
+				case 'c':
+				{	
+					Perception();
+					m_entities = GetVisiableEntities();
+					cout << "The entities in the map: " << endl;
+					for (int i = 0; i < m_entities.size(); i++)
+					{
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << endl;
+ 					}
+					break;			  
+				}
+				case 'g':
+				{
+					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+					GenerateStaticDescription(dcts);
+				}
+			}
+		}	
+		SetRobotVelocity();
+		
+		ros::spinOnce();
 	}
-	
-	else if (m_mission.compare("end") == 0)
-	{
-		m_mission = "end";
-		exit(0);
-	}
-	
 	return res;
-}
-
-int Robot::HumanCommand()
-{
-	if (m_mission.compare("init") == 0)
-	{
-		m_mission = "wait";
-	}
-	
-	else if (m_mission.compare("run_cmd") == 0)
-	{
-		if (ExecuteCommand(m_humanCmd))
-		{
-			m_mission = "wait";
-			m_humanCmd = "";
-		}
-	}
-	else if (m_mission.compare("wait") == 0)
-	{
-		if (m_humanCmd.size() > 0)
-		{
-			m_mission = "run_cmd";
-		}
-	}
-	
-	else if (m_action.compare("stop") == 0)
-	{
-		m_mission = "wait";
-		m_action = "init";
-		m_humanCmd = "";
-		if (m_step >= m_groundings.size())
-		{
-			cout << "Plz finish\n";
-			m_state = "init";
-// 			string cmdfilename = "/home/hri/HRI_Doc/Imitation/" + m_cmdID + "/cmd - " + m_cmdID + ".out";
-// 			ofstream cmdfile(cmdfilename.c_str());
-// 			for (int n = 0; n < m_cmdRec.size(); n++)
-// 			{
-// 				vector<string> cmdSet = m_cmdRec[n];
-// 				for(int i = 0; i < cmdSet.size(); i++)
-// 				{
-// 					cmdfile << cmdSet[i] << " ";
-// 				}
-// 				cmdfile << endl;
-// 			}
-// 			cmdfile.close();
-// 			
-// 			string posefilename = "/home/hri/HRI_Doc/Imitation/"+ m_cmdID + "/pose - " + m_cmdID + ".out";
-// 			ofstream posefile(posefilename.c_str());
-// 			for (int n = 0; n < m_poseRec.size(); n++)
-// 			{
-// 				vector<float> poseSet = m_poseRec[n];
-// 				for(int i = 0; i < poseSet.size(); i++)
-// 				{
-// 					posefile << poseSet[i] << " ";
-// 				}
-// 				posefile << endl;
-// 			}
-// 			posefile.close();
-// 			exit(0);
-		}
-		else
-		{
-			vector<string> g = m_groundings[m_step];
-			m_cmdRec.push_back(g);
-			
-			for (int i = 0; i < g.size(); i++)
-			{
-				cout << g[i] << " ";
-			}
-			cout << "\n";
-			cout << "m_step: " << m_step << "\n";
-			m_state = "init";
-			m_step ++;
-		}
-	}
-	
-	//cout << "m_mission: " << m_mission << endl;
-	ShowRobotPose();
-	m_imgshow = m_imgshow + m_imglattice;
-	imshow("imgshow", m_imgshow);
-	waitKey(1);
 }
 
 

@@ -19,7 +19,7 @@ int Robot::RunNode()
   
 	while (ros::ok())
 	{
-		KeyboardControl();
+		DecisionMaking();
 		ros::spinOnce();
 	}
 	
