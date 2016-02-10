@@ -69,7 +69,6 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
   	vector<string> res;
 	// get the target object grouding
 	res.push_back(m_targetObject + "_non_non_non_non");
-	
   
 	// get the room and RDT grounding
 	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
@@ -86,6 +85,44 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
 			  
 		}
 	}
+	return res;
+}
+
+vector<string> Robot::ConvertGroundingsFormatToLGServer(vector<string> groundings)
+{
+	vector<string> res;
+	char findIt = '_';
+	
+	for (int n = 0; n < groundings.size(); n++)
+	{
+		string sample = groundings[n];
+		vector<int> dc;
+		for(int i = 0; i < sample.size(); i++)
+		    if(sample[i] == findIt)
+			dc.push_back(i);
+		 
+		string roomstr = sample.substr(0,dc[0]);
+		string objstr = sample.substr(dc[0]+1,dc[1]-dc[0]);
+		
+		if (roomstr.compare("non") != 0)
+		{
+			cout << sample.substr(0,dc[0]) << endl;
+			res.push_back( sample.substr(0,dc[0]) );
+			continue;
+		}
+		else if (objstr.compare("non") != 0)
+		{
+			cout << sample.substr(dc[0]+1, dc[1]-dc[0]-1 ) << endl;
+			res.push_back( sample.substr(dc[0]+1, dc[1]-dc[0]-1 ) );
+			continue;		    
+		}
+		else
+		{
+			cout << sample.substr(dc[1]+1) << endl;
+			res.push_back( sample.substr(dc[1]+1) );
+		}
+	}
+	
 	return res;
 }
 

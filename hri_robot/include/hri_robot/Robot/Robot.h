@@ -202,6 +202,7 @@ public:	//Path Generation (Generate RDT from Path)
 	map<string, vector<Dct> > LoadGroundingTypesList();
 	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations);
+	vector<string> ConvertGroundingsFormatToLGServer(vector<string> groundings);
   
 };
 
@@ -219,6 +220,9 @@ Robot::Robot()
 	m_originalRobotPose.push_back(0);
 	m_originalRobotPose.push_back(0);
 	m_originalRobotPose.push_back(PI / 2);
+	
+	m_linearSpeed = 0;
+	m_angularSpeed = 0;
 	
 	m_posRobot.SetX(0);
 	m_posRobot.SetY(0);

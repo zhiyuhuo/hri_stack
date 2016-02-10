@@ -120,7 +120,7 @@ def inorder_traversal_graph(nodelist):
 	    #nd = n
 	    #break
 	  
-    return
+    #return
 
     print sentence
     if nd.sibling_left != None:

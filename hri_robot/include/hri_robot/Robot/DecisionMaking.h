@@ -168,13 +168,11 @@ int Robot::KeyboardControlForLanguageGeneration()
 	{
 		imshow("grid map", m_imgOccupancy);
 		char c = waitKey(1);
-		
+
 		if (m_mission.compare("init") == 0)
 		{
 			m_mission = "receive_keyboard_action";
 		}
-
-
 		else if (m_mission.compare("receive_keyboard_action") == 0)
 		{
 			switch (c)
@@ -223,6 +221,9 @@ int Robot::KeyboardControlForLanguageGeneration()
 				{
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
 					vector<string> dscpSet = GenerateStaticDescription(dcts);
+					
+					dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+					
 					hri_language_generation::GenerateSpatialLanguage srv;
 					for (int i = 0; i < dscpSet.size(); i++)
 					{
@@ -236,16 +237,10 @@ int Robot::KeyboardControlForLanguageGeneration()
 					}
 					else
 					{
-						ROS_ERROR("Failed to call service SpatialLanguageGrounding");
-						return 1;
+						ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
 					}
 					break;
 					
-				}
-				default: 
-				{
-					m_linearSpeed = 0; 
-					m_angularSpeed = 0;
 				}
 			}
 		}	

@@ -135,9 +135,11 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 	{
 		for (int i = 0; i < tempEntList.size(); i++)
 		{
-			m_SEList.push_back(tempEntList[i]);
+			if (tempEntList[i].name.compare("unknown") != 0)
+			{
+				m_SEList.push_back(tempEntList[i]);
+			}
 		}
-	
 	}
 	else
 	{
@@ -154,7 +156,10 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 			}
 			if (m < 0.5 )
 			{
-				m_SEList.push_back(tempEntList[i]);
+				if (tempEntList[i].name.compare("unknown") != 0)
+				{
+					m_SEList.push_back(tempEntList[i]);
+				}
 			}
 		}
 	}
