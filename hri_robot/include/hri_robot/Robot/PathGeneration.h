@@ -66,7 +66,12 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 
 vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 {
-	vector<string> res;
+  	vector<string> res;
+	// get the target object grouding
+	res.push_back(m_targetObject + "_non_non_non_non");
+	
+  
+	// get the room and RDT grounding
 	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
 	{
 		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)

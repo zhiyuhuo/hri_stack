@@ -113,7 +113,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_robot
- CATKIN_DEPENDS cv_bridge geometry_msgs hri_perception hri_spatial_language_grounding image_transport nav_msgs p2os_msgs pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs
+ CATKIN_DEPENDS cv_bridge geometry_msgs hri_perception hri_spatial_language_grounding hri_language_generation image_transport nav_msgs p2os_msgs pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -139,11 +139,11 @@ include_directories(include
 # add_dependencies(hri_robot ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-#add_executable(hri_robot_node src/hri_robot_node.cpp)
-#target_link_libraries(hri_robot_node ${catkin_LIBRARIES})
+add_executable(hri_robot_node src/hri_robot_node.cpp)
+target_link_libraries(hri_robot_node ${catkin_LIBRARIES})
 
-#add_executable(control src/control.cpp)
-#target_link_libraries(control ${catkin_LIBRARIES})
+add_executable(control src/control.cpp)
+target_link_libraries(control ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

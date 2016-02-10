@@ -44,6 +44,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>hri_perception</build_depend>
   <build_depend>hri_spatial_language_grounding</build_depend>
+  <build_depend>hri_language_generation</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>p2os_msgs</build_depend>
@@ -58,6 +59,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>hri_perception</run_depend>
   <run_depend>hri_spatial_language_grounding</run_depend>
+  <run_depend>hri_language_generation</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>p2os_msgs</run_depend>

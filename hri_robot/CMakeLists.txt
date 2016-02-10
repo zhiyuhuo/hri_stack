@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   hri_perception
   hri_spatial_language_grounding
+  hri_language_generation
   image_transport
   nav_msgs
   p2os_msgs
@@ -113,7 +114,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_robot
- CATKIN_DEPENDS cv_bridge geometry_msgs hri_perception hri_spatial_language_grounding image_transport nav_msgs p2os_msgs pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs
+ CATKIN_DEPENDS cv_bridge geometry_msgs hri_perception hri_spatial_language_grounding hri_language_generation image_transport nav_msgs p2os_msgs pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 

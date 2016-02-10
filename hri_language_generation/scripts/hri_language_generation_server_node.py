@@ -6,6 +6,10 @@ import re
 import numpy as np
 from hri_language_generation.srv import *
 
+global globa_rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
+global global_rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
+global global_relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
+
 class Node:
   
     def __init__(self, rdt):
@@ -157,22 +161,39 @@ def inorder_traversal_graph(nodelist):
                 if nd.parent != None:
                     nd = nd.parent
 
-def language_generation(grounding):
+def language_generation(groundings):
     rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
     rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
   
-    #grounding = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
+    #groundings = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
     relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
     
     rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
     rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
-    relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
+    relations = compute_grounding_relations(groundings, rdtrelationprobdic, relationtypes)
     
     print relations
     
-    graph = build_grounding_graph(grounding, relations)
+    graph = build_grounding_graph(groundings, relations)
     inorder_traversal_graph(graph)
     print 'spatial description generated!'
+    
+def handle_language_generation(groundings):
+    rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
+    rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
+    relations = compute_grounding_relations(groundings, rdtrelationprobdic, relationtypes)
+    
+    print relations
+    
+    graph = build_grounding_graph(groundings, relations)
+    inorder_traversal_graph(graph)
+    print 'spatial description generated!'    
+    
+def language_generation_server():
+    rospy.init_node('hri_language_generation_server')
+    s = rospy.Service('hri_language_generation', GenerateSpatialLanguage, handle_language_generation)
+    print "Ready to generate spatial language."
+    rospy.spin()
 
 if __name__ == '__main__':
     print 'more code'

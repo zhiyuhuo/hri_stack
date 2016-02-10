@@ -15,6 +15,7 @@
 #include "p2os_msgs/MotorState.h"
 #include "hri_perception/Env.h"
 #include "hri_spatial_language_grounding/SpatialLanguageGrounding.h"
+#include "hri_language_generation/GenerateSpatialLanguage.h"
 #include "nav_msgs/SetMap.h"
 #include "nav_msgs/GetPlan.h"
 #include <vector>

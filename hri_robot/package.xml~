@@ -44,6 +44,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>hri_perception</build_depend>
   <build_depend>hri_spatial_language_grounding</build_depend>
+  <build_depend>hri_language_generation</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>p2os_msgs</build_depend>
@@ -73,6 +74,5 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-  	<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib"/>
   </export>
 </package>
