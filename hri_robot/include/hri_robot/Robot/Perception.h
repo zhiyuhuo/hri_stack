@@ -10,6 +10,125 @@
 
 #include "Header.h"
 
+void Robot::CallforPercepstionService()
+{
+	hri_perception::Perception srv;
+	srv.request.fetch = true;
+	
+	if (m_perceptionClient.call(srv))
+	{	
+		hri_perception::Env msg = srv.response.env;
+	  
+		vector<Ent> tempEntList;
+		m_tempSEList.clear();
+		
+		if (msg.name0.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name0;
+			ent.dir = msg.dir0;
+			ent.vec.insert(ent.vec.end(), &msg.vec0[0], &msg.vec0[msg.vec0.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+		if (msg.name1.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name1;
+			ent.dir = msg.dir1;
+			ent.vec.insert(ent.vec.end(), &msg.vec1[0], &msg.vec1[msg.vec1.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+		if (msg.name2.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name2;
+			ent.dir = msg.dir2;
+			ent.vec.insert(ent.vec.end(), &msg.vec2[0], &msg.vec2[msg.vec2.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+		if (msg.name3.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name3;
+			ent.dir = msg.dir3;
+			ent.vec.insert(ent.vec.end(), &msg.vec3[0], &msg.vec3[msg.vec3.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+		if (msg.name4.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name4;
+			ent.dir = msg.dir4;
+			ent.vec.insert(ent.vec.end(), &msg.vec4[0], &msg.vec4[msg.vec4.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+		if (msg.name5.size() > 1)
+		{
+			Ent ent;
+			ent.name = msg.name5;
+			ent.dir = msg.dir5;
+			ent.vec.insert(ent.vec.end(), &msg.vec5[0], &msg.vec5[msg.vec5.size()]);
+			for (int i = 0; i < ent.vec.size()/2; i++)
+			{
+				ent.x += ent.vec[2*i];
+				ent.y += ent.vec[2*i+1];
+			}
+			ent.x /= ent.vec.size()/2;
+			ent.y /= ent.vec.size()/2;
+			tempEntList.push_back(ent);
+		}
+		
+	// 	cout << "ent num: " << tempEntList.size() << endl;
+		m_tempSEList = tempEntList; 
+	}
+	else
+	{
+		ROS_ERROR("Failed to call service Perception");
+		return;
+	}
+  
+}
+
 void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 {
 	vector<Ent> tempEntList;

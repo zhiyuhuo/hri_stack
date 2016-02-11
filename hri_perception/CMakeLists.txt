@@ -24,6 +24,12 @@ add_message_files(
   Env.msg
 )
 
+add_service_files(
+  FILES
+  Perception.srv
+)
+
+
 generate_messages(
   DEPENDENCIES
   std_msgs
@@ -45,6 +51,12 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 
+add_executable (hri_perception_node src/hri_perception_node.cpp)
+target_link_libraries (hri_perception_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+
+add_executable (hri_perception_server_node src/hri_perception_server.cpp)
+target_link_libraries (hri_perception_server_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+
 
 add_executable(hri_perception_test src/hri_perception_test.cpp)
 target_link_libraries(hri_perception_test ${OpenCV_LIBS} ${catkin_LIBRARIES})
@@ -52,10 +64,9 @@ target_link_libraries(hri_perception_test ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_executable (cloud_viewer src/cloud_viewer.cpp)
 target_link_libraries (cloud_viewer ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
 
-add_executable (hri_perception_node src/hri_perception_node.cpp)
-target_link_libraries (hri_perception_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
-
 add_executable (get_pcd_sample_normal src/get_pcd_sample_normal.cpp)
-target_link_libraries (get_pcd_sample_normal ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+target_link_libraries (get_pcd_sample_normal ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+
+	
 
 
