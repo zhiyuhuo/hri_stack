@@ -129,7 +129,7 @@ public:	//robot sensor data processing
 	vector<Ent> m_SEList;	
 	vector<Ent> m_tempSEList;
 	vector<float> LocalToGlobal(float lx, float ly, float lth); //x, y, theta
-	void CallforPercepstionService();
+	void CallForPercepstionService();
 	void EnvCallback(const hri_perception::Env::ConstPtr& msg);
 	int Perception();
 	int UpdateSEMap(vector<Ent> tempEntList);

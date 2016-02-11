@@ -121,17 +121,6 @@ int main(int argc, char **argv)
 	ROS_INFO("Ready for perception service.");
 
 	ros::spin();
-	
-// 	while (ros::ok())
-// 	{	
-// 		//vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
-// 		//_perception.ImportKinectData(imgRGB, pts);
-// 		//_perception.Process();
-// 		//envMsg = BuildEnvMsg();
-// 		
-// 		ros::spinOnce();
-// 		loopRate.sleep();
-// 	}
 	  
 	return 0;
 }

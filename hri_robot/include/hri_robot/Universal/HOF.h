@@ -289,9 +289,9 @@ vector<float> GenerateEntityVector(float px, float py, float dimx, float dimy)
 {
 	vector<float> res;
 
-	for (float i = -dimx/2; i < dimx/2; i += 0.1)
+	for (float i = -dimx/2; i <= dimx/2; i += 0.1)
 	{
-		for (float j = -dimy/2; j < dimy/2; j += 0.1)
+		for (float j = -dimy/2; j <= dimy/2; j += 0.1)
 		{
 			res.push_back(px+i);
 			res.push_back(py+j);

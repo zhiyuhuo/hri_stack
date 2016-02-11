@@ -14,6 +14,8 @@ Ent Robot::GetRobotEntity(float x, float y, float theta)
 	Ent res;
 	res.vec = GenerateRobotVector(x, y);
 	res.dir = theta;
+	res.x = x;
+	res.y = y;
 	res.name = "robot";;
 	
 	return res;

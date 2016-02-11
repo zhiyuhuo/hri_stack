@@ -19,6 +19,7 @@ int Robot::RunCommand(vector<string> cmd)
 	
 	if (m_state.compare("init") == 0)
 	{
+		CallForPercepstionService();
 		Perception();
 		vector<float> originalRobotPose;
 		originalRobotPose.push_back(m_posRobot.GetX());

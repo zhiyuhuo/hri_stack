@@ -10,7 +10,7 @@
 
 #include "Header.h"
 
-void Robot::CallforPercepstionService()
+void Robot::CallForPercepstionService()
 {
 	hri_perception::Perception srv;
 	srv.request.fetch = true;
@@ -120,6 +120,13 @@ void Robot::CallforPercepstionService()
 		
 	// 	cout << "ent num: " << tempEntList.size() << endl;
 		m_tempSEList = tempEntList; 
+		
+		cout << "m_tempSEList" << endl;
+		for (int i = 0; i < m_tempSEList.size(); i++)
+		{
+			  cout << m_tempSEList[i].name << " " << m_tempSEList[i].x << " " << m_tempSEList[i].y << " " << m_tempSEList[i].dir << endl;
+		}
+
 	}
 	else
 	{

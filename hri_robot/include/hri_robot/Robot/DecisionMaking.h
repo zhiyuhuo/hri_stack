@@ -208,6 +208,8 @@ int Robot::KeyboardControlForLanguageGeneration()
 				}
 				case 'c':
 				{	
+					cout << "real robot pose: " << m_posRobot.GetX() << "    " << m_posRobot.GetY() << "    " << m_theta << endl; 
+					CallForPercepstionService();
 					Perception();
 					m_entities = GetVisiableEntities();
 					cout << "The entities in the map: " << endl;
