@@ -96,30 +96,42 @@ vector<string> Robot::ConvertGroundingsFormatToLGServer(vector<string> grounding
 	for (int n = 0; n < groundings.size(); n++)
 	{
 		string sample = groundings[n];
+		cout << sample << endl;
 		vector<int> dc;
 		for(int i = 0; i < sample.size(); i++)
 		    if(sample[i] == findIt)
 			dc.push_back(i);
 		 
 		string roomstr = sample.substr(0,dc[0]);
-		string objstr = sample.substr(dc[0]+1,dc[1]-dc[0]);
+		string objstr = sample.substr(dc[0]+1,dc[1]-dc[0]-1);
+		string refdirstr = sample.substr(dc[1]+1, dc[3]-dc[1]-1);
+		string tarstr = sample.substr(dc[3]+1);
 		
 		if (roomstr.compare("non") != 0)
 		{
-			cout << sample.substr(0,dc[0]) << endl;
-			res.push_back( sample.substr(0,dc[0]) );
+			cout << roomstr << endl;
+			res.push_back( roomstr );
 			continue;
 		}
 		else if (objstr.compare("non") != 0)
 		{
-			cout << sample.substr(dc[0]+1, dc[1]-dc[0]-1 ) << endl;
-			res.push_back( sample.substr(dc[0]+1, dc[1]-dc[0]-1 ) );
+			cout << objstr << endl;
+			res.push_back( objstr );
 			continue;		    
 		}
 		else
 		{
-			cout << sample.substr(dc[1]+1) << endl;
-			res.push_back( sample.substr(dc[1]+1) );
+			cout << refdirstr << endl;
+			cout << tarstr << endl;
+			if (tarstr.compare("non") != 0)
+			{
+				res.push_back(refdirstr + "_non");
+				res.push_back("non_non_" + tarstr);
+			}
+			else
+			{
+				res.push_back(refdirstr + tarstr);
+			}
 		}
 	}
 	

@@ -304,7 +304,8 @@ float Robot::GetResponseOfADetector(SpR sp, Dct dct)
 		
 		//cout << "--" << outdirresp + indirresp << " " << distresp << "--\n";
 		
-		res = ((outdirresp + indirresp) + distresp) / 2;
+// 		res = ((outdirresp + indirresp) + distresp) / 2;
+		res = (outdirresp + indirresp) * distresp;
 		//res = (outdirresp + indirresp) * distresp;
 	}
 	

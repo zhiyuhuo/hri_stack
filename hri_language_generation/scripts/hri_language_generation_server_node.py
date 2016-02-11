@@ -94,7 +94,7 @@ def edit_grounding_text(sentence, rdtcontentdic):
 def build_grounding_graph(groundings, relations):
     print groundings
   
-    nodelist = [None] * 5
+    nodelist = [None] * len(groundings)
     for i in range(len(groundings)):
         nodelist[i] = Node(groundings[i]);
 
@@ -142,7 +142,7 @@ def inorder_traversal_graph(nodelist):
 		print sentence
 	else:
 	    if nd.child_left != None:
-		nd = nd.child_right
+		nd = nd.child_left
 		if nd.ps == False:
 		    nd.ps = True
 		    sentence.append(nd.rdt)
@@ -166,13 +166,22 @@ def inorder_traversal_graph(nodelist):
 			    print sentence
 		    if nd.parent != None:
 			nd = nd.parent
+			nd.ps = True
+			sentence.append(nd.rdt)
+			print sentence
+		        
+	if n.ps == False:
+	    n.ps = True
+	    sentence.append(n.rdt)
+	    print sentence
+			
     return sentence
 
 def language_generation_example():
     rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
     rdtcontentfilename = '/home/hri/hri_DATA/spatial_language_generation/rdtcontent.txt'
   
-    groundings = ['bedroom', 'mug', 'room_right_non', 'chair_beside_non', 'non_non_table']
+    groundings = ['bedroom', 'mug']
     relationtypes = ['parent_left', 'parent_right', 'child_left', 'child_right', 'sibling_left', 'sibling_right']
     
     rdtrelationprobdic = load_rdt_relation_prob_dic(rdtkeyrelationprobfilname)
@@ -184,7 +193,7 @@ def language_generation_example():
     graph = build_grounding_graph(groundings, relations)
     sentence = inorder_traversal_graph(graph)
     
-    #edit_grounding_text(sentence, rdtcontentdic) 
+    edit_grounding_text(sentence, rdtcontentdic) 
     
     print 'spatial description generated!'
     
@@ -199,7 +208,9 @@ def handle_language_generation(req):
     graph = build_grounding_graph(groundings, relations)
     sentence = inorder_traversal_graph(graph)
 
+    language = edit_grounding_text(sentence, rdtcontentdic) 
     print 'spatial description generated!'    
+    return language
     
 def language_generation_server():
     rospy.init_node('hri_language_generation_server')
@@ -208,6 +219,6 @@ def language_generation_server():
     rospy.spin()
 
 if __name__ == '__main__':
-    language_generation_example()
-    #language_generation_server()
+    #language_generation_example()
+    language_generation_server()
     

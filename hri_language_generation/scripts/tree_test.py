@@ -101,60 +101,60 @@ def build_grounding_graph(grounding, relations):
   
 def inorder_traversal_graph(nodelist):
     sentence = []
-    for n in nodelist:
-        nd = n
-        print nd
-        print nd.rdt
-        if nd.parent != None:
-	    print nd.parent.rdt
-	if nd.sibling_left != None:
-            print nd.sibling_left.rdt
-        if nd.sibling_right != None:
-            print nd.sibling_right.rdt
-        if nd.child_left != None:
-            print nd.child_left.rdt
-        if nd.child_right != None:
-            print nd.child_right.rdt
-        print nd.ps
-        #if n.parent == None and n.sibling_left == None:
-	    #nd = n
-	    #break
-	  
-    #return
+    #for n in nodelist:
+        #nd = n
+        #print nd
+        #print nd.rdt
+        #if nd.parent != None:
+	    #print nd.parent.rdt
+	#if nd.sibling_left != None:
+            #print nd.sibling_left.rdt
+        #if nd.sibling_right != None:
+            #print nd.sibling_right.rdt
+        #if nd.child_left != None:
+            #print nd.child_left.rdt
+        #if nd.child_right != None:
+            #print nd.child_right.rdt
+        #print nd.ps
+        ######if n.parent == None and n.sibling_left == None:
+	    ######nd = n
+	    ######break
 
     print sentence
-    if nd.sibling_left != None:
-        nd = nd.sibling_left
-        if nd.ps == False:
-            nd.ps = True
-            sentence.append(nd.rdt)
-            print sentence
-    else:
-        if nd.child_left != None:
-	    nd = nd.child_right
-            if nd.ps == False:
-                nd.ps = True
-                sentence.append(nd.rdt)
-                print sentence
+    for nd in nodelist:
+        print nd.rdt
+	if nd.sibling_left != None:
+	    nd = nd.sibling_left
+	    if nd.ps == False:
+		nd.ps = True
+		sentence.append(nd.rdt)
+		print sentence
 	else:
-            if nd.ps == False:
-                nd.ps = True
-                sentence.append(nd.rdt)
-                print sentence
-	    if nd.child_right != None:
-	        nd = ne.sibling_right
-	        if nd.ps == False:
-                    nd.ps = True
-                    sentence.append(nd.rdt)
-                    print sentence
-            else: 
-                if nd.sibling_right != None:
+	    if nd.child_left != None:
+		nd = nd.child_left
+		if nd.ps == False:
+		    nd.ps = True
+		    sentence.append(nd.rdt)
+		    print sentence
+	    else:
+		if nd.ps == False:
+		    nd.ps = True
+		    sentence.append(nd.rdt)
+		    print sentence
+		if nd.child_right != None:
+		    nd = ne.sibling_right
 		    if nd.ps == False:
-                        nd.ps = True
-                        sentence.append(nd.rdt)
-                        print sentence
-                if nd.parent != None:
-                    nd = nd.parent
+			nd.ps = True
+			sentence.append(nd.rdt)
+			print sentence
+		else: 
+		    if nd.sibling_right != None:
+			if nd.ps == False:
+			    nd.ps = True
+			    sentence.append(nd.rdt)
+			    print sentence
+		    if nd.parent != None:
+			nd = nd.parent
     
 if __name__ == '__main__':
     rdtkeyrelationprobfilname = '/home/hri/hri_DATA/spatial_language_generation/rdtkeyrelationprob.txt'
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     rdtcontentdic = load_rdt_content_dic(rdtcontentfilename)
     relations = compute_grounding_relations(grounding, rdtrelationprobdic, relationtypes)
     
-    print relations
+    #print relations
     
     graph = build_grounding_graph(grounding, relations)
     inorder_traversal_graph(graph)
