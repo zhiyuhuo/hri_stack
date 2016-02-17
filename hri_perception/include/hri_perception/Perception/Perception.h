@@ -22,6 +22,7 @@
 
 #include "Header.h"
 
+#define DRAW_TAG	
 
 using namespace std;
 
@@ -40,10 +41,11 @@ public:
 	~Perception();
   
 public:
+	cv::Mat m_imgTag;
 	cv::Mat m_imgScene;
 	vector<float> m_pt;
 	map<string, FurnitureDetector> m_detectorSet;
-	vector<Ent> m_GOList;
+	vector<Ent> m_SEList;
 	
 public: 
 	FurnitureDetector ReadOneFurnitureDetector(string rootDir, string name);
@@ -51,6 +53,7 @@ public:
 	int ImportKinectData(cv::Mat imgRGB, vector<float> pts);
 	int Process();
 	Ent GenerateEnt(SE g);
+	int DrawImageTag(vector<int> index, string name);
 	
 private:
 	vector<vector<float> > LoadVectorVectorFloat(string fileName);
@@ -61,6 +64,7 @@ private:
 Perception::Perception()
 {
 	m_imgScene = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
+	m_imgTag = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
 }
 
 Perception::~Perception()
@@ -113,7 +117,7 @@ int Perception::ImportKinectData(cv::Mat imgRGB, vector<float> pts)
 
 int Perception::Process()
 {
-	m_GOList.clear();
+	m_SEList.clear();
   
 	int res = 0;
 	cv::Mat localMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
@@ -150,6 +154,9 @@ int Perception::Process()
 	//Generate Furniture Samples and Add them to Robot Vars.
 	int ct = 0;
 	cout << "Processing Data...: " << endl;
+        #ifdef DRAW_TAG
+	m_imgTag.setTo(cv::Scalar(0, 0, 0));
+	#endif
 	for (int n = 1; n <= Num; n++)
 	{	
 		float area = blobToProcess[n] * (LOCALMAP_RESOLUTION * LOCALMAP_RESOLUTION);
@@ -185,13 +192,17 @@ int Perception::Process()
 			
 			///Furniture recognition end
 			
-			//cout << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
+			//cout << "  " << g.m_name << ":   " << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
 			if (g.m_centroid[0] < LOCALMAP_X/2-1 && g.m_centroid[0] > -LOCALMAP_X/2+1 && g.m_centroid[1] > 0.5 && g.m_centroid[1] < LOCALMAP_Y-1)
 			{
+			  
+			        #ifdef DRAW_TAG
+				DrawImageTag(targetIndex, g.m_name);
+				#endif
 			
 				Ent en = GenerateEnt(g);
 				cout << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << endl;
-				m_GOList.push_back(en);	
+				m_SEList.push_back(en);	
 				res++;
 			}
 			else
@@ -233,6 +244,47 @@ Ent Perception::GenerateEnt(SE g)
 	//delete map;
 	en.vec = vec;
 	return en;
+}
+
+int Perception::DrawImageTag(vector<int> index, string name)
+{
+	unsigned char r,g,b;
+	vector<string> keys;
+	for (map<string, FurnitureDetector>::iterator i = m_detectorSet.begin(); i != m_detectorSet.end(); ++i)
+	{
+		keys.push_back(i->first);
+	}
+	
+	cv::Scalar colors[] = {cv::Scalar(255, 0, 0), cv::Scalar(0, 255, 0), cv::Scalar(0, 0, 255), cv::Scalar(255, 255, 0), cv::Scalar(0, 255, 255)};
+	for (int i = 0; i < keys.size(); i++)
+	{
+		if (keys[i].compare(name) == 0)
+		{
+			r = colors[i].val[0];
+			g = colors[i].val[1];
+			b = colors[i].val[2];
+		}
+		break;
+	}
+	
+	if (name.compare("unknown") == 0)
+	{
+		r = 150;
+		g = 150;
+		b = 150;
+	}
+  
+	int L = index.size();
+	for (int i = 0; i < L; i++) 
+	{
+		m_imgTag.data[3*index[i]] = r; 
+		m_imgTag.data[3*index[i] + 1] = g; 
+		m_imgTag.data[3*index[i] + 2] = b; 
+	}
+	
+	//cv::waitKey(1);
+	//imshow("image tag", m_imgTag);
+	return 0;
 }
 
 vector<vector<float> > Perception::LoadVectorVectorFloat(string fileName)

@@ -125,6 +125,8 @@ int main(int argc, char **argv)
 		
 		_perception.ImportKinectData(imgRGB, pts);
 		_perception.Process();
+		
+		cv::imshow("tagged image", _perception.m_imgTag);
 	
 		envMsg = BuildEnvMsg();
 		envPub.publish(envMsg);
@@ -194,48 +196,48 @@ hri_perception::Env BuildEnvMsg()
 {
 	hri_perception::Env env;
   
-	int L = _perception.m_GOList.size();
+	int L = _perception.m_SEList.size();
 	
 	if (L >= 1)
 	{
-		env.name0 = _perception.m_GOList[0].name;
-		env.dir0 = _perception.m_GOList[0].dir;
-		env.vec0 = _perception.m_GOList[0].vec;
+		env.name0 = _perception.m_SEList[0].name;
+		env.dir0 = _perception.m_SEList[0].dir;
+		env.vec0 = _perception.m_SEList[0].vec;
 	}
 	
 	if (L >= 2)
 	{
-		env.name1 = _perception.m_GOList[1].name;
-		env.dir1 = _perception.m_GOList[1].dir;
-		env.vec1 = _perception.m_GOList[1].vec;
+		env.name1 = _perception.m_SEList[1].name;
+		env.dir1 = _perception.m_SEList[1].dir;
+		env.vec1 = _perception.m_SEList[1].vec;
 	}
 	
 	if (L >= 3)
 	{
-		env.name2 = _perception.m_GOList[2].name;
-		env.dir2 = _perception.m_GOList[2].dir;
-		env.vec2 = _perception.m_GOList[2].vec;
+		env.name2 = _perception.m_SEList[2].name;
+		env.dir2 = _perception.m_SEList[2].dir;
+		env.vec2 = _perception.m_SEList[2].vec;
 	}
 	
 	if (L >= 4)
 	{
-		env.name3 = _perception.m_GOList[3].name;
-		env.dir3 = _perception.m_GOList[3].dir;
-		env.vec3 = _perception.m_GOList[3].vec;
+		env.name3 = _perception.m_SEList[3].name;
+		env.dir3 = _perception.m_SEList[3].dir;
+		env.vec3 = _perception.m_SEList[3].vec;
 	}
 	
 	if (L >= 5)
 	{
-		env.name4 = _perception.m_GOList[4].name;
-		env.dir4 = _perception.m_GOList[4].dir;
-		env.vec4 = _perception.m_GOList[4].vec;
+		env.name4 = _perception.m_SEList[4].name;
+		env.dir4 = _perception.m_SEList[4].dir;
+		env.vec4 = _perception.m_SEList[4].vec;
 	}
 	
 	if (L >= 6)
 	{
-		env.name5 = _perception.m_GOList[5].name;
-		env.dir5 = _perception.m_GOList[5].dir;
-		env.vec5 = _perception.m_GOList[5].vec;
+		env.name5 = _perception.m_SEList[5].name;
+		env.dir5 = _perception.m_SEList[5].dir;
+		env.vec5 = _perception.m_SEList[5].vec;
 	}
 	
 	return env;
