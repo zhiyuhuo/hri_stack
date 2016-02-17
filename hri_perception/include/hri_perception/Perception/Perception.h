@@ -193,7 +193,7 @@ int Perception::Process()
 			///Furniture recognition end
 			
 			//cout << "  " << g.m_name << ":   " << g.m_centroid[0] << ", " << g.m_centroid[1] << endl;
-			if (g.m_centroid[0] < LOCALMAP_X/2-1 && g.m_centroid[0] > -LOCALMAP_X/2+1 && g.m_centroid[1] > 0.5 && g.m_centroid[1] < LOCALMAP_Y-1)
+			if (g.m_centroid[0] < LOCALMAP_X/2-1.5 && g.m_centroid[0] > -LOCALMAP_X/2+1.5 && g.m_centroid[1] > 0.5 && g.m_centroid[1] < LOCALMAP_Y-0.5)
 			{
 			  
 			        #ifdef DRAW_TAG
@@ -201,7 +201,7 @@ int Perception::Process()
 				#endif
 			
 				Ent en = GenerateEnt(g);
-				cout << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << endl;
+				cout << "   " << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << endl;
 				m_SEList.push_back(en);	
 				res++;
 			}
@@ -255,31 +255,27 @@ int Perception::DrawImageTag(vector<int> index, string name)
 		keys.push_back(i->first);
 	}
 	
-	cv::Scalar colors[] = {cv::Scalar(255, 0, 0), cv::Scalar(0, 255, 0), cv::Scalar(0, 0, 255), cv::Scalar(255, 255, 0), cv::Scalar(0, 255, 255)};
-	for (int i = 0; i < keys.size(); i++)
+	map<string, cv::Scalar> colors; 
+	colors["table"] = cv::Scalar(255, 0, 0);
+	colors["chair"] = cv::Scalar(0, 255, 0);
+	colors["couch"] = cv::Scalar(0, 0, 255);
+	colors["bed"] = cv::Scalar(255, 255, 0);
+	colors["unknown"] = cv::Scalar(150, 150, 150);
+
+	if (colors.count(name) > 0)
 	{
-		if (keys[i].compare(name) == 0)
+		cv::Scalar rgb = colors[name];
+		r = rgb.val[0];
+		g = rgb.val[1];
+		b = rgb.val[2];
+		
+		int L = index.size();
+		for (int i = 0; i < L; i++) 
 		{
-			r = colors[i].val[0];
-			g = colors[i].val[1];
-			b = colors[i].val[2];
+			m_imgTag.data[3*index[i]] = r; 
+			m_imgTag.data[3*index[i] + 1] = g; 
+			m_imgTag.data[3*index[i] + 2] = b; 
 		}
-		break;
-	}
-	
-	if (name.compare("unknown") == 0)
-	{
-		r = 150;
-		g = 150;
-		b = 150;
-	}
-  
-	int L = index.size();
-	for (int i = 0; i < L; i++) 
-	{
-		m_imgTag.data[3*index[i]] = r; 
-		m_imgTag.data[3*index[i] + 1] = g; 
-		m_imgTag.data[3*index[i] + 2] = b; 
 	}
 	
 	//cv::waitKey(1);
