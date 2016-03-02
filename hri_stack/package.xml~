@@ -17,6 +17,7 @@
   <run_depend>hri_nav</run_depend>
   <run_depend>hri_perception</run_depend>
   <run_depend>hri_spatial_language_grounding</run_depend>
+  <run_depend>hri_language_generation</run_depend>
   <run_depend>hri_robot</run_depend>
   <run_depend>hri_android_to_robot</run_depend>
   <run_depend>hri_demonstration</run_depend>
