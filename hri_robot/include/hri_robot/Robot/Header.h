@@ -6,7 +6,7 @@
 #include "Perception.h"
 #include "WorldStateFeature.h"
 #include "Behavior.h"
-#include "RDTProcess.h"
+#include "Grounding.h"
 #include "Navigation.h"
 #include "DecisionMaking.h"
 #include "PathGeneration.h"

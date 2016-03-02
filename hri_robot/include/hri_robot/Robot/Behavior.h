@@ -58,8 +58,9 @@ int Robot::RunCommand(vector<string> cmd)
 			{
 				if (r2 > m_currentScore || r2 > 0.7)
 				{
-					m_state = "plan_path";
-// 					m_state = "directly_to_targert";
+// 					m_state = "plan_path";
+					m_state = "directly_to_targert";
+					cout << "m_moveTarget: " << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << " " << m_turnTarget << endl;
 				}
 				else
 				{

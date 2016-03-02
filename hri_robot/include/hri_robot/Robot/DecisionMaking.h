@@ -19,12 +19,96 @@ int Robot::RunNode()
 
 // 	Test();
   
-	while (ros::ok())
+// 	while (ros::ok())
+// 	{
+// 		DecisionMaking();
+// 		ros::spinOnce();
+// 	}
+  
+	while (ros::ok()) 
 	{
-		DecisionMaking();
+		HomeFetchTask();
 		ros::spinOnce();
 	}
-	
+	return 0;
+}
+
+int Robot::HomeFetchTask()
+{
+	//cout << m_ifGetPerception << " " << m_ifGetPose << endl;
+	if (m_mission == "init") 
+	{
+		CallForPercepstionService();
+		if (m_ifGetPerception && m_ifGetPose) 
+		{
+			m_mission = "wait_for_command";	
+		}
+	}
+		
+	else if (m_mission == "wait_for_command")
+	{
+		BuildFakeGroundingList();
+		m_mission = "init_task";
+	}
+	  
+	else if (m_mission == "init_task") 
+	{
+		m_posRobotLast = m_posRobot;
+		m_action = "init";
+		m_step = 0;
+		vector<string> cmdVec = m_groundings[m_step];
+		cout << "-----------------------------------------:\n";
+		for (int i = 0; i < cmdVec.size(); i++)	{	cout << cmdVec[i] << " ";	}	cout << endl;
+			
+			m_mission = "follow_command";
+	}
+
+	else if (m_mission == "follow_command")
+	{
+		int r = 0;
+		vector<string> cmdVec = m_groundings[m_step];
+		r = RunCommand(cmdVec);
+		if (r == 1)
+		{
+			//cout << " m_pathLength: " << m_pathLength << endl;
+			//cout << "Finished" << endl;
+			cout << "Final Robot Pose For This RDT: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
+			m_mission = "jump_to_next";
+		}
+	}
+		
+	else if (m_mission == "jump_to_next")
+	{
+		if (m_step == m_groundings.size()-1)
+		{
+			cout << "mission finished pose: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
+			cout << "mission accomplished!" << endl;
+			m_mission = "end";
+		}
+		else
+		{
+		      m_step++;	
+		      m_move = "init";
+		      m_action = "init";
+		      m_state = "init";
+		      m_currentDct.clear();
+		      m_currentScore = 0;
+		      m_entities.clear();
+		      
+		      vector<string> cmdVec = m_groundings[m_step];
+		      for (int i = 0; i < cmdVec.size(); i++)	{	cout << cmdVec[i] << " ";	}	cout << endl;
+		      m_mission = "follow_command";
+		}
+	}
+		
+	else if (m_mission == "end")
+	{
+		m_mission = "end";
+	}
+		
+	imshow("grid map", m_imgOccupancy);
+	waitKey(1);
+		
 	return 0;
 }
 

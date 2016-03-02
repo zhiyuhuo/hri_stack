@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
 	//
 	Robot _robot;
-	//_robot.ConnectToServer();
+	_robot.ConnectToServer();
 	_robot.RunNode();
 
 	return 0;

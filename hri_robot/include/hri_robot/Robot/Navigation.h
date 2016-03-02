@@ -39,6 +39,7 @@ void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 	m_posRobot.SetY(y);
 	m_theta = theta;	
 	
+	m_ifGetPose = true;
 // 	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
 }
 

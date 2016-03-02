@@ -134,6 +134,7 @@ void Robot::CallForPercepstionService()
 		return;
 	}
   
+	m_ifGetPerception = true;
 }
 
 void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
@@ -239,6 +240,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 	
 // 	cout << "ent num: " << tempEntList.size() << endl;
 	m_tempSEList = tempEntList;
+	m_ifGetPerception = true;
 }
 
 int Robot::Perception()

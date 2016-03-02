@@ -158,6 +158,9 @@ public:	//new Behaviors for imitation learning
 	
 	
 public:	//robot behavior
+	bool m_ifGetPerception;
+	bool m_ifGetPose;
+	
 	string m_move;
 	string m_action;
 	string m_state;
@@ -193,12 +196,17 @@ public:	//Robot Strategy
 	float m_pathLength;
 	int ConnectToServer();
 	int RunNode();
+	
+	int HomeFetchTask();
 	int DecisionMaking();
 	int Test();
 	int TestPathGeneration();
 	int TestRead();
 	int UpdatePerception();
 	int KeyboardControlForLanguageGeneration();
+	
+	int BuildGroundingList();
+	int BuildFakeGroundingList();
 	
 public:	//Path Generation (Generate RDT from Path)
   	ros::ServiceClient m_generatingLanguageClient; 
@@ -235,6 +243,9 @@ Robot::Robot()
 	m_imgOccupancy = Mat::zeros(200, 200, CV_8UC1);
 	m_pathLength = 0;
 	m_spatialCommand = "";
+	
+	m_ifGetPerception = false;
+	m_ifGetPose = false;
 	
 	//Get Le
 	GetLEList("/home/hri/hri_DATA/Map");
