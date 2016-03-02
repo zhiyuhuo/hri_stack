@@ -282,7 +282,7 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 					m = sim;
 				}
 			}
-			if (m < 0.5 )
+			if (m < 0.1 )
 			{
 				if (tempEntList[i].name.compare("unknown") != 0)
 				{

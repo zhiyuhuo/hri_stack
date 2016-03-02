@@ -9,6 +9,6 @@
 #include "Grounding.h"
 #include "Navigation.h"
 #include "DecisionMaking.h"
-#include "PathGeneration.h"
+#include "GroundingGeneration.h"
 
 #endif
