@@ -1,8 +1,4 @@
 <launch>	  
-	<include file="$(find gazebo_ros)/launch/empty_world.launch">	    
-		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/mybot.world"/>	    
-		<arg name="gui" value="true"/>	  
-	</include>	
 
 	<include file="$(find hri_spatial_language_grounding)/launch/launch_spatial_language_grounding_server.launch" />	      
 	

@@ -3,15 +3,18 @@ import roslib;roslib.load_manifest('hri_python_interface')
 import rospy
 import sys
 from std_msgs.msg import String
-from twitter import *
-	
+import fbchat
 
 if __name__ == "__main__":
     rospy.init_node('hri_python_interface_client')
     print "start hri_python_interface_client node"
 
-    t = Twitter(
-    auth=OAuth(token, token_key, con_secret, con_secret_key))
+
+    
+    client = fbchat.Client("100011404486718", "hrihri")
+    print "login finished"
+    
+    msgRec = client.ping()
 
     pub = rospy.Publisher('/recognizer/output', String, queue_size=10)
     msg = "the message"
