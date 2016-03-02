@@ -17,7 +17,11 @@ int Robot::RunNode()
 // 	AskGroundingService(m_spatialCommand);
 // 	ShowRobotCmdInfo();
 
-// 	Test();
+// 	while (ros::ok())
+// 	{
+// 		TestPathGeneration();
+// 		ros::spinOnce();
+// 	}
   
 // 	while (ros::ok())
 // 	{
@@ -30,6 +34,8 @@ int Robot::RunNode()
 		HomeFetchTask();
 		ros::spinOnce();
 	}
+  
+  
 	return 0;
 }
 
@@ -190,17 +196,23 @@ int Robot::TestPathGeneration()
 {
 	if (m_mission.compare("init") == 0)
 	{
-// 		Perception();
-// 		vector<float> originalRobotPose;
-// 		originalRobotPose.push_back(m_posRobot.GetX());
-// 		originalRobotPose.push_back(m_posRobot.GetY());
-// 		originalRobotPose.push_back(m_theta);
-// 		m_originalRobotPose = originalRobotPose;
-// 		m_entities = GetVisiableEntities();
+		CallForPercepstionService();
+		if (m_ifGetPerception && m_ifGetPose) 
+		{
+			m_mission = "path_plan";	
+		}
+	}
+	
+	else if (m_mission.compare("path_plan") == 0)
+	{
 		SetOccupiedMap(400, 400, 0.25, -50, -50);
-		VecPosition posTarget(2,-1);
+		VecPosition posTarget(3,-0.5);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, posTarget);
+// 		for (int i = 0; i < m_pathPoints.size(); i++)
+// 		{
+// 		      cout << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
+// 		}
 		m_path = 0;
 		m_mission = "run";
 	}
@@ -213,7 +225,7 @@ int Robot::TestPathGeneration()
 		{
 			cout << ++m_path << endl;
 		}
-		if (m_path > m_pathPoints.size())
+		if (m_path >= m_pathPoints.size())
 		{
 			m_mission = "stop";
 		}
@@ -221,7 +233,9 @@ int Robot::TestPathGeneration()
 	
 	else if (m_mission.compare("stop") == 0)
 	{
-	  
+		m_linearSpeed = 0;
+		m_angularSpeed = 0;
+		SetRobotVelocity();
 	}
 	
 	

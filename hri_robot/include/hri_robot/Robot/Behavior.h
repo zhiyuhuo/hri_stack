@@ -58,8 +58,8 @@ int Robot::RunCommand(vector<string> cmd)
 			{
 				if (r2 > m_currentScore || r2 > 0.7)
 				{
-// 					m_state = "plan_path";
-					m_state = "directly_to_targert";
+					m_state = "plan_path";
+// 					m_state = "directly_to_targert";
 					cout << "m_moveTarget: " << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << " " << m_turnTarget << endl;
 				}
 				else
@@ -84,6 +84,7 @@ int Robot::RunCommand(vector<string> cmd)
 	
 	else if (m_state.compare("plan_path") == 0)
 	{
+		CallForPercepstionService();
 		Perception();
 		m_entities = GetVisiableEntities();
 		SetOccupiedMap(400, 400, 0.25, -50, -50);
@@ -155,6 +156,7 @@ int Robot::Search90()
 	float rotc = PI / 4;
 	if (m_action.compare("init") == 0)
 	{
+	  	CallForPercepstionService();
 		Perception();
 		m_turnTarget = m_theta - rotc;
 		m_action = "search_-45";
@@ -165,6 +167,7 @@ int Robot::Search90()
 	{
 		if (ToAngle(m_turnTarget) == 1)
 		{
+			CallForPercepstionService();
 			Perception();
 			m_turnTarget = m_theta - rotc;
 			m_action = "search_-90";
@@ -176,6 +179,7 @@ int Robot::Search90()
 	{
 		if (ToAngle(m_turnTarget) == 1)
 		{
+			CallForPercepstionService();
 			Perception();
 			m_turnTarget = m_theta + rotc * 3;
 			m_action = "search_45";
@@ -187,6 +191,7 @@ int Robot::Search90()
 	{
 		if (ToAngle(m_turnTarget) == 1)
 		{
+			CallForPercepstionService();
 			Perception();
 			m_turnTarget = m_theta + rotc;
 			m_action = "search_90";
@@ -198,6 +203,7 @@ int Robot::Search90()
 	{
 		if (ToAngle(m_turnTarget) == 1)
 		{
+			CallForPercepstionService();
 			Perception();
 			m_turnTarget = m_theta - 2*rotc;
 			m_action = "move_back";
