@@ -1,0 +1,6 @@
+<launch>	  
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">	    
+		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/couch_front_table_test.world"/>	    
+		<arg name="gui" value="true"/>	  
+	</include>	
+</launch>

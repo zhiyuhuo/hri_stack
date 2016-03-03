@@ -138,11 +138,11 @@ int Robot::BuildFakeGroundingList()
 
 	const char* argsRDT1[] = {"non", "non", "move", "front", "non"};
 	vector<string> groundingRDT1(argsRDT1, argsRDT1 + 5);
-	m_groundings.push_back(groundingRDT1);
+	//m_groundings.push_back(groundingRDT1);
 	
 	const char* argsRDT2[] = {"non", "non", "move", "right", "non"};
 	vector<string> groundingRDT2(argsRDT2, argsRDT2 + 5);
-	m_groundings.push_back(groundingRDT2);
+	//m_groundings.push_back(groundingRDT2);
 
 	const char* argsRDT3[] = {"non", "non", "couch", "front", "table"};
 	vector<string> groundingRDT3(argsRDT3, argsRDT3 + 5);

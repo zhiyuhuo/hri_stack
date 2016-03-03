@@ -57,6 +57,35 @@ int Robot::GetLEList(string rootDir)
 	return res;
 }
 
+Ent Robot::GetWallEntity(float x, float y, float theta)
+{
+	Ent res;
+	
+	Ent botEnt = GetRobotEntity(x, y, theta);
+	for (int i = 0; i < m_LEList.size(); i++) 
+	{
+		SpR spr = GetSpatialRelationB2A(m_LEList[i], botEnt);
+		float out = 0;
+		float in = 0;
+		for (int k = 0; k < spr.outdirw.size(); k++)
+		{
+			out += spr.outdirw[k];
+		}
+		for (int k = 0; k < spr.indirw.size(); k++)
+		{
+			in += spr.indirw[k];
+		}
+		
+		if (out <= 0 && in > 0)
+		{
+			res = m_LEList[i];
+			break;
+		}
+	}
+	
+	return res;
+}
+
 Ent Robot::GetLE(string fullfname, string lename)
 {
 	Ent res;
@@ -322,6 +351,8 @@ vector<Ent> Robot::GetVisiableEntities()
 	Ent OR = GetRobotEntity(m_originalRobotPose[0], m_originalRobotPose[1], m_originalRobotPose[2]);
 	OR.name = "OR";
 	res.push_back(OR);
+	
+	//
 
 	//CR
 	Ent CR = GetRobotEntity(m_posRobot.GetX(), m_posRobot.GetY(), m_theta);
@@ -332,8 +363,13 @@ vector<Ent> Robot::GetVisiableEntities()
 	for (int i = 0; i < m_LEList.size(); i++)
 	{
 		res.push_back(m_LEList[i]);
-	}	
-
+	}
+	
+	//room and wall
+	Ent wall = GetWallEntity(m_originalRobotPose[0], m_originalRobotPose[1], m_originalRobotPose[2]);
+	wall.name = "room";
+	res.push_back(wall);
+	
 	//SE
 	for (int i = 0; i < m_SEList.size(); i++)
 	{

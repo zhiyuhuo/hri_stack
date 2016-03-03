@@ -183,6 +183,7 @@ public:	//World State Feature
 	Ent GetRobotEntity(float x, float y, float theta);
 	vector<Ent> m_LEList;
 	int GetLEList(string rootDir);
+	Ent GetWallEntity(float x, float y, float theta);
 	Ent GetLE(string fname, string lename);
 	SpR GetSpatialRelationB2A(Ent A, Ent B);	
 	vector<float> GetDistanceBetweenTwoSpatialFeature(vector<float> dirhg1, vector<float> disthg1, vector<float> dirhg2, vector<float> disthg2);
