@@ -23,6 +23,28 @@
 
 using namespace std;
 
+void save_pc_fpfh(string fileName, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs)
+{
+	ofstream myfile;
+	myfile.open (fileName.c_str());
+	for (size_t i = 0; i < cloud->points.size (); ++i)
+	{	
+		if (!isnan(cloud->points[i].x) && !isnan(cloud->points[i].y) && !isnan(cloud->points[i].z))
+		{
+			myfile << cloud->points[i].x << " " 
+				<< cloud->points[i].y << " " 
+				<< cloud->points[i].z << " ";	
+			
+			for (int j = 0; j < 33; j++)
+			{
+				myfile << fpfhs->points[i].histogram[j] << " ";
+			}
+			myfile << endl;
+		}
+	}
+	myfile.close();
+}
+
 int main()
 {
 	int FNUM[8] = {32,24,36,24,36,32,24,24};
@@ -67,9 +89,9 @@ int main()
 			//save normals
 			char pcnormNameStr[100] = {};
 			sprintf(pcnormNameStr, "/home/hri/Samples/FPFH/hri_apartment/%d/pcfpfh-%d-%d.txt", instance, instance, sample);
-			string pcnormName(pcnormNameStr);
-			cout << "saving " << pcnormName << endl;
-			//save_pc_fpfh(pcnormName, cloud, normals);
+			string pcfpfsName(pcnormNameStr);
+			cout << "saving " << pcfpfsName << endl;
+			save_pc_fpfh(pcfpfsName, cloud, fpfhs);
 			cout << "save done. " << endl;
 		}
 	}

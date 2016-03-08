@@ -49,6 +49,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
   <run_depend>cv_bridge</run_depend>
   <build_depend>message_generation</build_depend>
   <run_depend>message_runtime</run_depend>
@@ -59,6 +60,7 @@
   <run_depend>rospack</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
 
 
