@@ -27,6 +27,9 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/octree/octree.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/voxel_grid.h>
 
 #include "hri_perception/Env.h"
 
@@ -50,6 +53,7 @@ float cameraHeight;
 vector<float> rawPoints;
 float posX, posY, posTheta;
 bool ifGetPointCloud = false;
+bool ifGetPose = false;
 cv::Mat imgRGB;
 cv::Mat imgDepth;
 
@@ -105,7 +109,7 @@ int main(int argc, char **argv)
     
     //slam data
     vector<float> scenePoints;
-    float resolution = 32.0f;
+    float resolution = 0.02f;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPast (new pcl::PointCloud<pcl::PointXYZ> );
     //octree 
     pcl::octree::OctreePointCloudChangeDetector<pcl::PointXYZ> octree (resolution);
@@ -127,7 +131,7 @@ int main(int argc, char **argv)
 	
 		
 	ros::Rate loopRate(30);
-	while(ros::ok() && (!ifGetPointCloud))
+	while(ros::ok() && (!ifGetPointCloud) && (!ifGetPose))
 	{
 		ros::spinOnce();
 	}
@@ -135,48 +139,81 @@ int main(int argc, char **argv)
 	cout << "robot loop start..." << endl;
 	while (ros::ok())
 	{	
-		vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
-        vector<float> gpts = LocalToGlobal(pts);
-        
-        //octree find spatial change
-        octree.setInputCloud (cloudPast);
-        octree.addPointsFromInputCloud ();
-        octree.switchBuffers ();
-        
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudNow (new pcl::PointCloud<pcl::PointXYZ> );
-        cloudNow->width = gpts.size() / 3;
-        cloudNow->height = 1;
-        cloudNow->points.resize (cloudNow->width * cloudNow->height);
-        for (size_t i = 0; i < cloudNow->points.size (); ++i)
+        char c = cv::waitKey(10);
+        if (c == 'r')
         {
-            cloudNow->points[i].x = gpts[3*i];
-            cloudNow->points[i].y = gpts[3*i+1];
-            cloudNow->points[i].z = gpts[3*i+2];
-        }
-        octree.setInputCloud (cloudNow);
-        octree.addPointsFromInputCloud ();
-        
-        std::vector<int> newPointIdxVector;
-        octree.getPointIndicesFromNewVoxels (newPointIdxVector);
+            cout << "x: " << posX << ",	y: " << posY << ",		theta: " << posTheta << endl;
+            vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
+            vector<float> gpts = LocalToGlobal(pts);
+            
+            //octree find spatial change
+            octree.setInputCloud (cloudPast);
+            octree.addPointsFromInputCloud ();
+            octree.switchBuffers ();
+            
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloudNow (new pcl::PointCloud<pcl::PointXYZ> );
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloudNowFiltered (new pcl::PointCloud<pcl::PointXYZ> ());
+            cloudNow->width = gpts.size() / 3;
+            cloudNow->height = 1;
+            cloudNow->points.resize (cloudNow->width * cloudNow->height);
+            for (size_t i = 0; i < cloudNow->points.size (); ++i)
+            {
+                cloudNow->points[i].x = gpts[3*i];
+                cloudNow->points[i].y = gpts[3*i+1];
+                cloudNow->points[i].z = gpts[3*i+2];
+            }
+            
+            pcl::VoxelGrid<pcl::PointXYZ> sor;
+            sor.setInputCloud (cloudNow);
+            sor.setLeafSize (0.02f, 0.02f, 0.02f);
+            sor.filter (*cloudNowFiltered);
+            
+            octree.setInputCloud (cloudNowFiltered);
+            octree.addPointsFromInputCloud ();
+            
+            std::vector<int> newPointIdxVector;
+            octree.getPointIndicesFromNewVoxels (newPointIdxVector);
+            cout << "newPointIdxVector: " << newPointIdxVector.size() << endl;
 
-		for (int i = 0; i < newPointIdxVector.size(); i++)
-        {
-            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].x);
-            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].y);
-            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].z);
-        }
+            for (int i = 0; i < newPointIdxVector.size(); i++)
+            {
+                scenePoints.push_back(cloudNowFiltered->points[newPointIdxVector[i]].x);
+                scenePoints.push_back(cloudNowFiltered->points[newPointIdxVector[i]].y);
+                scenePoints.push_back(cloudNowFiltered->points[newPointIdxVector[i]].z);
+            }
+            
+            cloudPast->width = scenePoints.size() / 3;
+            cloudPast->height = 1;
+            cloudPast->points.resize (cloudPast->height * cloudPast->width);
+            for (size_t i = 0; i < cloudPast->points.size (); ++i)
+            {
+                cloudPast->points[i].x = scenePoints[3*i];
+                cloudPast->points[i].y = scenePoints[3*i+1];
+                cloudPast->points[i].z = scenePoints[3*i+2];
+            }
+            
+            cout << cloudNowFiltered->points.size() << " " << cloudPast->points.size() << " " << scenePoints.size() << endl;
         
-        cloudPast->width = scenePoints.size() / 3;
-        cloudPast->height = 1;
-        cloudPast->points.resize (cloudPast->height * cloudPast->width);
-        for (size_t i = 0; i < cloudPast->points.size (); ++i)
-        {
-            cloudPast->points[i].x = scenePoints[3*i];
-            cloudPast->points[i].y = scenePoints[3*i+1];
-            cloudPast->points[i].z = scenePoints[3*i+2];
         }
-        
-        cout << scenePoints.size() << endl;
+        else if (c == 'f')
+        {
+            pcl::PointCloud<pcl::PointXYZ> cloud;
+
+            // Fill in the cloud data
+            cloud.width    = scenePoints.size() / 3;
+            cloud.height   = 1;
+            cloud.is_dense = false;
+            cloud.points.resize (cloud.width * cloud.height);
+
+            for (size_t i = 0; i < scenePoints.size () / 3; ++i)
+            {
+                cloud.points[i].x = scenePoints[3*i];
+                cloud.points[i].y = scenePoints[3*i+1];
+                cloud.points[i].z = scenePoints[3*i+2];
+            }
+
+            pcl::io::savePCDFileASCII ("/home/hri/hri_DATA/test/scene.pcd", cloud);
+        }
 		ros::spinOnce();
 		loopRate.sleep();
 	}
@@ -264,7 +301,9 @@ void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg)
 	posX = x;
 	posY = y;
 	posTheta = theta;	
-	
+    
+	ifGetPose = true;
+    
 // 	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
 }
 

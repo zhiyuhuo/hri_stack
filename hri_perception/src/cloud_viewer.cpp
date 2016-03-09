@@ -15,8 +15,8 @@ main ()
   //get data
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::io::loadPCDFile ("/home/hri/pcd_chair.pcd", *cloud);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::io::loadPCDFile ("/home/hri/pcd_chair.pcd", *cloud2);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile ("/home/hri/hri_DATA/test/scene.pcd", *cloud2);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ> ());
     
   //get normal
