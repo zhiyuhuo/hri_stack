@@ -159,8 +159,24 @@ int main(int argc, char **argv)
         std::vector<int> newPointIdxVector;
         octree.getPointIndicesFromNewVoxels (newPointIdxVector);
 
-		
+		for (int i = 0; i < newPointIdxVector.size(); i++)
+        {
+            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].x);
+            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].y);
+            scenePoints.push_back(cloudNow->points[newPointIdxVector[i]].z);
+        }
         
+        cloudPast->width = scenePoints.size() / 3;
+        cloudPast->height = 1;
+        cloudPast->points.resize (cloudPast->height * cloudPast->width);
+        for (size_t i = 0; i < cloudPast->points.size (); ++i)
+        {
+            cloudPast->points[i].x = scenePoints[3*i];
+            cloudPast->points[i].y = scenePoints[3*i+1];
+            cloudPast->points[i].z = scenePoints[3*i+2];
+        }
+        
+        cout << scenePoints.size() << endl;
 		ros::spinOnce();
 		loopRate.sleep();
 	}
@@ -258,8 +274,8 @@ vector<float> LocalToGlobal(vector<float> lp)
 	vector<float> res(L*3, 0);
     for (int i = 0; i < L; i++)
     {
-        res[3*i] = cos(th) * lp[3*i] + -sin(th) * lp[3*i+1] + posX;
-        res[3*i+1] = sin(th) * lp[3*i] + cos(th) * lp[3*i+1] + posY;
+        res[3*i] = cos(posTheta) * lp[3*i] + -sin(posTheta) * lp[3*i+1] + posX;
+        res[3*i+1] = sin(posTheta) * lp[3*i] + cos(posTheta) * lp[3*i+1] + posY;
         res[3*i+2] = lp[3*i+2];
     }
 	
