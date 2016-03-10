@@ -51,6 +51,7 @@ float curTiltAngle;
 float tiltAngle;
 float cameraHeight;
 vector<float> rawPoints;
+float pastX, pastY, pastTheta;
 float posX, posY, posTheta;
 bool ifGetPointCloud = false;
 bool ifGetPose = false;
@@ -61,6 +62,7 @@ void ListenCallbackTilt(const std_msgs::Float64& msg);
 void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg);
 void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
 vector<float> LocalToGlobal(vector<float> lp);
+bool CheckIfPoseChange();
 
 
 int main(int argc, char **argv)
@@ -127,20 +129,21 @@ int main(int argc, char **argv)
 		tiltMsg.data = tiltAngle;
 		tiltPub.publish(tiltMsg);	
 	}
-	
-	
 		
 	ros::Rate loopRate(30);
+    
+    //check it the robot has received all the data source
 	while(ros::ok() && (!ifGetPointCloud) && (!ifGetPose))
 	{
 		ros::spinOnce();
 	}
+    pastX = 0; pastY = 0; pastTheta = 0;
 
 	cout << "robot loop start..." << endl;
 	while (ros::ok())
 	{	
-        char c = cv::waitKey(10);
-        if (c == 'r')
+
+        if (CheckIfPoseChange())
         {
             cout << "x: " << posX << ",	y: " << posY << ",		theta: " << posTheta << endl;
             vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
@@ -195,7 +198,9 @@ int main(int argc, char **argv)
             cout << cloudNowFiltered->points.size() << " " << cloudPast->points.size() << " " << scenePoints.size() << endl;
         
         }
-        else if (c == 'f')
+        
+        char c = cv::waitKey(10);
+        if (c == 'f')
         {
             pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -211,8 +216,14 @@ int main(int argc, char **argv)
                 cloud.points[i].y = scenePoints[3*i+1];
                 cloud.points[i].z = scenePoints[3*i+2];
             }
+            
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFiltered (new pcl::PointCloud<pcl::PointXYZ> ());
+            pcl::VoxelGrid<pcl::PointXYZ> sor;
+            sor.setInputCloud (cloud);
+            sor.setLeafSize (0.02f, 0.02f, 0.02f);
+            sor.filter (*cloudFiltered);
 
-            pcl::io::savePCDFileASCII ("/home/hri/hri_DATA/test/scene.pcd", cloud);
+            pcl::io::savePCDFileASCII ("/home/hri/hri_DATA/test/scene.pcd", cloudFiltered);
         }
 		ros::spinOnce();
 		loopRate.sleep();
@@ -319,4 +330,20 @@ vector<float> LocalToGlobal(vector<float> lp)
     }
 	
 	return res;
+}
+
+bool CheckIfPoseChange()
+{
+    float d = sqrt(pow(posX-pastX, 2) + pow(posY-pastY, 2));
+    float t = posTheta - pastTheta;
+    while (t > PI) t -= 2*PI;
+    while (t < -PI) t += 2*PI;
+    t = abs(t);
+    
+    if (d > 0.5 || t > PI/6)
+    {
+        pastX = posX;
+        pastY = posY;
+        pastTheta = posTheta;
+    }
 }
