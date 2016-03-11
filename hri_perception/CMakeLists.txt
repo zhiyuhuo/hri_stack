@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   nav_msgs 
+  geometry_msgs
   message_generation
 )
 
@@ -39,7 +40,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_perception2015a
- CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs nav_msgs message_runtime
+ CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs nav_msgs geometry_msgs message_runtime
 #  DEPENDS system_lib
 )	
 
@@ -51,6 +52,8 @@ include_directories(include
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+add_executable (build_semantic_map src/build_semantic_map.cpp)
+target_link_libraries (build_semantic_map ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
 
 add_executable (hri_perception_node src/hri_perception_node.cpp)
 target_link_libraries (hri_perception_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
@@ -60,7 +63,6 @@ target_link_libraries (hri_perception_reconstruction ${OpenCV_LIBS} ${PCL_LIBRAR
 
 add_executable (hri_perception_server src/hri_perception_server.cpp)
 target_link_libraries (hri_perception_server ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
-
 
 add_executable(hri_perception_test src/hri_perception_test.cpp)
 target_link_libraries(hri_perception_test ${OpenCV_LIBS} ${catkin_LIBRARIES})

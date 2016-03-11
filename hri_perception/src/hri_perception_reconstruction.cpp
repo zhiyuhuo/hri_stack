@@ -19,6 +19,7 @@
 #include <image_transport/image_transport.h>
 #include "sensor_msgs/PointCloud2.h"
 #include <tf2_msgs/TFMessage.h>
+#include <geometry_msgs/Twist.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -57,10 +58,12 @@ bool ifGetPointCloud = false;
 bool ifGetPose = false;
 cv::Mat imgRGB;
 cv::Mat imgDepth;
+geometry_msgs::Twist bufferSpeed;
 
 void ListenCallbackTilt(const std_msgs::Float64& msg);
 void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg);
 void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
+void ListenCallbackSpeed(const geometry_msgs::Twist& msg);
 vector<float> LocalToGlobal(vector<float> lp);
 bool CheckIfPoseChange();
 
@@ -99,6 +102,12 @@ int main(int argc, char **argv)
 	#else
 	ros::Subscriber pose2Sub = n.subscribe("/pose", 10, ListenCallbackPose);
 	#endif
+    
+    #ifdef GAZEBO
+	ros::Subscriber speed2Sub = n.subscribe("/hri_robot/cmd_vel", 10, ListenCallbackSpeed);
+	#else
+	ros::Subscriber speed2Sub = n.subscribe("/cmd_vel", 10, ListenCallbackSpeed);
+	#endif
 	
 	// published tilt topic
 	ros::Publisher envPub = n.advertise<hri_perception::Env>("/env", 10);
@@ -106,6 +115,9 @@ int main(int argc, char **argv)
 	// published env model topic
 	ros::Publisher tiltPub = n.advertise<std_msgs::Float64>("/tilt_angle", 100);
 	
+    // published env model topic
+	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
+    
 	// Define messages
 	std_msgs::Float64 tiltMsg; 
     
@@ -138,13 +150,18 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 	}
     pastX = 0; pastY = 0; pastTheta = 0;
+    geometry_msgs::Twist zeroSpeed;
+    zeroSpeed.linear.x = 0;
+    zeroSpeed.angular.z = 0;
+    
 
 	cout << "robot loop start..." << endl;
 	while (ros::ok())
 	{	
-
+        char c = cv::waitKey(1);
         if (CheckIfPoseChange())
         {
+            speedPub.publish(zeroSpeed);
             cout << "x: " << posX << ",	y: " << posY << ",		theta: " << posTheta << endl;
             vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
             vector<float> gpts = LocalToGlobal(pts);
@@ -195,26 +212,28 @@ int main(int argc, char **argv)
                 cloudPast->points[i].z = scenePoints[3*i+2];
             }
             
+            speedPub.publish(bufferSpeed);
             cout << cloudNowFiltered->points.size() << " " << cloudPast->points.size() << " " << scenePoints.size() << endl;
         
         }
         
-        char c = cv::waitKey(10);
+
         if (c == 'f')
         {
-            pcl::PointCloud<pcl::PointXYZ> cloud;
+            speedPub.publish(zeroSpeed);
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ> );
 
             // Fill in the cloud data
-            cloud.width    = scenePoints.size() / 3;
-            cloud.height   = 1;
-            cloud.is_dense = false;
-            cloud.points.resize (cloud.width * cloud.height);
+            cloud->width    = scenePoints.size() / 3;
+            cloud->height   = 1;
+            cloud->is_dense = false;
+            cloud->points.resize (cloud->width * cloud->height);
 
             for (size_t i = 0; i < scenePoints.size () / 3; ++i)
             {
-                cloud.points[i].x = scenePoints[3*i];
-                cloud.points[i].y = scenePoints[3*i+1];
-                cloud.points[i].z = scenePoints[3*i+2];
+                cloud->points[i].x = scenePoints[3*i];
+                cloud->points[i].y = scenePoints[3*i+1];
+                cloud->points[i].z = scenePoints[3*i+2];
             }
             
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFiltered (new pcl::PointCloud<pcl::PointXYZ> ());
@@ -223,7 +242,10 @@ int main(int argc, char **argv)
             sor.setLeafSize (0.02f, 0.02f, 0.02f);
             sor.filter (*cloudFiltered);
 
-            pcl::io::savePCDFileASCII ("/home/hri/hri_DATA/test/scene.pcd", cloudFiltered);
+            string saveDir = "/home/hri/hri_DATA/test/" + string(argv[1]);
+
+            pcl::io::savePCDFileASCII (saveDir.c_str(), *cloudFiltered);
+            exit(1);
         }
 		ros::spinOnce();
 		loopRate.sleep();
@@ -318,14 +340,20 @@ void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg)
 // 	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
 }
 
+void ListenCallbackSpeed(const geometry_msgs::Twist& msg)
+{
+    bufferSpeed = msg;
+}
+
 vector<float> LocalToGlobal(vector<float> lp)
 {
     int L = lp.size() / 3;
 	vector<float> res(L*3, 0);
+    float th = posTheta - PI/2;
     for (int i = 0; i < L; i++)
     {
-        res[3*i] = cos(posTheta) * lp[3*i] + -sin(posTheta) * lp[3*i+1] + posX;
-        res[3*i+1] = sin(posTheta) * lp[3*i] + cos(posTheta) * lp[3*i+1] + posY;
+        res[3*i] = cos(th) * lp[3*i] + -sin(th) * lp[3*i+1] + posX;
+        res[3*i+1] = sin(th) * lp[3*i] + cos(th) * lp[3*i+1] + posY;
         res[3*i+2] = lp[3*i+2];
     }
 	
@@ -336,14 +364,19 @@ bool CheckIfPoseChange()
 {
     float d = sqrt(pow(posX-pastX, 2) + pow(posY-pastY, 2));
     float t = posTheta - pastTheta;
+
     while (t > PI) t -= 2*PI;
     while (t < -PI) t += 2*PI;
     t = abs(t);
     
-    if (d > 0.5 || t > PI/6)
+    if (d > 1.0 || t > PI/6)
     {
+        cout << d << " " << t << endl;
         pastX = posX;
         pastY = posY;
         pastTheta = posTheta;
+        return true;
     }
+    
+    return false;
 }
