@@ -71,8 +71,8 @@ bool CheckIfPoseChange();
 int main(int argc, char **argv)
 {
 	// initialization global variables
-	curTiltAngle = -20;
-	tiltAngle = -20;
+	curTiltAngle = -10;
+	tiltAngle = -10;
 	cameraHeight = 1.105;
 	imgRGB = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
 	imgDepth = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC1);
@@ -159,7 +159,8 @@ int main(int argc, char **argv)
 	while (ros::ok())
 	{	
         char c = cv::waitKey(1);
-        if (CheckIfPoseChange())
+        if (c == 'r')
+//        if (CheckIfPoseChange())
         {
             speedPub.publish(zeroSpeed);
             cout << "x: " << posX << ",	y: " << posY << ",		theta: " << posTheta << endl;
