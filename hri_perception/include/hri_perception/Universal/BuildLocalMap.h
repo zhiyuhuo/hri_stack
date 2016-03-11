@@ -128,8 +128,8 @@ void BuildZeroCentroidLocalMap(vector<float> points, cv::Mat localMap, float len
 		x = points[3*i];
 		y = points[3*i+1];
 		z = points[3*i+2];
-		x = x + LOCALMAP_X / 2;	
-        y = y + LOCALMAP_X / 2;
+		x = x + lengthX / 2;	
+        y = y + lengthY / 2;
 
 		int xx, yy;
 		xx = x / LOCALMAP_RESOLUTION;
