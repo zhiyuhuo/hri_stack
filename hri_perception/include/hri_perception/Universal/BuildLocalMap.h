@@ -112,6 +112,41 @@ void BuildLocalMap(vector<float> points, cv::Mat localMap)
 	
 }
 
+void BuildZeroCentroidLocalMap(vector<float> points, cv::Mat localMap, float lengthX, float lengthY)
+{
+	int width = localMap.cols;
+	int height = localMap.rows;
+	int i;	
+	for(i = 0; i < width*height; i++)
+	{
+		localMap.data[i] = 0;
+	}
+	
+	for(i = 0; i < points.size()/3; i++)
+	{
+		float x, y, z;
+		x = points[3*i];
+		y = points[3*i+1];
+		z = points[3*i+2];
+		x = x + LOCALMAP_X / 2;	
+        y = y + LOCALMAP_X / 2;
+
+		int xx, yy;
+		xx = x / LOCALMAP_RESOLUTION;
+		yy = y / LOCALMAP_RESOLUTION;
+
+		if (x == x && y == y && z == z)
+		{
+			if (xx<width && xx>=0 && yy<height && yy>=0 && z > 0.1)
+			{
+				int gi = width * yy + xx;
+				localMap.data[gi] = 255;
+			}
+		}
+	}
+	
+}
+
 float FindDistance(int x, int y)
 {
 	float res = 0;
