@@ -176,6 +176,7 @@ public:	//Robot Behavior
 	vector<Dct> ReadDetector(vector<string> cmd);
 	float ScoreCurrentState(vector<Dct> decisionSpatialRelations);
 	float IterateltSearchTarget(vector<Dct> decisionSpatialRelations);
+    float IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations);
 	vector<vector<Ent> > ListEntitiesSetCombination(vector<string> requiredEntsNames, vector<Ent> myEnts);
 	
 public:	//World State Feature

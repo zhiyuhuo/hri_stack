@@ -749,6 +749,373 @@ float Robot::IterateltSearchTarget(vector<Dct> decisionSpatialRelations)
 	return res;	
 }
 
+float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
+{
+	float res = 1;
+	VecPosition posRobot = m_posRobot;
+	//decide if there is enough entities to make decision
+	vector<string> requiredEntitiesNames;
+	for (int i = 0; i < decisionSpatialRelations.size(); i++)
+	{
+		string nameA = decisionSpatialRelations[i].nameA;
+		string nameB = decisionSpatialRelations[i].nameB;
+		
+		if (nameA.compare("rotation") != 0 && nameA.compare("rotation") != 0)
+		{
+			requiredEntitiesNames.push_back(nameA);
+			requiredEntitiesNames.push_back(nameB);
+		}
+	}  
+	
+	sort(requiredEntitiesNames.begin(), requiredEntitiesNames.end());
+        requiredEntitiesNames.erase(unique(requiredEntitiesNames.begin(), requiredEntitiesNames.end()), requiredEntitiesNames.end());
+	  
+	vector<string> myEntitiesNames;
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		myEntitiesNames.push_back(m_entities[i].name);
+	}
+	
+	vector<int> matchVector(requiredEntitiesNames.size(), 0);
+	for (int i = 0; i < requiredEntitiesNames.size(); i++)
+	{
+		for (int j = 0; j < myEntitiesNames.size(); j++)
+		{
+			if (requiredEntitiesNames[i].compare(myEntitiesNames[j]) == 0)
+			{
+				matchVector[i] = 1;
+				break;
+			}
+		}
+	}
+	
+	for (int i = 0; i < matchVector.size(); i++)
+	{
+		int kk = matchVector[i];
+		if (matchVector[i] == 0)
+		{
+			cout << "entity " << requiredEntitiesNames[i] << " is not observed" << endl;
+			res = -1;
+			return res;
+		}
+	}
+	
+	if (res > 0)
+	{
+		//First Step - Calculate Position by 1m & 1/4PI resolution
+	  	vector<vector<Ent> > candidatedEnts = ListEntitiesSetCombination(requiredEntitiesNames, m_entities);
+	  
+	  	float score = 0;
+		vector<float> finalTargetPose(3, 0);
+		
+		float score1 = 0;
+		vector<float> respset;
+		vector<float> movePose(3, 0);
+		
+		for (int E = 0; E < candidatedEnts.size(); E++)
+		{		
+			vector<Ent> entities = candidatedEnts[E];
+			vector<vector<float> > xythSet;
+			
+			for ( float x = -4 + posRobot.GetX(); x <= 4 + posRobot.GetX(); x+=0.5 )
+			{
+				for ( float y = -4 + posRobot.GetY(); y <= 4 + posRobot.GetY(); y+=0.5 )
+				{
+					for ( float th = 0; th < PI * 2; th += PI / 4 )
+					{
+						vector<float> xyth(3, 0);
+						xyth[0] = x;
+						xyth[1] = y;
+						xyth[2] = th;
+						xythSet.push_back(xyth);
+					}
+				}
+			}
+            
+            //the model will go through all the possible solutions. No Robot first, then Robot
+            // float respadd = 0;
+		    // vector<float> respbbb;
+            vector<vector<float> > responseForRobotEntityListSet;
+            vector<float> responseForRobotEntityList;
+            for (int D = 0; D < decisionSpatialRelations.size(); D++)
+            {
+                Dct dct = decisionSpatialRelations[D];
+				SpR spAB;
+                if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
+                {
+                    spAB.nameA = "rotation";
+				    spAB.nameB = "rotation";
+                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
+                    for (int P = 0; P < xythSet.size(); P++)
+                    {
+                        float th = (xythSet[P])[2];
+                        float rotationf = th - m_originalRobotPose[2];
+				        while (rotationf > PI)	{	rotationf -= 2*PI;	}
+				        while (rotationf < -PI)	{	rotationf += 2*PI;	}
+                        spAB.outdirw = vector<float>(1, rotationf);
+                        spAB.indirw = vector<float>(1, 0);
+                        float dctResponse = GetResponseOfADetector(spAB, dct);
+                        responseForRobotEntityList[P] = dctResponse;
+                    }
+                    
+                }
+                else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
+                {
+                    Ent entCR;
+					Ent entX;		
+					for (int Entity = 0; Entity < entities.size(); Entity++)
+					{
+						if (entities[Entity].name.compare("CR") != 0)
+                        {
+							entX = entities[Entity];
+                            break;
+						}
+					}			
+                    
+                    float x,y,th;
+                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
+                    for (int P = 0; P < xythSet.size(); P++)
+                    {
+                        x = (xythSet[P])[0];
+                        y = (xythSet[P])[1];
+                        th = (xythSet[P])[2];
+                        entCR = GetRobotEntity( x, y, th );
+                        entCR.name = "CR";
+                        if (dct.nameA.find("CR"))
+                        {
+                            spAB = GetSpatialRelationB2A(entCR, entX);	  
+                        }
+                        else
+                        {
+                            spAB = GetSpatialRelationB2A(entX, entCR);	
+                        }
+                        float dctResponse = GetResponseOfADetector(spAB, dct);
+                        responseForRobotEntityList[P] = dctResponse;
+                    }       							            
+                }
+                else
+                {
+                    Ent A;
+					Ent B;		
+					for (int j = 0; j < entities.size(); j++)
+					{
+						if (entities[j].name.compare(dct.nameA) == 0)
+						{
+							A = entities[j];
+						}
+						if (entities[j].name.compare(dct.nameB) == 0)
+						{
+							B = entities[j];
+						}
+					}										
+					spAB = GetSpatialRelationB2A(A, B);	 
+                    float dctResponse = GetResponseOfADetector(spAB, dct);       
+                    responseForRobotEntityList.push_back(dctResponse);             
+                }
+            }
+            
+			/**/
+			for (int i = 0; i < xythSet.size(); i++)
+			{
+			
+// 				cout << x << " " << y  << " " << th << endl;	
+				vector<float> xyth = xythSet[i];
+				float x = xyth[0];
+				float y = xyth[1];
+				float th = xyth[2];
+				SpR sprot;
+				sprot.nameA = "rotation";
+				sprot.nameB = "rotation";
+				float rotationf = th - m_originalRobotPose[2];
+				while (rotationf > PI)	{	rotationf -= 2*PI;	}
+				while (rotationf < -PI)	{	rotationf += 2*PI;	}
+				vector<float> rotoutdirw(1, rotationf);
+				vector<float> rotindirw(1, 0);
+				sprot.outdirw = rotoutdirw;
+				sprot.indirw = rotindirw;
+						
+				for (int i = 0; i < entities.size(); i++)
+				{
+					if (entities[i].name.compare("CR") == 0)
+					{
+						entities[i] = GetRobotEntity( x, y, th );
+						entities[i].name = "CR";
+					}
+				}
+						
+				float respadd = 0;
+				vector<float> respbbb;
+				for (int i = 0; i < decisionSpatialRelations.size(); i++)
+				{
+					Dct dct = decisionSpatialRelations[i];
+					SpR spAB;
+					if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
+					{
+						spAB = sprot;
+					}
+					else
+					{
+						Ent A;
+						Ent B;		
+						for (int j = 0; j < entities.size(); j++)
+						{
+							if (entities[j].name.compare(dct.nameA) == 0)
+							{
+								A = entities[j];
+							}
+							if (entities[j].name.compare(dct.nameB) == 0)
+							{
+								B = entities[j];
+							}
+						}										
+						spAB = GetSpatialRelationB2A(A, B);			
+					}
+					
+					float dctResponse = GetResponseOfADetector(spAB, dct);
+					//cout << dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
+					respadd += dctResponse;
+					respbbb.push_back(dctResponse);
+				}
+						
+				respadd /= decisionSpatialRelations.size();
+				//cout << respadd << endl;
+						
+				if (respadd > score1)
+				{
+					int xi = (int)(x / 0.1) + 100;
+					int yi = (int)(y / 0.1) + 100;
+					if (m_imgOccupancy.data[xi + yi*200] == 0)
+					{
+						respset = respbbb;
+						score1 = respadd;
+						movePose[0] = x;
+						movePose[1] = y;
+						movePose[2] = th;
+					}
+				}
+
+			}
+            /**/
+			score = score1;
+			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
+			cout << "move to pose1: " << movePose[0] << " " << movePose[1] << " " << movePose[2] << ", score1: " << score1 << endl;
+			
+			float score2 = 0;
+			vector<float> movePose2 = movePose;
+			for ( float x = -1 + movePose[0]; x <= 1 + movePose[0]; x += 0.25 )
+			{
+				for ( float y = -1 + movePose[1]; y <= 1 + movePose[1]; y += 0.25 )
+				{
+					for ( float th = 0; th < PI * 2; th += PI / 8 )
+					{
+// 						cout << " <" << x << " " << y  << " " << th << "> ";
+						SpR sprot;
+						sprot.nameA = "rotation";
+						sprot.nameB = "rotation";
+						float rotationf = th - m_originalRobotPose[2];
+						while (rotationf > PI)	{	rotationf -= 2*PI;	}
+						while (rotationf < -PI)	{	rotationf += 2*PI;	}
+						vector<float> rotoutdirw(1, rotationf);
+						vector<float> rotindirw(1, 0);
+						sprot.outdirw = rotoutdirw;
+						sprot.indirw = rotindirw;
+						
+						for (int i = 0; i < entities.size(); i++)
+						{
+							if (entities[i].name.compare("CR") == 0)
+							{
+								entities[i] = GetRobotEntity( x, y, th );
+								entities[i].name = "CR";
+							}
+						}
+						
+							
+						float respadd = 0;
+						vector<float> respbbb;
+						for (int i = 0; i < decisionSpatialRelations.size(); i++)
+						{
+							Dct dct = decisionSpatialRelations[i];
+							SpR spAB;
+							if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
+							{
+								spAB = sprot;
+							}
+							else
+							{
+								Ent A;
+								Ent B;		
+								for (int j = 0; j < entities.size(); j++)
+								{
+									if (entities[j].name.compare(dct.nameA) == 0)
+									{
+										A = entities[j];
+									}
+									if (entities[j].name.compare(dct.nameB) == 0)
+									{
+										B = entities[j];
+									}
+								}										
+								spAB = GetSpatialRelationB2A(A, B);			
+							}
+								
+							float dctResponse = GetResponseOfADetector(spAB, dct);
+							//cout << dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
+							respadd += dctResponse;
+							respbbb.push_back(dctResponse);
+						}
+						
+						respadd /= decisionSpatialRelations.size();
+						//cout << respadd << endl;
+						
+						if (respadd > score2)
+						{
+							int xi = (int)(x / 0.1) + 100;
+							int yi = (int)(y / 0.1) + 100;
+							if (m_imgOccupancy.data[xi + yi*200] == 0)
+							{
+								respset = respbbb;
+								score1 = respadd;
+								movePose2[0] = x;
+								movePose2[1] = y;
+								movePose2[2] = th;
+							}
+						}					
+					}
+				}
+				
+			}			
+			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
+			cout << "move to pose2: " << movePose2[0] << " " << movePose2[1] << " " << movePose2[2] << ", score2: " << score2 << endl;
+		
+			if (score2 > score)
+			{
+				score = score2;
+				finalTargetPose[0] = movePose2[0];
+				finalTargetPose[1] = movePose2[1];
+				finalTargetPose[2] = movePose2[2];
+			}
+			else
+			{
+				finalTargetPose[0] = movePose[0];
+				finalTargetPose[1] = movePose[1];
+				finalTargetPose[2] = movePose[2];
+			}
+		}
+		
+		cout << "move to pose final: " << finalTargetPose[0] << " " << finalTargetPose[1] << " " << finalTargetPose[2] << ", final score: " << score << endl;
+		
+		m_moveTarget.SetX(finalTargetPose[0]);
+		m_moveTarget.SetY(finalTargetPose[1]);
+		m_turnTarget = finalTargetPose[2];
+		
+		res = 1;
+		
+		//exit(0);
+	}
+	
+	return res;	  
+}
+
 vector<vector<Ent> > Robot::ListEntitiesSetCombination(vector<string> requiredEntsNames, vector<Ent> myEnts)
 {
 	vector<vector<Ent> > res;
