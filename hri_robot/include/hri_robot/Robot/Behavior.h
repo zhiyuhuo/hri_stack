@@ -833,10 +833,9 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			}
             
             //the model will go through all the possible solutions. No Robot first, then Robot
-            // float respadd = 0;
-		    // vector<float> respbbb;
+            float respadd = 0;
+		    vector<float> respbbb;
             vector<vector<float> > responseForRobotEntityListSet;
-            vector<float> responseForRobotEntityList;
             for (int D = 0; D < decisionSpatialRelations.size(); D++)
             {
                 Dct dct = decisionSpatialRelations[D];
@@ -857,7 +856,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                         float dctResponse = GetResponseOfADetector(spAB, dct);
                         responseForRobotEntityList[P] = dctResponse;
                     }
-                    
+                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);
                 }
                 else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
                 {
@@ -891,7 +890,8 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                         }
                         float dctResponse = GetResponseOfADetector(spAB, dct);
                         responseForRobotEntityList[P] = dctResponse;
-                    }       							            
+                    }       
+                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
                 }
                 else
                 {
@@ -910,9 +910,34 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 					}										
 					spAB = GetSpatialRelationB2A(A, B);	 
                     float dctResponse = GetResponseOfADetector(spAB, dct);       
-                    responseForRobotEntityList.push_back(dctResponse);             
+                    respadd += dctResponse;
+					respbbb.push_back(dctResponse);            
                 }
             }
+            
+            float maxCRResult = 0;
+            int indexMaxCRResult = 0;
+            vector<float> CRRelatedResult(xythSet.size(), 0);
+            for (int P = 0; P < xythSet.size(); P++)
+            {
+                for (int n = 0; n < responseForRobotEntityListSet.size(); n++)
+                {
+                    CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
+                }
+                if (CRRelatedResult[P] > maxCRResult)
+                {
+                    maxCRResult = CRRelatedResult[P];
+                    indexMaxCRResult = P;
+                }
+            }
+            respadd += maxCRResult;
+            respbbb.push_back(maxCRResult);
+            score1 = respadd;
+			movePose[0] = (xythSet[indexMaxCRResult])[0];
+			movePose[1] = (xythSet[indexMaxCRResult])[1];
+			movePose[2] = (xythSet[indexMaxCRResult])[2];
+            
+
             
 			/**/
 			for (int i = 0; i < xythSet.size(); i++)
