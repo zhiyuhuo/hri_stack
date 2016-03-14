@@ -269,6 +269,12 @@ int Robot::KeyboardControlForLanguageGeneration()
 
 		if (m_mission.compare("init") == 0)
 		{
+            cout << "real robot pose: " << m_posRobot.GetX() << "    " << m_posRobot.GetY() << "    " << m_theta << endl; 
+			CallForPercepstionService();
+			Perception();
+			m_entities = GetVisiableEntities();
+		    SetOccupiedMap(400, 400, 0.25, -50, -50);
+            
 			m_mission = "receive_keyboard_action";
 		}
 		else if (m_mission.compare("receive_keyboard_action") == 0)
@@ -310,6 +316,8 @@ int Robot::KeyboardControlForLanguageGeneration()
 					CallForPercepstionService();
 					Perception();
 					m_entities = GetVisiableEntities();
+		            SetOccupiedMap(400, 400, 0.25, -50, -50);
+                    
 					cout << "The entities in the map: " << endl;
 					for (int i = 0; i < m_entities.size(); i++)
 					{
@@ -320,25 +328,49 @@ int Robot::KeyboardControlForLanguageGeneration()
 				case 'g':
 				{
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
-					vector<string> dscpSet = GenerateStaticDescription(dcts);
-					
-					dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
-					
-					hri_language_generation::GenerateSpatialLanguage srv;
-					for (int i = 0; i < dscpSet.size(); i++)
-					{
-						cout << dscpSet[i] << endl;
-						srv.request.groundings.push_back(dscpSet[i]);
-					}
-					
-					if (m_generatingLanguageClient.call(srv))
-					{
-						cout << srv.response.language << endl;
-					}
-					else
-					{
-						ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
-					}
+                    
+                    string cmdType;
+                    cout << "dynamic/static?(please enter d/s): " << endl;
+                    cin >> cmdType;
+                    cout << cmdType << endl;
+                    getchar(); 
+                    if (cmdType == "d")
+                    {
+                        m_pathPoints.clear();
+                        cout << "Current Robot Pose: " << endl;
+                        cout << "Generate Path from [0, 0, 0]:..." << endl;
+                        VecPosition origin(0, 0);
+                        m_pathPoints = CallForPathPlan(origin, m_posRobot);
+                        cout << "Get a path of " << m_pathPoints.size() << " points\n"; 
+                        for (int i = 0; i < m_pathPoints.size(); i++)
+                        {
+                            cout << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
+                        }
+                        vector<string> GenerateDynamicDescription(m_pathPoints, dcts);
+                    }
+                    else if (cmdType == "s")
+                    {
+                        vector<string> dscpSet = GenerateStaticDescription(dcts);			
+                        dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+                        
+                        hri_language_generation::GenerateSpatialLanguage srv;
+                        for (int i = 0; i < dscpSet.size(); i++)
+                        {
+                            cout << dscpSet[i] << endl;
+                            srv.request.groundings.push_back(dscpSet[i]);
+                        }
+                        
+                        if (m_generatingLanguageClient.call(srv))
+                        {
+                            cout << srv.response.language << endl;
+                        }
+                        else
+                        {
+                            ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
+                        }
+                    }
+                    
+                    
 					break;
 					
 				}

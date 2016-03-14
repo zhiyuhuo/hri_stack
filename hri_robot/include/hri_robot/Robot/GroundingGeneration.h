@@ -64,6 +64,47 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 	return res;
 }
 
+vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap)
+{
+  	vector<string> res;
+	// get the target object grouding
+	res.push_back(m_targetObject + "_non_non_non_non");
+    
+    for (int n = 0; n < pathPoints.size()-1; n++)
+    {
+        float rotation;
+        En OR;
+        OR = GetRobotEntity(pathPoints[i].GetX(), pathPoints[i].GetY(), (pathPoints[i+1] - pathPoints[i]).GetDirection());
+        En CR;
+        if (i < pathPoints.size()-1) 
+            CR = GetRobotEntity(pathPoints[i+1].GetX(), pathPoints[i].GetY(), (pathPoints[i+2] - pathPoints[i+1]).GetDirection());
+            rotation = (pathPoints[i+2] - pathPoints[i+1]).GetDirection() - pathPoints[i+1].GetX(), pathPoints[i].GetY();
+            while (rotaion > PI)    rotation -= 2* PI;
+            while (rotaion < -PI)    rotation += 2* PI;
+        else
+            CR = GetRobotEntity(pathPoints[i+1].GetX(), pathPoints[i].GetY(), (pathPoints[i+1] - pathPoints[i]).GetDirection());
+            rotation = 0;
+        
+        float maxScore = 0;
+        string name = "";
+        for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
+        {
+            if (it->first.find("move") != string::npos)
+            {
+                float score = ScoreStateToOneGrounding(it->second);
+                if (score > maxScore)
+                {
+                    maxScore = score;
+                    name = it->first;
+                }
+            }       
+        }
+        
+        cout << name << ": " << maxScore << endl;
+    }
+	return res;
+}
+
 vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
 {
   	vector<string> res;

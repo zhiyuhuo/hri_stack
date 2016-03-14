@@ -50,6 +50,10 @@ int Robot::SetOccupiedMap(int width, int height, double resolution, double origi
   
 	for (int n = 0; n < m_entities.size(); n++)
 	{
+        if (m_entities[n].name == "CR" || m_entities[n].name == "OR")
+        {
+            continue;
+        }
 		Ent ent = m_entities[n];
 		int u, v;
 		for (int i = 0; i < ent.vec.size() / 2; i++)

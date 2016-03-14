@@ -214,6 +214,7 @@ public:	//Path Generation (Generate RDT from Path)
   	ros::ServiceClient m_generatingLanguageClient; 
 	map<string, vector<Dct> > LoadGroundingTypesList();
 	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
+    vector<string> GenerateDynamicDescription(vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations);
 	vector<string> ConvertGroundingsFormatToLGServer(vector<string> groundings);
   

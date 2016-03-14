@@ -91,7 +91,7 @@ int Robot::RunCommand(vector<string> cmd)
 		SetOccupiedMap(400, 400, 0.25, -50, -50);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
-		m_path = 0;
+		m_path = 1;
 		m_state = "move_to_targert";
 	}
 	
