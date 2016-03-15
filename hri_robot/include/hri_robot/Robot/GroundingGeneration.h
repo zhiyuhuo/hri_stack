@@ -97,6 +97,8 @@ vector<string> Robot::GenerateDynamicDescription(float addresseeDir, vector<VecP
             while (CR.dir > PI)    CR.dir -= 2* PI;
             while (CR.dir < -PI)    CR.dir += 2* PI;
         }
+        cout << "CR: " << CR.x << " " << CR.y << " " << CR.dir << "; " <<
+                 OR.x << " " << OR.y << " " << OR.dir << " " << endl;
         
         float maxScore = 0;
         string name = "";
@@ -297,7 +299,9 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 	}
 // 	cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
 	
-	float respmin = 1;
+	float resp_min = 1;
+    float resp_mul = 1;
+    float resp_mean = 0;
 	for (int i = 0; i < decisionSpatialRelations.size(); i++)
 	{
 		Dct dct = decisionSpatialRelations[i];
@@ -329,13 +333,17 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 		float dctResponse = GetResponseOfADetector(spAB, dct);
 		cout << "   " <<  dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
 
-		if (dctResponse < respmin)
+		if (dctResponse < resp_min)
 		{
-			respmin = dctResponse;
+			resp_min = dctResponse;
 		}
+        resp_mul *= dctResponse;
+        resp_mean += dctResponse;
 	}
+    resp_mean /= decisionSpatialRelations.size();
 	
-	return respmin;
+    res = resp_min;
+	return res;
 }
 
 #endif

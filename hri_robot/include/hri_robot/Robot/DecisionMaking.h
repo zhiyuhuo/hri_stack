@@ -342,11 +342,6 @@ int Robot::KeyboardControlForLanguageGeneration()
                         VecPosition origin(0, 0);
                         float addresseeDir = 0;
                         m_pathPoints = CallForPathPlan(origin, m_posRobot);
-                        cout << "Get a path of " << m_pathPoints.size() << " points\n"; 
-                        for (int i = 0; i < m_pathPoints.size(); i++)
-                        {
-                            cout << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
-                        }
                         vector<string> dscpSet = GenerateDynamicDescription(addresseeDir, m_pathPoints, dcts);
                     }
                     else if (cmdType == "s")
