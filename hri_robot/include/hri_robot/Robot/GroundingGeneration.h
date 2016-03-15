@@ -73,17 +73,21 @@ vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints,
     for (int n = 0; n < pathPoints.size()-1; n++)
     {
         float rotation;
-        En OR;
-        OR = GetRobotEntity(pathPoints[i].GetX(), pathPoints[i].GetY(), (pathPoints[i+1] - pathPoints[i]).GetDirection());
-        En CR;
-        if (i < pathPoints.size()-1) 
-            CR = GetRobotEntity(pathPoints[i+1].GetX(), pathPoints[i].GetY(), (pathPoints[i+2] - pathPoints[i+1]).GetDirection());
-            rotation = (pathPoints[i+2] - pathPoints[i+1]).GetDirection() - pathPoints[i+1].GetX(), pathPoints[i].GetY();
-            while (rotaion > PI)    rotation -= 2* PI;
-            while (rotaion < -PI)    rotation += 2* PI;
+        Ent OR;
+        OR = GetRobotEntity(pathPoints[n].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
+        Ent CR;
+        if (n < pathPoints.size()-1) 
+        {
+            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+2] - pathPoints[n+1]).GetDirection());
+            rotation = (pathPoints[n+2] - pathPoints[n+1]).GetDirection() - pathPoints[n+1].GetX(), pathPoints[n].GetY();
+            while (rotation > PI)    rotation -= 2* PI;
+            while (rotation < -PI)    rotation += 2* PI;
+        }
         else
-            CR = GetRobotEntity(pathPoints[i+1].GetX(), pathPoints[i].GetY(), (pathPoints[i+1] - pathPoints[i]).GetDirection());
+        {
+            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
             rotation = 0;
+        }
         
         float maxScore = 0;
         string name = "";
@@ -91,7 +95,15 @@ vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints,
         {
             if (it->first.find("move") != string::npos)
             {
-                float score = ScoreStateToOneGrounding(it->second);
+                vector<float> CRPose;
+                CRPose.push_back(m_posRobot.GetX());
+                CRPose.push_back(m_posRobot.GetY());
+                CRPose.push_back(m_theta);
+                vector<float> ORPose;
+                ORPose.push_back(0);
+                ORPose.push_back(0);
+                ORPose.push_back(0);
+                float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
                 if (score > maxScore)
                 {
                     maxScore = score;
@@ -117,7 +129,15 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
 		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)
 		{
 			cout << "-" << it->first << ":" << endl;
-			float score = ScoreStateToOneGrounding(it->second);
+            vector<float> CRPose;
+            CRPose.push_back(m_posRobot.GetX());
+            CRPose.push_back(m_posRobot.GetY());
+            CRPose.push_back(m_theta);
+            vector<float> ORPose;
+            ORPose.push_back(0);
+            ORPose.push_back(0);
+            ORPose.push_back(0);
+			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			cout << "   The score is:    " << score << endl;
 			if (score > 0.01)
 			{
@@ -179,18 +199,22 @@ vector<string> Robot::ConvertGroundingsFormatToLGServer(vector<string> grounding
 	return res;
 }
 
-float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)
+float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic)
 {
-	vector<Dct>::iterator it;
-	for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
-	{
-		if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
-		  || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
-		)
-		{
-			decisionSpatialRelations.erase(it);
-		}
-	}
+    vector<Ent> entities = m_entities;
+    if (isStatic)
+    {
+        vector<Dct>::iterator it;
+        for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
+        {
+            if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
+            || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
+            )
+            {
+                decisionSpatialRelations.erase(it);
+            }
+        }
+    }
   
 	float res = 1;
 	float res2 = 0;
@@ -206,10 +230,10 @@ float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)
 	  
 	vector<string> myEntitiesNames;
 	myEntitiesNames.push_back("rotation");
-	for (int i = 0; i < m_entities.size(); i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
 // 		cout << "I have " << m_entities[i].name << endl;
-		myEntitiesNames.push_back(m_entities[i].name);
+		myEntitiesNames.push_back(entities[i].name);
 	}
 	
 	vector<int> matchVector(requiredEntitiesNames.size(), 0);
@@ -239,7 +263,7 @@ float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)
 	SpR rot;
 	rot.nameA = "rotation";
 	rot.nameB = "rotation";
-	float rotationf = m_theta - m_originalRobotPose[2];
+	float rotationf = CRPose[2] - ORPose[2];
 	while (rotationf > PI)	{	rotationf -= 2*PI;	}
 	while (rotationf < -PI)	{	rotationf += 2*PI;	}
 	vector<float> rotoutdirw(1, rotationf);
@@ -247,13 +271,19 @@ float Robot::ScoreStateToOneGrounding(vector<Dct> decisionSpatialRelations)
 	rot.outdirw = rotoutdirw;
 	rot.indirw = rotindirw;
 	
-	for (int i = 0; i < m_entities.size(); i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
-		if (m_entities[i].name.compare("CR") == 0)
+		if (entities[i].name.compare("CR") == 0)
 		{
-			m_entities[i] = GetRobotEntity( m_posRobot.GetX(), m_posRobot.GetY(), m_theta );
-			m_entities[i].name = "CR";
+			entities[i] = GetRobotEntity( CRPose[0], CRPose[1], CRPose[2] );
+			entities[i].name = "CR";
 		}
+        
+ 		if (entities[i].name.compare("OR") == 0)
+		{
+			entities[i] = GetRobotEntity( ORPose[0], ORPose[1], ORPose[2] );
+			entities[i].name = "OR";
+		}       
 	}
 // 	cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
 	

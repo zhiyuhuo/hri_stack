@@ -346,7 +346,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                         {
                             cout << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
                         }
-                        vector<string> GenerateDynamicDescription(m_pathPoints, dcts);
+                        vector<string> dscpSet = GenerateDynamicDescription(m_pathPoints, dcts);
                     }
                     else if (cmdType == "s")
                     {
