@@ -118,4 +118,31 @@ vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition pos
 	return res;
 }
 
+vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition posTarget)
+{
+	nav_msgs::GetPlan srvGetPlan;
+	srvGetPlan.request.start.pose.position.x = posStart.GetX(); 
+	srvGetPlan.request.start.pose.position.y = posStart.GetY(); 
+	srvGetPlan.request.goal.pose.position.x = posTarget.GetX(); 
+	srvGetPlan.request.goal.pose.position.y = posTarget.GetY(); 
+	
+	vector<VecPosition> res;
+	if (m_getPlanClient.call(srvGetPlan))
+	{
+		for (int i = 0; i < srvGetPlan.response.plan.poses.size(); i++)
+		{
+			VecPosition step(srvGetPlan.response.plan.poses[i].pose.position.x,
+					srvGetPlan.response.plan.poses[i].pose.position.y);
+			res.push_back(step);
+			cout << step.GetX() << " " << step.GetY() << endl;
+		}
+	}
+	else
+	{
+		ROS_ERROR("Failed to call service get path");
+	}		
+	
+	return res;
+}
+
 #endif
