@@ -64,7 +64,7 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 	return res;
 }
 
-vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap)
+vector<string> Robot::GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap)
 {
   	vector<string> res;
 	// get the target object grouding
@@ -72,21 +72,30 @@ vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints,
     
     for (int n = 0; n < pathPoints.size()-1; n++)
     {
+        cout << "path segment:" << n << endl;
         float rotation;
         Ent OR;
         OR = GetRobotEntity(pathPoints[n].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
         Ent CR;
-        if (n < pathPoints.size()-1) 
+        if (n == 0) 
         {
             CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+2] - pathPoints[n+1]).GetDirection());
-            rotation = (pathPoints[n+2] - pathPoints[n+1]).GetDirection() - pathPoints[n+1].GetX(), pathPoints[n].GetY();
-            while (rotation > PI)    rotation -= 2* PI;
-            while (rotation < -PI)    rotation += 2* PI;
+            CR.dir = addresseeDir;
+        }
+        else if (n < pathPoints.size()-1) 
+        {
+            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+2] - pathPoints[n+1]).GetDirection());
+            CR.dir = (pathPoints[n+1] - pathPoints[n]).GetDirection();
+            while (CR.dir > PI)    CR.dir -= 2* PI;
+            while (CR.dir < -PI)    CR.dir += 2* PI;
+            
         }
         else
         {
             CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
-            rotation = 0;
+            CR.dir = (pathPoints[n] - pathPoints[n-1]).GetDirection();
+            while (CR.dir > PI)    CR.dir -= 2* PI;
+            while (CR.dir < -PI)    CR.dir += 2* PI;
         }
         
         float maxScore = 0;
@@ -95,15 +104,16 @@ vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints,
         {
             if (it->first.find("move") != string::npos)
             {
+                cout << "    -" << it->first << ":" << endl;
                 vector<float> CRPose;
-                CRPose.push_back(m_posRobot.GetX());
-                CRPose.push_back(m_posRobot.GetY());
-                CRPose.push_back(m_theta);
+                CRPose.push_back(CR.x);
+                CRPose.push_back(CR.y);
+                CRPose.push_back(CR.dir);
                 vector<float> ORPose;
-                ORPose.push_back(0);
-                ORPose.push_back(0);
-                ORPose.push_back(0);
-                float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
+                ORPose.push_back(OR.x);
+                ORPose.push_back(OR.y);
+                ORPose.push_back(OR.dir);
+                float score = ScoreStateToOneGrounding(CRPose, ORPose, it->second, false);
                 if (score > maxScore)
                 {
                     maxScore = score;
@@ -112,7 +122,7 @@ vector<string> Robot::GenerateDynamicDescription(vector<VecPosition> pathPoints,
             }       
         }
         
-        cout << name << ": " << maxScore << endl;
+        cout << "res" << name << ": " << maxScore << endl;
     }
 	return res;
 }

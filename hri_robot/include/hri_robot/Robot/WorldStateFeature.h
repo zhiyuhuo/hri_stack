@@ -60,7 +60,6 @@ int Robot::GetLEList(string rootDir)
 Ent Robot::GetWallEntity(float x, float y, float theta)
 {
 	Ent res;
-	
 	Ent botEnt = GetRobotEntity(x, y, theta);
 	for (int i = 0; i < m_LEList.size(); i++) 
 	{
@@ -75,7 +74,7 @@ Ent Robot::GetWallEntity(float x, float y, float theta)
 		{
 			in += spr.indirw[k];
 		}
-		
+        
 		if (out <= 0 && in > 0)
 		{
 			res = m_LEList[i];
