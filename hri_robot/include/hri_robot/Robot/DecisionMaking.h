@@ -370,6 +370,31 @@ int Robot::KeyboardControlForLanguageGeneration()
 					break;
 					
 				}
+                
+                case 'l':
+				{
+                    vector<string> dscpSet = GenerateStaticDescription(dcts);			
+                    dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+                        
+                    hri_language_generation::GenerateSpatialLanguage srv;
+                    for (int i = 0; i < dscpSet.size(); i++)
+                    {
+                        cout << dscpSet[i] << endl;
+                        srv.request.groundings.push_back(dscpSet[i]);
+                    }
+                        
+                    if (m_generatingLanguageClient.call(srv))
+                    {
+                        cout << srv.response.language << endl;
+                    }
+                    else
+                    {
+                        ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
+                    }
+    
+					break;
+					
+				}
 			}
 		}	
 		SetRobotVelocity();
