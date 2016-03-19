@@ -90,6 +90,7 @@ def edit_grounding_text(sentence, rdtcontentdic):
        print clause
        text = text + ' ' + clause
     print text
+    return text
     
 def build_grounding_graph(groundings, relations):
     print groundings
@@ -209,8 +210,9 @@ def handle_language_generation(req):
     sentence = inorder_traversal_graph(graph)
 
     language = edit_grounding_text(sentence, rdtcontentdic) 
-    print 'spatial description generated!'    
-    return language
+    print 'spatial description generated!:%s'%language  
+    
+    return GenerateSpatialLanguageResponse(language)
     
 def language_generation_server():
     rospy.init_node('hri_language_generation_server')
