@@ -216,7 +216,7 @@ public:	//Path Generation (Generate RDT from Path)
 	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
     vector<string> GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic);
-	vector<string> ConvertGroundingsFormatToLGServer(vector<string> groundings);
+	vector<string> AdjustGroundingsFormatToLGServer(vector<string> groundings);
   
 };
 

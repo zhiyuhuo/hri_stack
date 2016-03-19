@@ -347,7 +347,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                     else if (cmdType == "s")
                     {
                         vector<string> dscpSet = GenerateStaticDescription(dcts);			
-                        dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+                        dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
                         
                         hri_language_generation::GenerateSpatialLanguage srv;
                         for (int i = 0; i < dscpSet.size(); i++)
@@ -373,8 +373,9 @@ int Robot::KeyboardControlForLanguageGeneration()
                 
                 case 'l':
 				{
+                    map<string, vector<Dct> > dcts = LoadGroundingTypesList();
                     vector<string> dscpSet = GenerateStaticDescription(dcts);			
-                    dscpSet = ConvertGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+                    dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
                         
                     hri_language_generation::GenerateSpatialLanguage srv;
                     for (int i = 0; i < dscpSet.size(); i++)

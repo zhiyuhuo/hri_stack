@@ -161,7 +161,7 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
 	return res;
 }
 
-vector<string> Robot::ConvertGroundingsFormatToLGServer(vector<string> groundings)
+vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings)
 {
 	vector<string> res;
 	char findIt = '_';
