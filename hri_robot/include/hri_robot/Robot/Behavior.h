@@ -823,7 +823,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			{
 				for ( float y = -4 + posRobot.GetY(); y <= 4 + posRobot.GetY(); y+=0.5 )
 				{
-					for ( float th = 0; th < PI * 2; th += PI / 4 )
+					for ( float th = 0; th < PI * 2 - 0.001; th += PI / 4 )
 					{
 						vector<float> xyth(3, 0);
 						xyth[0] = x;
@@ -872,13 +872,14 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                     {
                         entXName = dct.nameA;
                     }
+
                     Ent entCR;
 					Ent entX;		
-					for (int Entity = 0; Entity < entities.size(); Entity++)
+					for (int ENTITY = 0; ENTITY < entities.size(); ENTITY++)
 					{
-						if (entities[Entity].name.compare(entXName) == 0)
+						if (entities[ENTITY].name.compare(entXName) == 0)
                         {
-							entX = entities[Entity];
+							entX = entities[ENTITY];
                             break;
 						}
 					}			
@@ -892,7 +893,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                         th = (xythSet[P])[2];
                         entCR = GetRobotEntity( x, y, th );
                         entCR.name = "CR";
-                        if (dct.nameA.find("CR"))
+                        if (dct.nameA.compare("CR") == 0)
                         {
                             spAB = GetSpatialRelationB2A(entCR, entX);	  
                         }
@@ -905,6 +906,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                     }       
                     responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
                 }
+                
                 else
                 {
                     Ent A;
@@ -936,6 +938,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                 {
                     CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
                 }
+                
                 if (CRRelatedResult[P] > maxCRResult1)
                 {
                     maxCRResult1 = CRRelatedResult[P];
@@ -973,11 +976,11 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
             float score2 = 0;
 			vector<float> movePose2 = movePose;
             xythSet.clear();		
-			for ( float x = -1 + movePose[0]; x <= 1 + movePose[0]; x += 0.25 )
+			for ( float x = -0.5 + movePose[0]; x <= 0.5 + movePose[0]; x += 0.25 )
 			{
-				for ( float y = -1 + movePose[1]; y <= 1 + movePose[1]; y += 0.25 )
+				for ( float y = -0.5 + movePose[1]; y <= 0.5 + movePose[1]; y += 0.25 )
 				{
-					for ( float th = 0; th < PI * 2; th += PI / 8 )
+					for ( float th = 0; th < PI * 2 - 0.01; th += PI / 8 )
 					{
 						vector<float> xyth(3, 0);
 						xyth[0] = x;
@@ -987,8 +990,10 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 					}
 				}
 			}
-            
+            cout << "build new xythSet: " << xythSet.size() << endl; 
             //the model will go through all the possible solutions. No Robot first, then Robot
+            respadd = 0;
+            respbbb.clear();
             responseForRobotEntityListSet.clear();
             for (int D = 0; D < decisionSpatialRelations.size(); D++)
             {
@@ -1043,7 +1048,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                         th = (xythSet[P])[2];
                         entCR = GetRobotEntity( x, y, th );
                         entCR.name = "CR";
-                        if (dct.nameA.find("CR"))
+                        if (dct.nameA.compare("CR") == 0)
                         {
                             spAB = GetSpatialRelationB2A(entCR, entX);	  
                         }
@@ -1077,7 +1082,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 					respbbb.push_back(dctResponse);            
                 }
             }
-            
+
             float maxCRResult2 = 0;
             int indexMaxCRResult2 = 0;
             CRRelatedResult.clear();
@@ -1094,14 +1099,13 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
                     indexMaxCRResult2 = P;
                 }
             }
-            
-            respadd -= maxCRResult1;
+           
+            cout << "respadd" << respadd << endl;
+           
             respadd += maxCRResult2;
-            respbbb.erase(respbbb.end());
-            respbbb.push_back(maxCRResult1);
+            respbbb.push_back(maxCRResult2);
             
             respadd /= decisionSpatialRelations.size();
-			//cout << respadd << endl;
 			
             x = (xythSet[indexMaxCRResult2])[0];
             y = (xythSet[indexMaxCRResult2])[1];
@@ -1201,13 +1205,14 @@ vector<vector<Ent> > Robot::ListEntitiesSetCombination(vector<string> requiredEn
 	
 	for (int i = 0; i < InstancesGroups.size(); i++)
 	{
-		cout << requiredEntsNames[i] << ": ";
+		cout << requiredEntsNames[i] << "; ";
 		vector<int> instancelist = InstancesGroups[i];
 // 		for (int j = 0; j < instancelist.size(); j++)
 // 		{
 // 			cout << instancelist[j] << " ";
 // 		}cout << endl;
 	}
+    cout << endl;
 	
 	vector<int> singleEnts;
 	vector<vector<int> > multiEntsSet;

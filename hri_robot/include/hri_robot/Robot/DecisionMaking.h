@@ -17,17 +17,20 @@ int Robot::RunNode()
 // 	AskGroundingService(m_spatialCommand);
 // 	ShowRobotCmdInfo();
 
+/***For testing the navigation package.***/
 // 	while (ros::ok())
 // 	{
 // 		TestPathGeneration();
 // 		ros::spinOnce();
 // 	}
   
+/***For testing old decision making function.***/
 // 	while (ros::ok())
 // 	{
 // 		DecisionMaking();
 // 		ros::spinOnce();
 // 	}
+    BuildFakeGroundingList();
   
 	while (ros::ok()) 
 	{
