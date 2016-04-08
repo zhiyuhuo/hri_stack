@@ -187,6 +187,7 @@ void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
 	rawPoints = xyzRaw;
 	ifGetPointCloud = true;
+   
 }
 
 hri_perception::Env BuildEnvMsg()

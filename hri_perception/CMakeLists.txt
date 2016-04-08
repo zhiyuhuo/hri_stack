@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs 
   geometry_msgs
   message_generation
+  tf
 )
 
 find_package(PCL 1.2 REQUIRED)
@@ -40,7 +41,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hri_perception2015a
- CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs nav_msgs geometry_msgs message_runtime
+ CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs nav_msgs geometry_msgs message_runtime tf
 #  DEPENDS system_lib
 )	
 

@@ -21,5 +21,6 @@
   <run_depend>hri_robot</run_depend>
   <run_depend>hri_android_to_robot</run_depend>
   <run_depend>hri_demonstration</run_depend>
+  <run_depend>teleop_twist_keyboard</run_depend>
 
 </package>

@@ -1,26 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hri_robot)
+project(hri_tf)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
-  geometry_msgs
-  hri_perception
-  hri_spatial_language_grounding
-  hri_language_generation
-  image_transport
-  nav_msgs
-  p2os_msgs
-  pcl_conversions
-  pcl_ros
   roscpp
-  rospack
   rospy
-  sensor_msgs
-  std_msgs
   tf
+  turtlesim
 )
 
 ## System dependencies are found with CMake's conventions
@@ -80,7 +68,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   p2os_msgs#   sensor_msgs#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -114,8 +102,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES hri_robot
- CATKIN_DEPENDS cv_bridge geometry_msgs hri_perception hri_spatial_language_grounding hri_language_generation image_transport nav_msgs p2os_msgs pcl_conversions pcl_ros roscpp rospack rospy sensor_msgs std_msgs tf
+#  LIBRARIES learning_tf
+#  CATKIN_DEPENDS roscpp rospy tf turtlesim
 #  DEPENDS system_lib
 )
 
@@ -126,35 +114,34 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(include
+include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(hri_robot
-#   src/${PROJECT_NAME}/hri_robot.cpp
+# add_library(learning_tf
+#   src/${PROJECT_NAME}/learning_tf.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(hri_robot ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(learning_tf ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(hri_robot_node src/hri_robot_node.cpp)
-target_link_libraries(hri_robot_node ${catkin_LIBRARIES})
-
-add_executable(control src/control.cpp)
-target_link_libraries(control ${catkin_LIBRARIES})
+# add_executable(learning_tf_node src/learning_tf_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(hri_robot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(learning_tf_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+# target_link_libraries(learning_tf_node
+#   ${catkin_LIBRARIES}
+# )
 
-
-
+add_executable(tf_broadcaster src/tf_broadcaster.cpp)
+target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -171,7 +158,7 @@ target_link_libraries(control ${catkin_LIBRARIES})
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hri_robot hri_robot_node
+# install(TARGETS learning_tf learning_tf_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -196,7 +183,7 @@ target_link_libraries(control ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hri_robot.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_learning_tf.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

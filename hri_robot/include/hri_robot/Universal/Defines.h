@@ -39,8 +39,8 @@
 #define NOAPRON		1
 #define NONE	3
 #define ERRORV	0.03
-#define X 72
-#define Y 50
+#define HRI_X 72
+#define HRI_Y 50
 
 //#define MAP_SIZE2 60*40
 
