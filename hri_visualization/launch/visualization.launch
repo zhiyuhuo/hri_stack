@@ -1,0 +1,6 @@
+<launch>
+	<param name="robot_description" command="cat $(find hri_gazebo_platform)/models/hri_robot/model.sdf" />
+    <node pkg="rviz" name="rviz" type="rviz"/>        
+	<node pkg="hri_visualization" name="hri_tf_broadcaster" type="hri_tf_broadcaster_node"/>
+  
+</launch>

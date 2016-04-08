@@ -54,17 +54,6 @@ int main(int argc, char** argv){
     float curTiltAngleRad;
     while(ros::ok())
     {
-        //build the tf for robot
-        /*
-        static tf::TransformBroadcaster brRobot;
-        tf::Transform transformRobot;
-        transformRobot.setOrigin( tf::Vector3(x, y, 0.0) );
-        tf::Quaternion qRobot;
-        qRobot.setRPY(0, 0, theta);
-        transformRobot.setRotation(qRobot);
-        brRobot.sendTransform(tf::StampedTransform(transformRobot, ros::Time::now(), "map", "hri_robot/odom"));
-        */
-        cout << curTiltAngle << endl;
         curTiltAngleRad = curTiltAngle * PI / 180;
 
         //build the tf for kinect

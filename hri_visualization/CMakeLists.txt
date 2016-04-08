@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hri_tf)
+project(hri_visualization)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   std_msgs
   nav_msgs
+  interactive_markers
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -141,8 +143,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(tf_broadcaster src/tf_broadcaster.cpp)
-target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
+add_executable(hri_tf_broadcaster_node src/hri_tf_broadcaster_node.cpp)
+target_link_libraries(hri_tf_broadcaster_node ${catkin_LIBRARIES})
+
+add_executable(hri_insert_marker src/hri_insert_marker.cpp)
+target_link_libraries(hri_insert_marker ${catkin_LIBRARIES})
 
 #############
 ## Install ##
