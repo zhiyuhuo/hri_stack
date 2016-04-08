@@ -8,7 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   tf
-  turtlesim
+  std_msgs
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -103,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES learning_tf
-#  CATKIN_DEPENDS roscpp rospy tf turtlesim
+#  CATKIN_DEPENDS roscpp rospy tf std_msgs nav_msgs
 #  DEPENDS system_lib
 )
 
