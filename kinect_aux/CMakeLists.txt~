@@ -141,7 +141,7 @@ include_directories(
 
 add_executable(kinect_aux_node src/kinect_aux_node.cpp)
 target_link_libraries(kinect_aux_node
-   ${catkin_LIBRARIES} usb-1.0
+   ${catkin_LIBRARIES} labjackusb
  )
 
 #############
