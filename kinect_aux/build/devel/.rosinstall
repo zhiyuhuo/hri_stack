@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/hri/ros_workspace/kinect_aux/build/devel/setup.sh
