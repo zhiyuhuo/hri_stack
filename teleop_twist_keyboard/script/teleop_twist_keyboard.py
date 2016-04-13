@@ -3,7 +3,7 @@ import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
 
 from geometry_msgs.msg import Twist
-#from p2os_msgs.msg import MotorState
+from p2os_msgs.msg import MotorState
 
 import sys, select, termios, tty
 
@@ -15,9 +15,9 @@ Moving around:
    a    s    d
    z    x    c
 
-q/z : increase/decrease max speeds by 10%
-w/x : increase/decrease only linear speed by 10%
-e/c : increase/decrease only angular speed by 10%
+u/m : increase/decrease max speeds by 10%
+i/, : increase/decrease only linear speed by 10%
+o/. : increase/decrease only angular speed by 10%
 anything else : stop
 
 CTRL-C to quit
@@ -59,16 +59,17 @@ def vels(speed,turn):
 if __name__=="__main__":
     	settings = termios.tcgetattr(sys.stdin)
 	
-	#pubms = rospy.Publisher('/cmd_motor_state', MotorState, queue_size=10)
-	pub = rospy.Publisher('/hri_robot/cmd_vel', Twist, queue_size=10)
+	pubms = rospy.Publisher('cmd_motor_state', MotorState, queue_size=10)
+	#pub = rospy.Publisher('/hri_robot/cmd_vel', Twist, queue_size=10)
+	pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 	rospy.init_node('teleop_twist_keyboard')
 
-#	ms = MotorState()
-#	ms = 1
-#	k = 0
-#	while (k < 1000):
-#		k = k + 1
-#		pubms.publish(ms)
+	ms = MotorState()
+	ms = 1
+	k = 0
+	while (k < 1000):
+		k = k + 1
+		pubms.publish(ms)
 
 	x = 0
 	th = 0
