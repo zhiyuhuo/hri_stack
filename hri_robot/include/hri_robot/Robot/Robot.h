@@ -273,10 +273,33 @@ int Robot::ConnectToServer()
 	m_nh = new ros::NodeHandle(this->m_robot_namespace_);
 	
 	//sub and pub
-	m_poseSub = m_nh->subscribe("/hri_robot/odom", 1000, &Robot::poseCallback, this);
-	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
-	m_speedPub = m_nh->advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
+	string platformStr;
+	string poseTopicStr;
+	string cmdvelTopicStr;
 	
+	string key;
+	if (m_nh->searchParam("robot_platform", key))
+	{
+	    m_nh->getParam(key, platformStr);
+	}
+	if (platformStr.compare("physical") == 0)
+	{
+	    poseTopicStr = "/pose";
+	    cmdvelTopicStr = "/hri_robot/cmd_vel";
+	}
+	else
+	{
+	    poseTopicStr = "/hri_robot/odom";
+	    cmdvelTopicStr = "/cmd_vel";  
+	}
+	
+	m_poseSub = m_nh->subscribe(poseTopicStr.c_str(), 1000, &Robot::poseCallback, this);
+	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
+	m_speedPub = m_nh->advertise<geometry_msgs::Twist>(cmdvelTopicStr.c_str(), 100);
+	
+	
+	cout <<poseTopicStr << " " << cmdvelTopicStr << endl;
+	exit(1);
 	//clients
 	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
 	m_generatingLanguageClient = m_nh->serviceClient<hri_language_generation::GenerateSpatialLanguage>("hri_language_generation");

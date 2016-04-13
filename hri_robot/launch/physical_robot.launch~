@@ -1,6 +1,7 @@
 <launch>	  
-
-	<include file="$(find openni_launch)/launch/openni.launch" />	      
-	<node pkg="p2os_driver" type="p2os_driver" name="p2os_driver" />
+	<param name="robot_platform" value="physical" />
+	<include file="$(find openni_launch)/launch/openni.launch" />	  
+        <node pkg="p2os_driver" type="p2os_driver" name="p2os_driver" args="_port:=/dev/ttyUSB0 _pulse:=1.0 _use_sonar:=false" />    
+	<node pkg="p2os_driver" type="p2os_driver" name="p2os_driver" args="_port:=/dev/ttyUSB0 _pulse:=1.0 _use_sonar:=false" />
   
 </launch>
