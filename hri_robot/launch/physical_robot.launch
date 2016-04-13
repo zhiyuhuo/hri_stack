@@ -1,0 +1,6 @@
+<launch>	  
+
+	<include file="$(find openni_launch)/launch/openni.launch" />	      
+	<node pkg="p2os_driver" type="p2os_driver" name="p2os_driver" param="port" value="/dev/ttyUSB0" />
+  
+</launch>
