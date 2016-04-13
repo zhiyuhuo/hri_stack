@@ -58,7 +58,7 @@ def vels(speed,turn):
 	return "currently:\tspeed %s\tturn %s " % (speed,turn)
 
 if __name__=="__main__":
-	platform_name = 'physical'
+	platform_name = 'virtual'
 	if rospy.search_param('robot_platform'):
 	    platform_name = 'physical'
     	settings = termios.tcgetattr(sys.stdin)
@@ -92,26 +92,24 @@ if __name__=="__main__":
 		while(1):
 			print ms
 			pubms.publish(ms)
-			#key = getKey()
-			#if key in moveBindings.keys():
-				#x = moveBindings[key][0]
-				#th = moveBindings[key][1]
-			#elif key in speedBindings.keys():
-				#speed = speed * speedBindings[key][0]
-				#turn = turn * speedBindings[key][1]
+			key = getKey()
+			if key in moveBindings.keys():
+				x = moveBindings[key][0]
+				th = moveBindings[key][1]
+			elif key in speedBindings.keys():
+				speed = speed * speedBindings[key][0]
+				turn = turn * speedBindings[key][1]
 
-				#print vels(speed,turn)
-				#if (status == 14):
-					#print msg
-				#status = (status + 1) % 15
-			#else:
-				#x = 0
-				#th = 0
-				#if (key == '\x03'):
-					#break
+				print vels(speed,turn)
+				if (status == 14):
+					print msg
+				status = (status + 1) % 15
+			else:
+				x = 0
+				th = 0
+				if (key == '\x03'):
+					break
 
-			x = 0
-			th = 0.5
 			twist = Twist()
 			twist.linear.x = x*speed; twist.linear.y = 0; twist.linear.z = 0
 			if platform_name != 'physical':

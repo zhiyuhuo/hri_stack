@@ -17,6 +17,7 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/image_encodings.h>
 #include <image_transport/image_transport.h>
+#include "sensor_msgs/PointCloud.h"
 #include "sensor_msgs/PointCloud2.h"
 #include <tf2_msgs/TFMessage.h>
 #include <geometry_msgs/Twist.h>
@@ -26,11 +27,16 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/point_cloud.h>
 #include <pcl/point_cloud.h>
 #include <pcl/octree/octree.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/conversions.h>
+#include <pcl_ros/transforms.h>
 
 #include "hri_perception/Env.h"
 
@@ -117,6 +123,9 @@ int main(int argc, char **argv)
 	
     // published env model topic
 	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
+    
+    // publish scene point cloud
+    ros::Publisher pclPub = n.advertise<pcl::PointCloud<pcl::PointXYZ> > ("/scene_points", 10);
     
 	// Define messages
 	std_msgs::Float64 tiltMsg; 
@@ -248,6 +257,9 @@ int main(int argc, char **argv)
             pcl::io::savePCDFileASCII (saveDir.c_str(), *cloudFiltered);
             exit(1);
         }
+        
+        
+        
 		ros::spinOnce();
 		loopRate.sleep();
 	}
