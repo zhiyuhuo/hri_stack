@@ -25,13 +25,14 @@ CTRL-C to quit
 
 moveBindings = {
 		'w':(1,0),
-		'e':(1,1),
-		'a':(0,-1),
-		'd':(0,1),
-		'q':(1,-1),
+		'e':(1,-1),
+		'a':(0,1),
+		'd':(0,-1),
+		'q':(1,1),
 		'x':(-1,0),
-		'c':(-1,-1),
-		'z':(-1,1),
+		'c':(-1,1),
+		'z':(-1,-1),
+		's':(0,0),
 	       }
 
 speedBindings={
@@ -57,19 +58,29 @@ def vels(speed,turn):
 	return "currently:\tspeed %s\tturn %s " % (speed,turn)
 
 if __name__=="__main__":
+	platform_name = 'physical'
+	if rospy.search_param('robot_platform'):
+	    platform_name = 'physical'
     	settings = termios.tcgetattr(sys.stdin)
+    	print platform_name
+	
+	cmd_vel_topic = '/hri_robot/cmd_vel'
+	if platform_name == 'physical':
+	    cmd_vel_topic = '/cmd_vel'
+	    
+	print cmd_vel_topic
 	
 	pubms = rospy.Publisher('cmd_motor_state', MotorState, queue_size=10)
-	#pub = rospy.Publisher('/hri_robot/cmd_vel', Twist, queue_size=10)
-	pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+	pub = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
 	rospy.init_node('teleop_twist_keyboard')
 
 	ms = MotorState()
 	ms = 1
-	k = 0
-	while (k < 1000):
-		k = k + 1
-		pubms.publish(ms)
+	pubms.publish(ms)
+	#k = 0
+	#while (k < 1000):
+		#k = k + 1
+		#pubms.publish(ms)
 
 	x = 0
 	th = 0
@@ -79,27 +90,35 @@ if __name__=="__main__":
 		print msg
 		print vels(speed,turn)
 		while(1):
-			key = getKey()
-			if key in moveBindings.keys():
-				x = moveBindings[key][0]
-				th = moveBindings[key][1]
-			elif key in speedBindings.keys():
-				speed = speed * speedBindings[key][0]
-				turn = turn * speedBindings[key][1]
+			print ms
+			pubms.publish(ms)
+			#key = getKey()
+			#if key in moveBindings.keys():
+				#x = moveBindings[key][0]
+				#th = moveBindings[key][1]
+			#elif key in speedBindings.keys():
+				#speed = speed * speedBindings[key][0]
+				#turn = turn * speedBindings[key][1]
 
-				print vels(speed,turn)
-				if (status == 14):
-					print msg
-				status = (status + 1) % 15
-			else:
-				x = 0
-				th = 0
-				if (key == '\x03'):
-					break
+				#print vels(speed,turn)
+				#if (status == 14):
+					#print msg
+				#status = (status + 1) % 15
+			#else:
+				#x = 0
+				#th = 0
+				#if (key == '\x03'):
+					#break
 
+			x = 0
+			th = 0.5
 			twist = Twist()
 			twist.linear.x = x*speed; twist.linear.y = 0; twist.linear.z = 0
+			if platform_name != 'physical':
+	                    if turn > 0:
+			        turn = -turn
 			twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = th*turn
+			print twist
 			pub.publish(twist)
 
 	except:

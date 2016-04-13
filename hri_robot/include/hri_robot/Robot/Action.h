@@ -217,11 +217,9 @@ int Robot::ToPositionAvoidObstacles(VecPosition posTarget)
 
 int Robot::SetRobotVelocity()
 {
-	double L = 2;
-	double A = 2;
 	geometry_msgs::Twist speedMsg;
-	speedMsg.linear.x = m_linearSpeed * L;
-	speedMsg.angular.z = -m_angularSpeed * A;
+	speedMsg.linear.x = m_linearSpeed * m_speedScalePlatform;
+	speedMsg.angular.z = m_angularSpeed * m_speedScalePlatform * m_angularConstPlatform;
 	m_speedPub.publish(speedMsg);
 	return 0;
 }

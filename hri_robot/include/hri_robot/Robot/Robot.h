@@ -98,6 +98,9 @@ public: // robot state variables
 	//linear and angular speed control parameter
 	float m_linearSpeed;
 	float m_angularSpeed;
+	
+	float m_angularConstPlatform;
+	float m_speedScalePlatform;
 	//Robot Position and Orientation
 	VecPosition m_posRobot;
 	float m_theta;
@@ -238,6 +241,9 @@ Robot::Robot()
 	m_linearSpeed = 0;
 	m_angularSpeed = 0;
 	
+	m_angularConstPlatform = 1.0;
+	m_speedScalePlatform = 1.0;
+	
 	m_posRobot.SetX(0);
 	m_posRobot.SetY(0);
 	m_theta = PI / 2;
@@ -285,12 +291,14 @@ int Robot::ConnectToServer()
 	if (platformStr.compare("physical") == 0)
 	{
 	    poseTopicStr = "/pose";
-	    cmdvelTopicStr = "/hri_robot/cmd_vel";
+	    cmdvelTopicStr = "/cmd_vel";
 	}
 	else
 	{
 	    poseTopicStr = "/hri_robot/odom";
-	    cmdvelTopicStr = "/cmd_vel";  
+	    cmdvelTopicStr = "/hri_robot/cmd_vel";  
+	    m_angularConstPlatform = -1.0;
+	    m_speedScalePlatform = 2.0;
 	}
 	
 	m_poseSub = m_nh->subscribe(poseTopicStr.c_str(), 1000, &Robot::poseCallback, this);
@@ -299,7 +307,7 @@ int Robot::ConnectToServer()
 	
 	
 	cout <<poseTopicStr << " " << cmdvelTopicStr << endl;
-	exit(1);
+	
 	//clients
 	m_groundingClient = m_nh->serviceClient<hri_spatial_language_grounding::SpatialLanguageGrounding>("hri_spatial_language_grounding");
 	m_generatingLanguageClient = m_nh->serviceClient<hri_language_generation::GenerateSpatialLanguage>("hri_language_generation");
