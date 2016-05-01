@@ -68,64 +68,7 @@ vector<string> Robot::GenerateDynamicDescription(float addresseeDir, vector<VecP
 {
   	vector<string> res;
 	// get the target object grouding
-	res.push_back(m_targetObject + "_non_non_non_non");
-    
-    for (int n = 0; n < pathPoints.size()-1; n++)
-    {
-        cout << "path segment:" << n << endl;
-        float rotation;
-        Ent OR;
-        OR = GetRobotEntity(pathPoints[n].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
-        Ent CR;
-        if (n == 0) 
-        {
-            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+2] - pathPoints[n+1]).GetDirection());
-            CR.dir = addresseeDir;
-        }
-        else if (n < pathPoints.size()-1) 
-        {
-            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+2] - pathPoints[n+1]).GetDirection());
-            CR.dir = (pathPoints[n+1] - pathPoints[n]).GetDirection();
-            while (CR.dir > PI)    CR.dir -= 2* PI;
-            while (CR.dir < -PI)    CR.dir += 2* PI;
-            
-        }
-        else
-        {
-            CR = GetRobotEntity(pathPoints[n+1].GetX(), pathPoints[n].GetY(), (pathPoints[n+1] - pathPoints[n]).GetDirection());
-            CR.dir = (pathPoints[n] - pathPoints[n-1]).GetDirection();
-            while (CR.dir > PI)    CR.dir -= 2* PI;
-            while (CR.dir < -PI)    CR.dir += 2* PI;
-        }
-        cout << "CR: " << CR.x << " " << CR.y << " " << CR.dir << "; " <<
-                 OR.x << " " << OR.y << " " << OR.dir << " " << endl;
-        
-        float maxScore = 0;
-        string name = "";
-        for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
-        {
-            if (it->first.find("move") != string::npos)
-            {
-                cout << "    -" << it->first << ":" << endl;
-                vector<float> CRPose;
-                CRPose.push_back(CR.x);
-                CRPose.push_back(CR.y);
-                CRPose.push_back(CR.dir);
-                vector<float> ORPose;
-                ORPose.push_back(OR.x);
-                ORPose.push_back(OR.y);
-                ORPose.push_back(OR.dir);
-                float score = ScoreStateToOneGrounding(CRPose, ORPose, it->second, false);
-                if (score > maxScore)
-                {
-                    maxScore = score;
-                    name = it->first;
-                }
-            }       
-        }
-        
-        cout << "res" << name << ": " << maxScore << endl;
-    }
+
 	return res;
 }
 
@@ -151,7 +94,7 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
             ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			cout << "   The score is:    " << score << endl;
-			if (score > 0.01)
+			if (score > 0.2)
 			{
 				res.push_back(it->first);
 			}

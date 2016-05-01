@@ -365,7 +365,7 @@ vector<Ent> Robot::GetVisiableEntities()
 	}
 	
 	//room and wall
-	Ent wall = GetWallEntity(m_originalRobotPose[0], m_originalRobotPose[1], m_originalRobotPose[2]);
+	Ent wall = GetWallEntity(m_posRobot.GetX(), m_posRobot.GetY(), m_theta);
 	wall.name = "room";
 	res.push_back(wall);
 	

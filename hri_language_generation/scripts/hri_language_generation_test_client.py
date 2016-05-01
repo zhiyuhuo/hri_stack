@@ -13,8 +13,6 @@ def call_for_language_generation_client(groundings):
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-def usage():
-    return "%s [x y]"%sys.argv[0]
     
 def read_groundings_file(fname):
     with open(fname) as f:

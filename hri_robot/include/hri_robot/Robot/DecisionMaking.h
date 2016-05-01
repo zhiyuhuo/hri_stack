@@ -328,51 +328,6 @@ int Robot::KeyboardControlForLanguageGeneration()
  					}
 					break;			  
 				}
-				case 'g':
-				{
-					map<string, vector<Dct> > dcts = LoadGroundingTypesList();
-                    
-                    string cmdType;
-                    cout << "dynamic/static?(please enter d/s): " << endl;
-                    cin >> cmdType;
-                    cout << cmdType << endl;
-                    getchar(); 
-                    if (cmdType == "d")
-                    {
-                        m_pathPoints.clear();
-                        cout << "Current Robot Pose: " << endl;
-                        cout << "Generate Path from [0, 0, 0]:..." << endl;
-                        VecPosition origin(0, 0);
-                        float addresseeDir = 0;
-                        m_pathPoints = CallForPathPlan(origin, m_posRobot);
-                        vector<string> dscpSet = GenerateDynamicDescription(addresseeDir, m_pathPoints, dcts);
-                    }
-                    else if (cmdType == "s")
-                    {
-                        vector<string> dscpSet = GenerateStaticDescription(dcts);			
-                        dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
-                        
-                        hri_language_generation::GenerateSpatialLanguage srv;
-                        for (int i = 0; i < dscpSet.size(); i++)
-                        {
-                            cout << dscpSet[i] << endl;
-                            srv.request.groundings.push_back(dscpSet[i]);
-                        }
-                        
-                        if (m_generatingLanguageClient.call(srv))
-                        {
-                            cout << srv.response.language << endl;
-                        }
-                        else
-                        {
-                            ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
-                        }
-                    }
-                    
-                    
-					break;
-					
-				}
                 
                 case 'l':
 				{
