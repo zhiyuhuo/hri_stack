@@ -280,6 +280,7 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 				if (sim > m)
 				{
 					m = sim;
+                    m_SEList[j] = tempEntList[i];
 				}
 			}
 			if (m < 0.1 )

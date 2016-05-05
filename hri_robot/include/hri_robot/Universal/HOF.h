@@ -334,7 +334,6 @@ vector<float> HistogramOfForcesWithOrientation(vector<float> B, vector<float> A,
 {
 	vector<float> res;
 
-	vector<float> B2(B.size(), 0);
 	float centerBX = 0;
 	float centerBY = 0;
 	for (int i = 0; i < B.size()/2; i++)
@@ -344,11 +343,21 @@ vector<float> HistogramOfForcesWithOrientation(vector<float> B, vector<float> A,
 	}
 	centerBX /= B.size()/2;
 	centerBY /= B.size()/2;
+    float dth = Borientation - PI/2;
 
+	vector<float> B2(B.size(), 0);
 	for (int i = 0; i < B.size()/2; i++)
 	{
 		B2[2*i] = B[2*i] - centerBX;
 		B2[2*i+1] = B[2*i+1] - centerBY;
+	}
+    
+    for (int i = 0; i < B.size()/2; i++)
+	{
+		float x = B2[2*i];
+		float y = B2[2*i+1];
+		B2[2*i] = x * cos(dth) + y * sin(dth);
+		B2[2*i+1] = -x * sin(dth) + y * cos(dth);
 	}
 
 	vector<float> A2(A.size(), 0);
@@ -358,7 +367,6 @@ vector<float> HistogramOfForcesWithOrientation(vector<float> B, vector<float> A,
 		A2[2*i+1] = A[2*i+1] - centerBY;
 	}
 
-	float dth = Borientation - PI/2;
 	for (int i = 0; i < A.size()/2; i++)
 	{
 		float x = A2[2*i];

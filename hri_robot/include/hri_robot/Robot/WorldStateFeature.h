@@ -21,7 +21,7 @@ Ent Robot::GetRobotEntity(float x, float y, float theta)
 	return res;
 }
 
-int Robot::GetLEList(string rootDir)
+int Robot::ImportLEList(string rootDir)
 {
 	m_LEList.clear();
 	
@@ -36,7 +36,7 @@ int Robot::GetLEList(string rootDir)
 		{
 			//printf ("%s\n", ent->d_name);
 			string fname(ent->d_name);
-			if (fname.find(".le") != string::npos)
+			if (fname.find(".le") != string::npos && fname.find(".le~") == string::npos)
 			{
 				string fullfname = rootDir + "/" + fname;
 				size_t nk = fname.find(".le");
@@ -75,7 +75,9 @@ Ent Robot::GetWallEntity(float x, float y, float theta)
 			in += spr.indirw[k];
 		}
         
-		if (out <= 0 && in > 0)
+        cout << m_LEList[i].name << " " << in << " " << out << endl;
+        
+		if (in > 0 && out <= 0)
 		{
 			res = m_LEList[i];
 			break;
@@ -97,8 +99,18 @@ Ent Robot::GetLE(string fullfname, string lename)
 		float xc = 0;
 		float yc = 0;
 		float ct = 0;
+        int Head = 1;
 		while ( getline (myfile,line) )
 		{
+            // if dir
+            if (Head == 1)
+            {
+                res.dir = (float)atof(line.c_str());
+                Head = 0;
+                continue;
+            }
+           
+            // else vector
 			string strx = "";
 			string stry = "";
 			float x,y;

@@ -199,7 +199,8 @@ def language_generation_example():
     print 'spatial description generated!'
     
 def handle_language_generation(req):
-    groundings = req.groundings;
+    groundings = req.groundings
+    print groundings
     rdtrelationprobdic = load_rdt_relation_prob_dic(global_rdtkeyrelationprobfilname)
     rdtcontentdic = load_rdt_content_dic(global_rdtcontentfilename)
     relations = compute_grounding_relations(groundings, rdtrelationprobdic, global_relationtypes)

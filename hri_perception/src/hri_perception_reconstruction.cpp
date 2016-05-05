@@ -252,7 +252,7 @@ int main(int argc, char **argv)
             sor.setLeafSize (0.02f, 0.02f, 0.02f);
             sor.filter (*cloudFiltered);
 
-            string saveDir = "/home/hri/hri_DATA/test/" + string(argv[1]);
+            string saveDir = "/home/hri/hri_DATA/reconstruction/" + string(argv[1]);
 
             pcl::io::savePCDFileASCII (saveDir.c_str(), *cloudFiltered);
             exit(1);

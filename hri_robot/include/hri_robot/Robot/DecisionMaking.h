@@ -263,7 +263,7 @@ int Robot::TestRead()
 int Robot::KeyboardControlForLanguageGeneration()
 {
 	int res = 0;
-	m_targetObject = "mug";
+	//m_targetObject = "mug";
 	
 	while (ros::ok())
 	{
@@ -324,7 +324,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 					cout << "The entities in the map: " << endl;
 					for (int i = 0; i < m_entities.size(); i++)
 					{
-						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << endl;
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << ",   " << m_entities[i].dir << endl;
  					}
 					break;			  
 				}
@@ -338,7 +338,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                     hri_language_generation::GenerateSpatialLanguage srv;
                     for (int i = 0; i < dscpSet.size(); i++)
                     {
-                        cout << dscpSet[i] << endl;
+                        cout << i << ": " << dscpSet[i] << endl;
                         srv.request.groundings.push_back(dscpSet[i]);
                     }
                         

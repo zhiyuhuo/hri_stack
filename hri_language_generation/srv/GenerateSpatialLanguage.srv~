@@ -1,5 +1,6 @@
 #request constants
-string groundings[]
+string obj
+string[] groundings
 ---
 #respond constants
 string language

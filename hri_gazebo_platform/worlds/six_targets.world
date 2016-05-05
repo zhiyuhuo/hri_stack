@@ -18,7 +18,7 @@
 
 		<include>
 			<uri>model://hri_robot</uri>
-			<pose>2.75 4 0 0 0 0</pose>
+			<pose>2.75 0 0 0 0 3.1416</pose>
 		</include>
 
 		<include>

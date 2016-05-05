@@ -53,7 +53,11 @@ public:
 };
 
 
-struct Ent{
+class Ent{
+public:
+	Ent(){dir = 0; x = 0; y = 0; name = "";}
+	~Ent(){}
+    
 	vector<float> vec;
 	float dir;
 	string name;
@@ -61,7 +65,8 @@ struct Ent{
 	float y;
 };
 
-struct SpR{
+class SpR{
+public:
 	string nameA;
 	string nameB;
 	
@@ -74,7 +79,8 @@ struct SpR{
 	
 };
 
-struct Dct{
+class Dct{
+public:
 	string nameA;
 	string nameB;
 	
@@ -186,7 +192,7 @@ public:	//World State Feature
 	vector<Ent> m_entities;
 	Ent GetRobotEntity(float x, float y, float theta);
 	vector<Ent> m_LEList;
-	int GetLEList(string rootDir);
+	int ImportLEList(string rootDir);
 	Ent GetWallEntity(float x, float y, float theta);
 	Ent GetLE(string fname, string lename);
 	SpR GetSpatialRelationB2A(Ent A, Ent B);	
@@ -257,7 +263,7 @@ Robot::Robot()
 	m_ifGetPose = false;
 	
 	//Get Le
-	GetLEList("/home/hri/hri_DATA/Map");
+	ImportLEList("/home/hri/hri_DATA/Map");
 	
 }
 

@@ -76,7 +76,7 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
 {
   	vector<string> res;
 	// get the target object grouding
-	res.push_back(m_targetObject + "_non_non_non_non");
+	res.push_back("non_obj_non_non_non");
   
 	// get the room and RDT grounding
 	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
@@ -94,7 +94,7 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
             ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			cout << "   The score is:    " << score << endl;
-			if (score > 0.2)
+			if (score > 0.25)
 			{
 				res.push_back(it->first);
 			}
@@ -112,7 +112,7 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 	for (int n = 0; n < groundings.size(); n++)
 	{
 		string sample = groundings[n];
-		cout << sample << endl;
+		//cout << sample << endl;
 		vector<int> dc;
 		for(int i = 0; i < sample.size(); i++)
 		    if(sample[i] == findIt)
@@ -125,20 +125,20 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 		
 		if (roomstr.compare("non") != 0)
 		{
-			cout << roomstr << endl;
+			//cout << roomstr << endl;
 			res.push_back( roomstr );
 			continue;
 		}
 		else if (objstr.compare("non") != 0)
 		{
-			cout << objstr << endl;
+			//cout << objstr << endl;
 			res.push_back( objstr );
 			continue;		    
 		}
 		else
 		{
-			cout << refdirstr << endl;
-			cout << tarstr << endl;
+			//cout << refdirstr << endl;
+			//cout << tarstr << endl;
 			if (tarstr.compare("non") != 0)
 			{
 				res.push_back(refdirstr + "_non");

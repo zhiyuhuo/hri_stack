@@ -98,7 +98,7 @@
 
 		<include>
 			<uri>model://hri_obj_glassescase</uri>
-			<pose>4 2 0.5 0 0 0</pose>
+			<pose>4 2 0.6 0 0 0</pose>
 		</include>
 
 		<include>
@@ -108,7 +108,7 @@
 
 		<include>
 			<uri>model://hri_obj_cellphone</uri>
-			<pose>4 -1.9 0.5 0 0 0</pose>
+			<pose>4 -1.9 0.6 0 0 0</pose>
 		</include>
 
 		<include>

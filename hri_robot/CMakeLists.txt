@@ -147,6 +147,9 @@ target_link_libraries(hri_robot_node ${catkin_LIBRARIES})
 add_executable(control src/control.cpp)
 target_link_libraries(control ${catkin_LIBRARIES})
 
+add_executable(speak src/speak.cpp)
+target_link_libraries(speak ${catkin_LIBRARIES})
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(hri_robot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
