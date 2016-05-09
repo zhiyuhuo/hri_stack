@@ -52,6 +52,7 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 						c.push_back(dirName[t]);
 					}
 				}while(t++ < dirName.size()-1);
+                
 				cmd.push_back(c);
 				cout << cmd[0] << " " << cmd[1] << " " << cmd[2] << " " << cmd[3] << " " << cmd[4] << endl;
 				vector<Dct> dct = ReadDetector(cmd);
@@ -94,7 +95,7 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
             ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			cout << "   The score is:    " << score << endl;
-			if (score > 0.25)
+			if (score > 0.50)
 			{
 				res.push_back(it->first);
 			}
@@ -146,7 +147,7 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 			}
 			else
 			{
-				res.push_back(refdirstr + tarstr);
+				res.push_back(refdirstr + "_" + tarstr);
 			}
 		}
 	}
@@ -157,16 +158,20 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic)
 {
     vector<Ent> entities = m_entities;
+
     if (isStatic)
     {
         vector<Dct>::iterator it;
         for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
         {
+            //cout << it->nameA << " ----- " << it->nameB << endl;
             if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
             || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
             )
             {
+                //cout << "remove:" << it->nameA << " ----- " << it->nameB << endl;
                 decisionSpatialRelations.erase(it);
+                it--;
             }
         }
     }

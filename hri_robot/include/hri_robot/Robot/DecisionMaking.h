@@ -324,7 +324,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 					cout << "The entities in the map: " << endl;
 					for (int i = 0; i < m_entities.size(); i++)
 					{
-						cout << " -" << m_entities[i].name << ": " << m_entities[i].x << ", " << m_entities[i].y << ",   " << m_entities[i].dir << endl;
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].vec.size()/2 << ", " << m_entities[i].x << ", " << m_entities[i].y << ",   " << m_entities[i].dir << endl;
  					}
 					break;			  
 				}
@@ -332,7 +332,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                 case 'l':
 				{
                     map<string, vector<Dct> > dcts = LoadGroundingTypesList();
-                    vector<string> dscpSet = GenerateStaticDescription(dcts);			
+                    vector<string> dscpSet = GenerateStaticDescription(dcts);		
                     dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
                         
                     hri_language_generation::GenerateSpatialLanguage srv;
@@ -341,7 +341,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                         cout << i << ": " << dscpSet[i] << endl;
                         srv.request.groundings.push_back(dscpSet[i]);
                     }
-                        
+                       
                     if (m_generatingLanguageClient.call(srv))
                     {
                         cout << srv.response.language << endl;

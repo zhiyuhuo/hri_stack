@@ -245,7 +245,7 @@ vector<Dct> Robot::ReadDetector(vector<string> cmd)
 		{  
 			//cout << epdf->d_name << endl;
 			string fileName(epdf->d_name);
-			if (fileName.size() > 5)
+			if (fileName.size() > 5 && fileName.find("~") == string::npos)
 			{
 				fileList.push_back(directory + fileName);
 				string featureName = fileName.substr(0, fileName.size() - 4);
@@ -280,7 +280,7 @@ vector<Dct> Robot::ReadDetector(vector<string> cmd)
 		}
 		string nameA = sLine.substr(0, stop);
 		string nameB = sLine.substr(stop+1, sLine.size() - stop - 2);
-		//cout << "-" << nameA << "_" << nameB << "-" << endl;
+		cout << "-" << nameA << "_" << nameB << "-" << endl;
 		getline(infile, sLine);
 		for (int k = 0; k < sLine.size(); k++)
 		{
