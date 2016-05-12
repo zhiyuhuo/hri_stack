@@ -63,6 +63,9 @@ public:
 	string name;
 	float x;
 	float y;
+    
+    int id;
+    string tag;
 };
 
 class SpR{
@@ -219,14 +222,14 @@ public:	//Robot Strategy
 	int BuildGroundingList();
 	int BuildFakeGroundingList();
 	
-public:	//Path Generation (Generate RDT from Path)
+public:	//Grounding Generation (Generate RDT from Path)
   	ros::ServiceClient m_generatingLanguageClient; 
 	map<string, vector<Dct> > LoadGroundingTypesList();
 	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
     vector<string> GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic);
 	vector<string> AdjustGroundingsFormatToLGServer(vector<string> groundings);
-  
+    void AnalyseEntityRelation();
 };
 
 Robot::Robot()

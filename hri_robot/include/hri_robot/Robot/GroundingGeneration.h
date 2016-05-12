@@ -10,17 +10,20 @@
 #include <fstream>
 #include <dirent.h>
 
-#include "Header.h"
-using namespace std;
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
 
-map<string, vector<Dct> > Robot::LoadGroundingTypesList()
+#include "Header.h"
+using namespace boost::numeric::ublas;
+
+map<string, std::vector<Dct> > Robot::LoadGroundingTypesList()
 {
-	map<string, vector<Dct> > res;
+	map<string, std::vector<Dct> > res;
 	
 	// get the grouding types
 	string rootDir = "/home/hri/hri_DATA/Targets/";
-	vector<string> groundingList;
-	vector<string> groundingDirList;
+	std::vector<string> groundingList;
+	std::vector<string> groundingDirList;
 	
 	DIR *dpdf;
 	struct dirent *epdf;
@@ -29,15 +32,15 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 	{
 		while (epdf = readdir(dpdf))
 		{  
-			//cout << epdf->d_name << endl;
+			//std::std::cout << epdf->d_name << endl;
 			string dirName(epdf->d_name);
 			if (dirName.size() > 5)
 			{
 				groundingDirList.push_back(rootDir + dirName + "/");
 				groundingList.push_back(dirName);
-				cout << dirName << endl;
+				std::cout << dirName << endl;
 				
-				vector<string> cmd;
+				std::vector<string> cmd;
 				int t(0);
 				string c;
 				do 
@@ -54,8 +57,8 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 				}while(t++ < dirName.size()-1);
                 
 				cmd.push_back(c);
-				cout << cmd[0] << " " << cmd[1] << " " << cmd[2] << " " << cmd[3] << " " << cmd[4] << endl;
-				vector<Dct> dct = ReadDetector(cmd);
+				std::cout << cmd[0] << " " << cmd[1] << " " << cmd[2] << " " << cmd[3] << " " << cmd[4] << endl;
+				std::vector<Dct> dct = ReadDetector(cmd);
 				res[dirName] = dct;
 			}
 		}
@@ -65,36 +68,36 @@ map<string, vector<Dct> > Robot::LoadGroundingTypesList()
 	return res;
 }
 
-vector<string> Robot::GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap)
+std::vector<string> Robot::GenerateDynamicDescription(float addresseeDir, std::vector<VecPosition> pathPoints, map<string, std::vector<Dct> > dctMap)
 {
-  	vector<string> res;
+  	std::vector<string> res;
 	// get the target object grouding
 
 	return res;
 }
 
-vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap)
+std::vector<string> Robot::GenerateStaticDescription(map<string, std::vector<Dct> > dctMap)
 {
-  	vector<string> res;
+  	std::vector<string> res;
 	// get the target object grouding
 	res.push_back("non_obj_non_non_non");
   
 	// get the room and RDT grounding
-	for(map<string, vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
+	for(map<string, std::vector<Dct> >::iterator it = dctMap.begin(); it != dctMap.end(); ++it) 
 	{
 		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)
 		{
-			cout << "-" << it->first << ":" << endl;
-            vector<float> CRPose;
+			std::cout << "-" << it->first << ":" << endl;
+            std::vector<float> CRPose;
             CRPose.push_back(m_posRobot.GetX());
             CRPose.push_back(m_posRobot.GetY());
             CRPose.push_back(m_theta);
-            vector<float> ORPose;
+            std::vector<float> ORPose;
             ORPose.push_back(0);
             ORPose.push_back(0);
             ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
-			cout << "   The score is:    " << score << endl;
+			std::cout << "   The score is:    " << score << endl;
 			if (score > 0.50)
 			{
 				res.push_back(it->first);
@@ -105,16 +108,16 @@ vector<string> Robot::GenerateStaticDescription(map<string, vector<Dct> > dctMap
 	return res;
 }
 
-vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings)
+std::vector<string> Robot::AdjustGroundingsFormatToLGServer(std::vector<string> groundings)
 {
-	vector<string> res;
+	std::vector<string> res;
 	char findIt = '_';
 	
 	for (int n = 0; n < groundings.size(); n++)
 	{
 		string sample = groundings[n];
-		//cout << sample << endl;
-		vector<int> dc;
+		//std::cout << sample << endl;
+		std::vector<int> dc;
 		for(int i = 0; i < sample.size(); i++)
 		    if(sample[i] == findIt)
 			dc.push_back(i);
@@ -126,20 +129,20 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 		
 		if (roomstr.compare("non") != 0)
 		{
-			//cout << roomstr << endl;
+			//std::cout << roomstr << endl;
 			res.push_back( roomstr );
 			continue;
 		}
 		else if (objstr.compare("non") != 0)
 		{
-			//cout << objstr << endl;
+			//std::cout << objstr << endl;
 			res.push_back( objstr );
 			continue;		    
 		}
 		else
 		{
-			//cout << refdirstr << endl;
-			//cout << tarstr << endl;
+			//std::cout << refdirstr << endl;
+			//std::cout << tarstr << endl;
 			if (tarstr.compare("non") != 0)
 			{
 				res.push_back(refdirstr + "_non");
@@ -155,21 +158,21 @@ vector<string> Robot::AdjustGroundingsFormatToLGServer(vector<string> groundings
 	return res;
 }
 
-float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic)
+float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<float> ORPose, std::vector<Dct> decisionSpatialRelations, bool isStatic)
 {
-    vector<Ent> entities = m_entities;
+    std::vector<Ent> entities = m_entities;
 
     if (isStatic)
     {
-        vector<Dct>::iterator it;
+        std::vector<Dct>::iterator it;
         for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
         {
-            //cout << it->nameA << " ----- " << it->nameB << endl;
+            //std::cout << it->nameA << " ----- " << it->nameB << endl;
             if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
             || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
             )
             {
-                //cout << "remove:" << it->nameA << " ----- " << it->nameB << endl;
+                //std::cout << "remove:" << it->nameA << " ----- " << it->nameB << endl;
                 decisionSpatialRelations.erase(it);
                 it--;
             }
@@ -179,7 +182,7 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 	float res = 1;
 	float res2 = 0;
 	//decide if there is enough entities to make decision
-	vector<string> requiredEntitiesNames;
+	std::vector<string> requiredEntitiesNames;
 	for (int i = 0; i < decisionSpatialRelations.size(); i++)
 	{
 		string nameA = decisionSpatialRelations[i].nameA;
@@ -188,33 +191,33 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 		requiredEntitiesNames.push_back(nameB);
 	}  
 	  
-	vector<string> myEntitiesNames;
+	std::vector<string> myEntitiesNames;
 	myEntitiesNames.push_back("rotation");
 	for (int i = 0; i < entities.size(); i++)
 	{
-// 		cout << "I have " << m_entities[i].name << endl;
+// 		std::cout << "I have " << m_entities[i].name << endl;
 		myEntitiesNames.push_back(entities[i].name);
 	}
 	
-	vector<int> matchVector(requiredEntitiesNames.size(), 0);
+	std::vector<int> match(requiredEntitiesNames.size(), 0);
 	for (int i = 0; i < requiredEntitiesNames.size(); i++)
 	{
-// 		cout << "I need " << requiredEntitiesNames[i] << endl;
+// 		std::cout << "I need " << requiredEntitiesNames[i] << endl;
 		for (int j = 0; j < myEntitiesNames.size(); j++)
 		{
 			if (requiredEntitiesNames[i].compare(myEntitiesNames[j]) == 0)
 			{
-				matchVector[i] = 1;
+				match[i] = 1;
 				break;
 			}
 		}
 	}
 	
-	for (int i = 0; i < matchVector.size(); i++)
+	for (int i = 0; i < match.size(); i++)
 	{
-		if (matchVector[i] == 0)
+		if (match[i] == 0)
 		{
-			cout << "   entity " << requiredEntitiesNames[i] << " is not observed" << endl;
+			std::cout << "   entity " << requiredEntitiesNames[i] << " is not observed" << endl;
 			res = 0;
 			return res;
 		}
@@ -226,8 +229,8 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 	float rotationf = CRPose[2] - ORPose[2];
 	while (rotationf > PI)	{	rotationf -= 2*PI;	}
 	while (rotationf < -PI)	{	rotationf += 2*PI;	}
-	vector<float> rotoutdirw(1, rotationf);
-	vector<float> rotindirw(1, 0);
+	std::vector<float> rotoutdirw(1, rotationf);
+	std::vector<float> rotindirw(1, 0);
 	rot.outdirw = rotoutdirw;
 	rot.indirw = rotindirw;
 	
@@ -245,7 +248,7 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 			entities[i].name = "OR";
 		}       
 	}
-// 	cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
+// 	std::cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
 	
 	float resp_min = 1;
     float resp_mul = 1;
@@ -273,13 +276,13 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
 					B = m_entities[j];
 				}
 			}	
-// 			cout << A.name << " " << A.vec.size()/2 << ", " << B.name << " " << B.vec.size()/2 << endl;
+// 			std::cout << A.name << " " << A.vec.size()/2 << ", " << B.name << " " << B.vec.size()/2 << endl;
 			spAB = GetSpatialRelationB2A(A, B);			
 			
 		}
 		
 		float dctResponse = GetResponseOfADetector(spAB, dct);
-		cout << "   " <<  dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
+		std::cout << "   " <<  dct.nameA << "_" << dct.nameB << ", " << dctResponse << endl;
 
 		if (dctResponse < resp_min)
 		{
@@ -293,5 +296,26 @@ float Robot::ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose
     res = resp_min;
 	return res;
 }
+
+void Robot::AnalyseEntityRelation()
+{   
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		std::cout << " -" << m_entities[i].name << ": " 
+            << m_entities[i].vec.size()/2 << ", " 
+            << m_entities[i].x << ", " << m_entities[i].y << ",   " 
+            << m_entities[i].dir << endl;
+            
+            m_entities[i].id = i;
+ 	}
+     
+    int L = m_entities.size();
+    matrix<double> m (L, L);
+    int t = 0;
+
+    std::cout << m << std::endl;
+}
+
+
 
 #endif

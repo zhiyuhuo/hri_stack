@@ -50,9 +50,10 @@ int Robot::HomeFetchTask()
 		CallForPercepstionService();
 		if (m_ifGetPerception && m_ifGetPose) 
 		{
+            m_tempSEList.clear();
 			m_mission = "wait_for_command";	
 		}
-	}
+    }
 		
 	else if (m_mission == "wait_for_command")
 	{
@@ -269,8 +270,18 @@ int Robot::KeyboardControlForLanguageGeneration()
 	{
 		imshow("grid map", m_imgOccupancy);
 		char c = waitKey(1);
+        
+        if (m_mission == "init") 
+        {
+            CallForPercepstionService();
+            if (m_ifGetPerception && m_ifGetPose) 
+            {
+                m_tempSEList.clear();
+                m_mission = "get_first_perception";	
+            }
+        }
 
-		if (m_mission.compare("init") == 0)
+		if (m_mission.compare("get_first_perception") == 0)
 		{
             cout << "real robot pose: " << m_posRobot.GetX() << "    " << m_posRobot.GetY() << "    " << m_theta << endl; 
 			CallForPercepstionService();
@@ -280,6 +291,7 @@ int Robot::KeyboardControlForLanguageGeneration()
             
 			m_mission = "receive_keyboard_action";
 		}
+        
 		else if (m_mission.compare("receive_keyboard_action") == 0)
 		{
 			switch (c)
@@ -331,6 +343,9 @@ int Robot::KeyboardControlForLanguageGeneration()
                 
                 case 'l':
 				{
+                    //AnalyseEntityRelation();
+                    //break;
+                   
                     map<string, vector<Dct> > dcts = LoadGroundingTypesList();
                     vector<string> dscpSet = GenerateStaticDescription(dcts);		
                     dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
