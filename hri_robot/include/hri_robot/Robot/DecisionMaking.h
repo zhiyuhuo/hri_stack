@@ -192,7 +192,7 @@ int Robot::DecisionMaking()
 
 int Robot::Test()
 {
-	map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+	map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
 	GenerateStaticDescription(dcts);
 }
 
@@ -346,7 +346,7 @@ int Robot::KeyboardControlForLanguageGeneration()
                     //AnalyseEntityRelation();
                     //break;
                    
-                    map<string, vector<Dct> > dcts = LoadGroundingTypesList();
+                    map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
                     vector<string> dscpSet = GenerateStaticDescription(dcts);		
                     dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
                         

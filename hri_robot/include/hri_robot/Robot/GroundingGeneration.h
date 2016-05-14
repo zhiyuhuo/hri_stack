@@ -16,12 +16,12 @@
 #include "Header.h"
 using namespace boost::numeric::ublas;
 
-map<string, std::vector<Dct> > Robot::LoadGroundingTypesList()
+map<string, std::vector<Dct> > Robot::LoadGroundingTypesList(string fileName)
 {
 	map<string, std::vector<Dct> > res;
 	
 	// get the grouding types
-	string rootDir = "/home/hri/hri_DATA/Targets/";
+	string rootDir = fileName; 
 	std::vector<string> groundingList;
 	std::vector<string> groundingDirList;
 	
