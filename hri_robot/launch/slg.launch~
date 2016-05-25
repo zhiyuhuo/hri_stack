@@ -1,5 +1,10 @@
 <launch>	        
 	
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">	    
+		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/six_targets.world"/>	    
+		<arg name="gui" value="true"/>	  
+	</include>	
+
 	<node pkg="hri_perception" name="hri_perception_server" type="hri_perception_server_node"/>
 	<node pkg="hri_language_generation" name="hri_language_generation_server" type="hri_language_generation_server_node.py"/>  
 

@@ -21,9 +21,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "hri_pbd5/Universal/Header.h"
-#include "hri_pbd5/Geometry/Header.h"
-#include "hri_pbd5/Robot/Header.h"
+#include "hri_demonstration/Universal/Header.h"
+#include "hri_demonstration/Geometry/Header.h"
+#include "hri_demonstration/Robot/Header.h"
 
 //#define SPATIALCOMMAND
 
@@ -53,7 +53,7 @@ float ht = 0;
 int main(int argc, char **argv)
 {
 	printf("");
-	ros::init(argc, argv, "auto");
+	ros::init(argc, argv, "newcontrol");
 	ros::NodeHandle n;
 	
 	//Robot Staff
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	{
 		string strID(argv[1]);
 		_robot.m_cmdID = strID;
-		string name = "/home/hri/HRI_Doc/Human Demo Rec 2/grounding - " + strID + ".txt";
+		string name = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_4/grounding - " + strID + ".txt";
 		groundingFileName.assign(name);	
 		cout << groundingFileName << endl;
 	}
@@ -89,8 +89,8 @@ int main(int argc, char **argv)
 		cout << "no file name!!\n";
 		return 0;
 	}
-	_robot.GetGroundingInfo(groundingFileName);
-	cout << "robot loop start..." << endl;
+	_robot.ReadGOInformation("/home/hri/hri_DATA/pbd/train.world");
+	
 	while (ros::ok() && ifTerminated == 0)
 	{	
 		_robot.m_laserData = laserData;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 		_robot.m_theta = posTheta;	
 		
 ////Robot Main Loop
-		_robot.Test();
+		_robot.KeyBoardControl();
 		
 ////Robot Main Loop End
 	
@@ -133,7 +133,7 @@ void ListenCallbackLaser(const sensor_msgs::LaserScan& msg)
 	for (int i = 0; i < N; i++)
 	{
 		vector<float> laserunit;
-		laserunit.push_back(minAngle + i * angleIncrement);
+		laserunit.push_back(minAngle + PI/2 + i * angleIncrement);
 		laserunit.push_back(ranges[i]);
 		laserunit.push_back(intensities[i]);
 		laserData.push_back(laserunit);

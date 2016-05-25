@@ -280,7 +280,7 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 				if (sim > m)
 				{
 					m = sim;
-                    m_SEList[j] = tempEntList[i];
+					m_SEList[j] = tempEntList[i];
 				}
 			}
 			if (m < 0.1 )
@@ -387,6 +387,67 @@ Ent Robot::GenerateGlobalEnt(Ent le)
 	}
 	ge.vec = vec;
 	return ge;
+}
+
+int Robot::DrawOccupancyGrid()
+{
+	float originX = -10;
+	float originY = -10;
+	float resolution = 0.1;
+	Ent ent;
+	m_imgGrid = cv::Scalar(0, 0, 0);
+	
+	map<string, vector<unsigned char> > colorTuple;
+	unsigned char bgrTable[3] = {0, 255, 0};
+	unsigned char bgrChair[3] = {255, 0, 0};
+	unsigned char bgrCouch[3] = {0, 0, 255};
+	unsigned char bgrBed[3] = {255, 255, 0};
+	unsigned char bgrRoom[3] = {150, 150, 255};
+	colorTuple["table"] = *(new vector<unsigned char>(bgrTable, bgrTable + sizeof(bgrTable) / sizeof(unsigned char)));
+	colorTuple["chair"] = *(new vector<unsigned char>(bgrChair, bgrChair + sizeof(bgrChair) / sizeof(unsigned char)));
+	colorTuple["couch"] = *(new vector<unsigned char>(bgrCouch, bgrCouch + sizeof(bgrCouch) / sizeof(unsigned char)));
+	colorTuple["bed"] = *(new vector<unsigned char>(bgrBed, bgrBed + sizeof(bgrBed) / sizeof(unsigned char)));
+	colorTuple["room"] = *(new vector<unsigned char>(bgrRoom, bgrRoom + sizeof(bgrRoom) / sizeof(unsigned char)));
+	
+	for (int n = 0; n < m_entities.size(); n++)
+	{
+		if (m_entities[n].name == "CR" || m_entities[n].name == "OR")
+		{
+		    continue;
+		}
+		
+		ent = m_entities[n];
+		int u, v, p;
+		string name = m_entities[n].name;
+		for (int i = 0; i < ent.vec.size() / 2; i++)
+		{
+			u = (int)((ent.vec[2*i] - originX) / resolution);
+			v = (int)((ent.vec[2*i+1] - originY) / resolution);
+			cout << u << ", " << v << endl;
+			if (u >= 0 && u < m_imgGrid.cols && v >= 0 && v < m_imgGrid.rows)
+			{			
+				p = u + v * 200;
+				m_imgOccupancy.data[p] = 255;
+				
+				if (colorTuple.count(name) == 1)
+				{
+					m_imgGrid.data[3*p] = (colorTuple[name])[0];
+					m_imgGrid.data[3*p+1] = (colorTuple[name])[1];
+					m_imgGrid.data[3*p+2] = (colorTuple[name])[2];
+				}
+				else
+				{
+					m_imgGrid.data[3*p] = 255;
+					m_imgGrid.data[3*p+1] = 255;
+					m_imgGrid.data[3*p+2] = 255;				
+				}
+			}
+		}
+	}
+	
+	int res;
+	res = m_entities.size();
+	return res;
 }
 
 #endif

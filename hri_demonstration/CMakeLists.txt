@@ -141,11 +141,9 @@ include_directories(include
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(new_control src/newcontrol.cpp)
-target_link_libraries(new_control ${OpenCV_LIBS} ${catkin_LIBRARIES})
+add_executable(train src/train.cpp)
+target_link_libraries(train ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(control_robot src/control.cpp)
-target_link_libraries(control_robot ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
 #############
 ## Install ##

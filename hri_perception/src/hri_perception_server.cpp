@@ -182,6 +182,7 @@ void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
 	}
 	
+	_perception.m_imgLocalMap.copyTo(imgDepth.rowRange(IMG_HEIGHT - LOCALMAP_HEIGHT, IMG_HEIGHT).colRange(IMG_WIDTH - LOCALMAP_WIDTH, IMG_WIDTH));
 	cv::imshow("Depth", imgDepth);
 	cv::waitKey(1);	
 

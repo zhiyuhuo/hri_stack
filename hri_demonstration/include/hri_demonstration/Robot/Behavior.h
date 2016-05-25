@@ -121,7 +121,7 @@ vector<Dct> Robot::ReadDetector(vector<string> cmd)
 {
 	vector<Dct> res;
 	string cmdStr = cmd[0] + "_" + cmd[1] + "_" + cmd[2] + "_" + cmd[3] + "_" + cmd[4];
-	string directory = "/home/hri/HRI_Doc/Targets/" + cmdStr + "/";
+	string directory = "/home/hri/hri_DATA/Targets/" + cmdStr + "/";
 	vector<string> fileList;
 	
 	DIR *dpdf;

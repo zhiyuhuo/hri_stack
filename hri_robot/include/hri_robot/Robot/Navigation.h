@@ -43,17 +43,19 @@ void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 // 	cout << "x: " << m_posRobot.GetX() << ",	y: " << m_posRobot.GetY() << ",		theta: " << m_theta << endl;
 }
 
-int Robot::SetOccupiedMap(int width, int height, double resolution, double originX, double originY)
+int Robot::SetOccupancyMap(int width, int height, double resolution, double originX, double originY)
 {
+        cout << "set grid map" << endl;
 	fill(m_occupiedMap.begin(), m_occupiedMap.end(), 0);
 	m_occupiedMap.resize(width*height, 0);
   
 	for (int n = 0; n < m_entities.size(); n++)
 	{
-        if (m_entities[n].name == "CR" || m_entities[n].name == "OR")
-        {
-            continue;
-        }
+		if (m_entities[n].name == "CR" || m_entities[n].name == "OR")
+		{
+		    continue;
+		}
+		
 		Ent ent = m_entities[n];
 		int u, v;
 		for (int i = 0; i < ent.vec.size() / 2; i++)
@@ -70,14 +72,14 @@ int Robot::SetOccupiedMap(int width, int height, double resolution, double origi
 	srvSetMap.request.map.info.height = height; 
 	srvSetMap.request.map.info.origin.position.x = originX;
 	srvSetMap.request.map.info.origin.position.y = originY;
-	
+		
 	for (int i = 0; i < m_occupiedMap.size(); i++)
 	{
 		srvSetMap.request.map.data.push_back(m_occupiedMap[i]);
 	}
 	srvSetMap.request.initial_pose.pose.pose.position.x = m_posRobot.GetX();
 	srvSetMap.request.initial_pose.pose.pose.position.y = m_posRobot.GetY();
-	
+		
 	if (m_setMapClient.call(srvSetMap))
 	{
 		ROS_INFO("Res: %d", (int)srvSetMap.response.success);

@@ -60,8 +60,8 @@ int main(int argc, char **argv)
 	
 	while(ros::ok())
 	{
-		cv::imshow("nav map", _planner.m_map);
-		cv::waitKey(1);
+		//cv::imshow("nav map", _planner.m_map);
+		//cv::waitKey(1);
 		ros::spinOnce();
 	}
 	  

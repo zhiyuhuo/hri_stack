@@ -126,7 +126,7 @@ public: // robot navigation
 	ros::ServiceClient m_setMapClient; 
 	ros::ServiceClient m_getPlanClient;
 	vector<uint8_t> m_occupiedMap;
-	int SetOccupiedMap(int width, int height, double resolution, double originX, double originY);
+	int SetOccupancyMap(int width, int height, double resolution, double originX, double originY);
 	vector<VecPosition> CallForPathPlan(VecPosition posStart, VecPosition posTarget);
 	
 public:	//robot basic action
@@ -147,6 +147,7 @@ public:	//robot sensor data processing
 	int UpdateSEMap(vector<Ent> tempEntList);
 	float CompareTwoGOs(Ent go1, Ent go2);
 	Ent GenerateGlobalEnt(Ent le);
+	int DrawOccupancyGrid();
 	
 public:	//parsing chunking tree
 	string m_spatialCommand;
@@ -161,6 +162,7 @@ public:	//parsing chunking tree
 public:	//new Behaviors for imitation learning
 	vector<float> m_originalRobotPose;
 	Mat m_imgOccupancy;
+	Mat m_imgGrid;
 	vector<vector<string> > m_groundings;
 	int m_step;
 	string m_cmdID;
@@ -188,7 +190,7 @@ public:	//Robot Behavior
 	vector<Dct> ReadDetector(vector<string> cmd);
 	float ScoreCurrentState(vector<Dct> decisionSpatialRelations);
 	float IterateltSearchTarget(vector<Dct> decisionSpatialRelations);
-    float IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations);
+	float IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations);
 	vector<vector<Ent> > ListEntitiesSetCombination(vector<string> requiredEntsNames, vector<Ent> myEnts);
 	
 public:	//World State Feature
@@ -226,11 +228,11 @@ public:	//Grounding Generation (Generate RDT from Path)
   	ros::ServiceClient m_generatingLanguageClient; 
 	map<string, vector<Dct> > LoadGroundingTypesList(string fileName);
 	vector<string> GenerateStaticDescription(map<string, vector<Dct> > dctMap);
-    vector<string> GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
+	vector<string> GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic);
 	vector<string> AdjustGroundingsFormatToLGServer(vector<string> groundings);
-    void AnalyseEntityRelation();
-    void LoadGroundingC0Appear();
+	void AnalyseEntityRelation();
+	void LoadGroundingC0Appear();
 };
 
 Robot::Robot()
@@ -260,6 +262,7 @@ Robot::Robot()
 	m_posRobotLast = m_posRobot;
 	
 	m_imgOccupancy = Mat::zeros(200, 200, CV_8UC1);
+	m_imgGrid = Mat::zeros(200, 200, CV_8UC3);
 	m_pathLength = 0;
 	m_spatialCommand = "";
 	

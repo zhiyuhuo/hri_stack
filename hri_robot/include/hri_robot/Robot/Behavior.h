@@ -88,7 +88,7 @@ int Robot::RunCommand(vector<string> cmd)
 		CallForPercepstionService();
 		Perception();
 		m_entities = GetVisiableEntities();
-		SetOccupiedMap(400, 400, 0.25, -50, -50);
+		SetOccupancyMap(400, 400, 0.25, -50, -50);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
 		m_path = 1;
@@ -818,7 +818,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			vector<Ent> entities = candidatedEnts[E];
 			vector<vector<float> > xythSet;
 			
-            // the first CR set
+			// the first CR set
 			for ( float x = -4 + posRobot.GetX(); x <= 4 + posRobot.GetX(); x+=0.5 )
 			{
 				for ( float y = -4 + posRobot.GetY(); y <= 4 + posRobot.GetY(); y+=0.5 )
@@ -834,82 +834,82 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				}
 			}
             
-            //the model will go through all the possible solutions. No Robot first, then Robot
-            float respadd = 0;
-		    vector<float> respbbb;
-            vector<vector<float> > responseForRobotEntityListSet;
-            for (int D = 0; D < decisionSpatialRelations.size(); D++)
-            {
-                Dct dct = decisionSpatialRelations[D];
+			//the model will go through all the possible solutions. No Robot first, then Robot
+			float respadd = 0;
+			vector<float> respbbb;
+			vector<vector<float> > responseForRobotEntityListSet;
+			for (int D = 0; D < decisionSpatialRelations.size(); D++)
+			{
+				Dct dct = decisionSpatialRelations[D];
 				SpR spAB;
-                if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
-                {
-                    spAB.nameA = "rotation";
-				    spAB.nameB = "rotation";
-                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
-                    for (int P = 0; P < xythSet.size(); P++)
-                    {
-                        float th = (xythSet[P])[2];
-                        float rotationf = th - m_originalRobotPose[2];
-				        while (rotationf > PI)	{	rotationf -= 2*PI;	}
-				        while (rotationf < -PI)	{	rotationf += 2*PI;	}
-                        spAB.outdirw = vector<float>(1, rotationf);
-                        spAB.indirw = vector<float>(1, 0);
-                        float dctResponse = GetResponseOfADetector(spAB, dct);
-                        responseForRobotEntityList[P] = dctResponse;
-                    }
-                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);
-                }
-                
-                else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
-                {
-                    string entXName;
-                    if (dct.nameA.compare("CR") == 0) 
-                    {
-                        entXName = dct.nameB;
-                    }
-                    else
-                    {
-                        entXName = dct.nameA;
-                    }
+				if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
+				{
+					spAB.nameA = "rotation";
+					spAB.nameB = "rotation";
+					vector<float> responseForRobotEntityList(xythSet.size(), 0);
+					for (int P = 0; P < xythSet.size(); P++)
+					{
+						float th = (xythSet[P])[2];
+						float rotationf = th - m_originalRobotPose[2];
+						while (rotationf > PI)	{	rotationf -= 2*PI;	}
+						while (rotationf < -PI)	{	rotationf += 2*PI;	}
+						spAB.outdirw = vector<float>(1, rotationf);
+						spAB.indirw = vector<float>(1, 0);
+						float dctResponse = GetResponseOfADetector(spAB, dct);
+						responseForRobotEntityList[P] = dctResponse;
+					}
+					responseForRobotEntityListSet.push_back(responseForRobotEntityList);
+				}
+			
+				else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
+				{
+					string entXName;
+					if (dct.nameA.compare("CR") == 0) 
+					{
+						entXName = dct.nameB;
+					}
+					else
+					{
+						entXName = dct.nameA;
+					}
 
-                    Ent entCR;
+					Ent entCR;
 					Ent entX;		
 					for (int ENTITY = 0; ENTITY < entities.size(); ENTITY++)
 					{
 						if (entities[ENTITY].name.compare(entXName) == 0)
-                        {
+						{
 							entX = entities[ENTITY];
-                            break;
+							break;
 						}
 					}			
-                    
-                    float x,y,th;
-                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
-                    for (int P = 0; P < xythSet.size(); P++)
-                    {
-                        x = (xythSet[P])[0];
-                        y = (xythSet[P])[1];
-                        th = (xythSet[P])[2];
-                        entCR = GetRobotEntity( x, y, th );
-                        entCR.name = "CR";
-                        if (dct.nameA.compare("CR") == 0)
-                        {
-                            spAB = GetSpatialRelationB2A(entCR, entX);	  
-                        }
-                        else
-                        {
-                            spAB = GetSpatialRelationB2A(entX, entCR);	
-                        }
-                        float dctResponse = GetResponseOfADetector(spAB, dct);
-                        responseForRobotEntityList[P] = dctResponse;
-                    }       
-                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
-                }
-                
-                else
-                {
-                    Ent A;
+					
+					float x,y,th;
+					vector<float> responseForRobotEntityList(xythSet.size(), 0);
+					for (int P = 0; P < xythSet.size(); P++)
+					{
+						x = (xythSet[P])[0];
+						y = (xythSet[P])[1];
+						th = (xythSet[P])[2];
+						entCR = GetRobotEntity( x, y, th );
+						entCR.name = "CR";
+						if (dct.nameA.compare("CR") == 0)
+						{
+							spAB = GetSpatialRelationB2A(entCR, entX);	  
+						}
+						else
+						{
+							spAB = GetSpatialRelationB2A(entX, entCR);	
+						}
+						float dctResponse = GetResponseOfADetector(spAB, dct);
+						responseForRobotEntityList[P] = dctResponse;
+					}       
+					responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
+				}
+			
+				else
+				{
+					Ent A;
 					Ent B;		
 					for (int j = 0; j < entities.size(); j++)
 					{
@@ -923,38 +923,38 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 						}
 					}										
 					spAB = GetSpatialRelationB2A(A, B);	 
-                    float dctResponse = GetResponseOfADetector(spAB, dct);       
-                    respadd += dctResponse;
+					float dctResponse = GetResponseOfADetector(spAB, dct);       
+					respadd += dctResponse;
 					respbbb.push_back(dctResponse);            
-                }
-            }
-            
-            float maxCRResult1 = 0;
-            int indexMaxCRResult1 = 0;
-            vector<float> CRRelatedResult(xythSet.size(), 0);
-            for (int P = 0; P < xythSet.size(); P++)
-            {
-                for (int n = 0; n < responseForRobotEntityListSet.size(); n++)
-                {
-                    CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
-                }
-                
-                if (CRRelatedResult[P] > maxCRResult1)
-                {
-                    maxCRResult1 = CRRelatedResult[P];
-                    indexMaxCRResult1 = P;
-                }
-            }
-            
-            respadd += maxCRResult1;
-            respbbb.push_back(maxCRResult1);
-            
-            respadd /= decisionSpatialRelations.size();
+				}
+			}
+		    
+			float maxCRResult1 = 0;
+			int indexMaxCRResult1 = 0;
+			vector<float> CRRelatedResult(xythSet.size(), 0);
+			for (int P = 0; P < xythSet.size(); P++)
+			{
+				for (int n = 0; n < responseForRobotEntityListSet.size(); n++)
+				{
+					CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
+				}
+				
+				if (CRRelatedResult[P] > maxCRResult1)
+				{
+					maxCRResult1 = CRRelatedResult[P];
+					indexMaxCRResult1 = P;
+				}
+			}
+			
+			respadd += maxCRResult1;
+			respbbb.push_back(maxCRResult1);
+			
+			respadd /= decisionSpatialRelations.size();
 			//cout << respadd << endl;
 			float x,y,th;
-            x = (xythSet[indexMaxCRResult1])[0];
-            y = (xythSet[indexMaxCRResult1])[1];
-            th = (xythSet[indexMaxCRResult1])[2];
+			x = (xythSet[indexMaxCRResult1])[0];
+			y = (xythSet[indexMaxCRResult1])[1];
+			th = (xythSet[indexMaxCRResult1])[2];
 			int xi = (int)(x / 0.1) + 100;
 			int yi = (int)(y / 0.1) + 100;
 			if (m_imgOccupancy.data[xi + yi*200] == 0)
@@ -965,17 +965,15 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				movePose[1] = y;
 				movePose[2] = th;
 			}
-			      
-            
+				      
 			score = score1;
 			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
 			cout << "move to pose1: " << movePose[0] << " " << movePose[1] << " " << movePose[2] << ", score1: " << score1 << endl;
-			
-            
-            // shrink the interval. the second CR set
-            float score2 = 0;
+				    
+			// shrink the interval. the second CR set
+			float score2 = 0;
 			vector<float> movePose2 = movePose;
-            xythSet.clear();		
+			xythSet.clear();		
 			for ( float x = -0.5 + movePose[0]; x <= 0.5 + movePose[0]; x += 0.25 )
 			{
 				for ( float y = -0.5 + movePose[1]; y <= 0.5 + movePose[1]; y += 0.25 )
@@ -990,80 +988,80 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 					}
 				}
 			}
-            cout << "build new xythSet: " << xythSet.size() << endl; 
-            //the model will go through all the possible solutions. No Robot first, then Robot
-            respadd = 0;
-            respbbb.clear();
-            responseForRobotEntityListSet.clear();
-            for (int D = 0; D < decisionSpatialRelations.size(); D++)
-            {
-                Dct dct = decisionSpatialRelations[D];
+			cout << "build new xythSet: " << xythSet.size() << endl; 
+			//the model will go through all the possible solutions. No Robot first, then Robot
+			respadd = 0;
+			respbbb.clear();
+			responseForRobotEntityListSet.clear();
+			for (int D = 0; D < decisionSpatialRelations.size(); D++)
+			{
+				Dct dct = decisionSpatialRelations[D];
 				SpR spAB;
-                if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
-                {
-                    spAB.nameA = "rotation";
-				    spAB.nameB = "rotation";
-                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
-                    for (int P = 0; P < xythSet.size(); P++)
-                    {
-                        float th = (xythSet[P])[2];
-                        float rotationf = th - m_originalRobotPose[2];
-				        while (rotationf > PI)	{	rotationf -= 2*PI;	}
-				        while (rotationf < -PI)	{	rotationf += 2*PI;	}
-                        spAB.outdirw = vector<float>(1, rotationf);
-                        spAB.indirw = vector<float>(1, 0);
-                        float dctResponse = GetResponseOfADetector(spAB, dct);
-                        responseForRobotEntityList[P] = dctResponse;
-                    }
-                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);
-                }
-                else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
-                {
-                    string entXName;
-                    if (dct.nameA.compare("CR") == 0) 
-                    {
-                        entXName = dct.nameB;
-                    }
-                    else
-                    {
-                        entXName = dct.nameA;
-                    }
-                    Ent entCR;
+				if (dct.nameA.find("rotation") != string::npos  ||  dct.nameB.find("rotation") != string::npos)
+				{
+					spAB.nameA = "rotation";
+					spAB.nameB = "rotation";
+					vector<float> responseForRobotEntityList(xythSet.size(), 0);
+					for (int P = 0; P < xythSet.size(); P++)
+					{
+						float th = (xythSet[P])[2];
+						float rotationf = th - m_originalRobotPose[2];
+						while (rotationf > PI)	{	rotationf -= 2*PI;	}
+						while (rotationf < -PI)	{	rotationf += 2*PI;	}
+					    spAB.outdirw = vector<float>(1, rotationf);
+					    spAB.indirw = vector<float>(1, 0);
+					    float dctResponse = GetResponseOfADetector(spAB, dct);
+					    responseForRobotEntityList[P] = dctResponse;
+					}
+					responseForRobotEntityListSet.push_back(responseForRobotEntityList);
+				}
+				else if (dct.nameA.find("CR") != string::npos  ||  dct.nameB.find("CR") != string::npos)
+				{
+					string entXName;
+					if (dct.nameA.compare("CR") == 0) 
+					{
+						entXName = dct.nameB;
+					}
+					else
+					{
+						entXName = dct.nameA;
+					}
+					Ent entCR;
 					Ent entX;		
 					for (int Entity = 0; Entity < entities.size(); Entity++)
 					{
 						if (entities[Entity].name.compare(entXName) == 0)
-                        {
+						{
 							entX = entities[Entity];
-                            break;
+							break;
 						}
 					}						
-                    
-                    float x,y,th;
-                    vector<float> responseForRobotEntityList(xythSet.size(), 0);
-                    for (int P = 0; P < xythSet.size(); P++)
-                    {
-                        x = (xythSet[P])[0];
-                        y = (xythSet[P])[1];
-                        th = (xythSet[P])[2];
-                        entCR = GetRobotEntity( x, y, th );
-                        entCR.name = "CR";
-                        if (dct.nameA.compare("CR") == 0)
-                        {
-                            spAB = GetSpatialRelationB2A(entCR, entX);	  
-                        }
-                        else
-                        {
-                            spAB = GetSpatialRelationB2A(entX, entCR);	
-                        }
-                        float dctResponse = GetResponseOfADetector(spAB, dct);
-                        responseForRobotEntityList[P] = dctResponse;
-                    }       
-                    responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
-                }
-                else
-                {
-                    Ent A;
+					
+					float x,y,th;
+					vector<float> responseForRobotEntityList(xythSet.size(), 0);
+					for (int P = 0; P < xythSet.size(); P++)
+					{
+						x = (xythSet[P])[0];
+						y = (xythSet[P])[1];
+						th = (xythSet[P])[2];
+						entCR = GetRobotEntity( x, y, th );
+						entCR.name = "CR";
+						if (dct.nameA.compare("CR") == 0)
+						{
+							spAB = GetSpatialRelationB2A(entCR, entX);	  
+						}
+						else
+						{
+							spAB = GetSpatialRelationB2A(entX, entCR);	
+						}
+						float dctResponse = GetResponseOfADetector(spAB, dct);
+						responseForRobotEntityList[P] = dctResponse;
+					}       
+					responseForRobotEntityListSet.push_back(responseForRobotEntityList);							            
+				}
+				else
+				{
+					Ent A;
 					Ent B;		
 					for (int j = 0; j < entities.size(); j++)
 					{
@@ -1077,39 +1075,39 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 						}
 					}										
 					spAB = GetSpatialRelationB2A(A, B);	 
-                    float dctResponse = GetResponseOfADetector(spAB, dct);       
-                    respadd += dctResponse;
+					float dctResponse = GetResponseOfADetector(spAB, dct);       
+					respadd += dctResponse;
 					respbbb.push_back(dctResponse);            
-                }
-            }
+				}
+			}
 
-            float maxCRResult2 = 0;
-            int indexMaxCRResult2 = 0;
-            CRRelatedResult.clear();
-            CRRelatedResult = vector<float>(xythSet.size(), 0);
-            for (int P = 0; P < xythSet.size(); P++)
-            {
-                for (int n = 0; n < responseForRobotEntityListSet.size(); n++)
-                {
-                    CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
-                }
-                if (CRRelatedResult[P] > maxCRResult2)
-                {
-                    maxCRResult2 = CRRelatedResult[P];
-                    indexMaxCRResult2 = P;
-                }
-            }
-           
-            cout << "respadd" << respadd << endl;
-           
-            respadd += maxCRResult2;
-            respbbb.push_back(maxCRResult2);
-            
-            respadd /= decisionSpatialRelations.size();
+			float maxCRResult2 = 0;
+			int indexMaxCRResult2 = 0;
+			CRRelatedResult.clear();
+			CRRelatedResult = vector<float>(xythSet.size(), 0);
+			for (int P = 0; P < xythSet.size(); P++)
+			{
+				for (int n = 0; n < responseForRobotEntityListSet.size(); n++)
+				{
+					CRRelatedResult[P] += (responseForRobotEntityListSet[n])[P];
+				}
+				if (CRRelatedResult[P] > maxCRResult2)
+				{
+					maxCRResult2 = CRRelatedResult[P];
+					indexMaxCRResult2 = P;
+				}
+			}
+		      
+			cout << "respadd" << respadd << endl;
+		      
+			respadd += maxCRResult2;
+			respbbb.push_back(maxCRResult2);
 			
-            x = (xythSet[indexMaxCRResult2])[0];
-            y = (xythSet[indexMaxCRResult2])[1];
-            th = (xythSet[indexMaxCRResult2])[2];			
+			respadd /= decisionSpatialRelations.size();
+				    
+			x = (xythSet[indexMaxCRResult2])[0];
+			y = (xythSet[indexMaxCRResult2])[1];
+			th = (xythSet[indexMaxCRResult2])[2];			
 			xi = (int)(x / 0.1) + 100;
 			yi = (int)(y / 0.1) + 100;
 			if (m_imgOccupancy.data[xi + yi*200] == 0)
@@ -1120,10 +1118,10 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				movePose2[1] = y;
 				movePose2[2] = th;
 			}
-            
-            for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
+			
+			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
 			cout << "move to pose2: " << movePose2[0] << " " << movePose2[1] << " " << movePose2[2] << ", score2: " << score2 << endl;
-		
+			    
 			if (score2 > score)
 			{
 				score = score2;
@@ -1138,13 +1136,13 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				finalTargetPose[2] = movePose[2];
 			}
 		}
-		
+		    
 		cout << "move to pose final: " << finalTargetPose[0] << " " << finalTargetPose[1] << " " << finalTargetPose[2] << ", final score: " << score << endl;
-		
+		  
 		m_moveTarget.SetX(finalTargetPose[0]);
 		m_moveTarget.SetY(finalTargetPose[1]);
 		m_turnTarget = finalTargetPose[2];
-		
+		    
 		res = 1;
 		
 	}

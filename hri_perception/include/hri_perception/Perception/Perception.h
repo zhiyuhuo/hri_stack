@@ -43,6 +43,7 @@ public:
 public:
 	cv::Mat m_imgTag;
 	cv::Mat m_imgScene;
+	cv::Mat m_imgLocalMap;
 	vector<float> m_pt;
 	map<string, FurnitureDetector> m_detectorSet;
 	vector<Ent> m_SEList;
@@ -65,6 +66,7 @@ Perception::Perception()
 {
 	m_imgScene = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
 	m_imgTag = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
+	m_imgLocalMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
 }
 
 Perception::~Perception()
@@ -120,16 +122,15 @@ int Perception::Process()
 	m_SEList.clear();
   
 	int res = 0;
-	cv::Mat localMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
 	cv::Mat labelLocalMap = cv::Mat::zeros(LOCALMAP_HEIGHT, LOCALMAP_WIDTH, CV_8UC1);
 	
 	
-	BuildLocalMap(m_pt, localMap);
-	BwLabel(localMap, labelLocalMap);
+	BuildLocalMap(m_pt, m_imgLocalMap);
+	BwLabel(m_imgLocalMap, labelLocalMap);
 	SetBwMapBackgroundZero(labelLocalMap);
 	
-	cv::imshow("LocalMap", localMap);
-	cv::waitKey(1);
+	//cv::imshow("LocalMap", localMap);
+	//cv::waitKey(1);
 
 	//Find the number of blobs
 	int Num = 0;
