@@ -19,7 +19,7 @@ int Robot::KeyBoardAction()
 	m_imgshow = m_imgshow + m_imglattice;
 	imshow("imgshow", m_imgshow);
 	char c = waitKey(1);
-// 	//cout << m_mission << endl;
+	//cout << "m_mission ----------: " << m_mission << endl;
 	if (m_mission.compare("init") == 0)
 	{
 		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
@@ -134,8 +134,8 @@ int Robot::KeyBoardAction()
 			if (m_fr[i] > 0)
 			{
 				cout << m_fr[i] << " ";
-				Fur f = m_furLib[m_fr[i]];
-				cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
+				//Fur f = m_furLib[m_fr[i]];
+				//cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
 			}
 		}
 		cout << "____________________________________________________" << endl;
@@ -260,7 +260,7 @@ int Robot::KeyBoardControl()
 	m_imgshow = m_imgshow + m_imglattice;
 	imshow("imgshow", m_imgshow);
 	char c = waitKey(1);
-// 	//cout << m_mission << endl;
+	cout << "m_mission //////////// : " << m_mission << endl;
 	if (m_mission.compare("init") == 0)
 	{
 		float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
@@ -293,12 +293,10 @@ int Robot::KeyBoardControl()
 			case 'x':	{	m_linearSpeed = -0.2; m_angularSpeed = 0;	 break;}
 			case 'f':	{	m_mission = "save_data_to_file";	break;}
 		}
-
 		float dist = (m_posRobot - m_posRobotLast).GetMagnitude();
 		float rot = m_theta - m_thetaLast;
 		while (rot > PI) {	rot -= 2 * PI;	}
 		while (rot < -PI) {	rot += 2 * PI;	}
-		
 		if (dist > 0.25 || abs(rot) > PI / 6 )
 		{
 			float poseRecArr[3] = { m_posRobot.GetX(), m_posRobot.GetY(), m_theta };
@@ -307,13 +305,14 @@ int Robot::KeyBoardControl()
 			m_frRec.push_back(m_fr);
 			vector<string> g(1, "o");
 			m_cmdRec.push_back(g);
+			cout << m_fr.size() << " " << m_furLib.size() << endl;
 			for (int i = 0; i < m_fr.size(); i++)
 			{
 				if (m_fr[i] > 0)
 				{
 					cout << m_fr[i] << " ";
-					Fur f = m_furLib[m_fr[i]];
-					cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
+					//Fur f = m_furLib[m_fr[i]];
+					//cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
 				}
 			}
 			cout << "------\n";
@@ -321,7 +320,7 @@ int Robot::KeyBoardControl()
 			m_posRobotLast = m_posRobot;
 			m_thetaLast = m_theta;
 		}
-		
+		cout << "bug s" << endl;
 	}
 	
 	else if (m_mission.compare("save_data_to_file") == 0)

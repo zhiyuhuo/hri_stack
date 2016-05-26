@@ -90,6 +90,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 	_robot.ReadGOInformation("/home/hri/hri_DATA/pbd/train.world");
+	_robot.GetGroundingInfo(groundingFileName);
 	
 	while (ros::ok() && ifTerminated == 0)
 	{	
@@ -100,7 +101,8 @@ int main(int argc, char **argv)
 		_robot.m_theta = posTheta;	
 		
 ////Robot Main Loop
-		_robot.KeyBoardControl();
+		//_robot.KeyBoardControl();
+		_robot.KeyBoardAction();
 		
 ////Robot Main Loop End
 	

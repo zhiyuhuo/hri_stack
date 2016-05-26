@@ -221,7 +221,7 @@ Robot::Robot()
 	Mat colorMat = imread("/home/hri/hri_DATA/pbd/room.bmp");
 	cvtColor(colorMat, m_imgOccupy, CV_BGR2GRAY);
 	
-	m_storeDir = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_2/";
+	m_storeDir = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_4/";
 	m_pathLength = 0;
 	
 	m_fr.push_back(-1);
