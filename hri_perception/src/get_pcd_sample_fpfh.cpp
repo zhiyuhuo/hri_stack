@@ -45,7 +45,34 @@ void save_pc_fpfh(string fileName, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pc
 	myfile.close();
 }
 
-int main()
+void build_fpfh_feature(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
+{
+	//voxelize pc
+	pcl::VoxelGrid<pcl::PointXYZ> sor;
+	sor.setInputCloud (cloud);
+	sor.setLeafSize (0.02f, 0.02f, 0.02f);
+	sor.filter (*cloud);
+			
+	//get normal feature
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+	ne.setInputCloud (cloud);
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+	ne.setSearchMethod (tree);
+	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+	ne.setRadiusSearch (0.03);
+	ne.compute (*normals);	
+			
+	//get fpfh feature
+	pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+	fpfh.setInputCloud (cloud);
+	fpfh.setInputNormals (normals);
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree2 (new pcl::search::KdTree<pcl::PointXYZ>);
+	fpfh.setSearchMethod (tree2);
+	fpfh.setRadiusSearch (0.05);
+	fpfh.compute (*feature);	
+}
+
+void get_apartment_dataset_feature()
 {
 	int FNUM[8] = {32,24,36,24,36,32,24,24};
 	string CAT[8] = {"table", "chair", "table", "chair", "table", "table", "couch", "bed"};
@@ -61,41 +88,72 @@ int main()
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 			pcl::io::loadPCDFile<pcl::PointXYZ> (pcdNameStr, *cloud);
 			
-			//voxelize pc
-			pcl::VoxelGrid<pcl::PointXYZ> sor;
-			sor.setInputCloud (cloud);
-			sor.setLeafSize (0.02f, 0.02f, 0.02f);
-			sor.filter (*cloud);
+			pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature (new pcl::PointCloud<pcl::FPFHSignature33>);
+			build_fpfh_feature(cloud, feature);
 			
-			//get normal feature
-			pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-			ne.setInputCloud (cloud);
-			pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
-			ne.setSearchMethod (tree);
-			pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
-			ne.setRadiusSearch (0.03);
-			ne.compute (*normals);	
-			
-			//get fpfh feature
-			pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-			fpfh.setInputCloud (cloud);
-			fpfh.setInputNormals (normals);
-			pcl::search::KdTree<pcl::PointXYZ>::Ptr tree2 (new pcl::search::KdTree<pcl::PointXYZ>);
-			fpfh.setSearchMethod (tree2);
-			pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs (new pcl::PointCloud<pcl::FPFHSignature33> ());
-			fpfh.setRadiusSearch (0.05);
-			fpfh.compute (*fpfhs);
-			
-			//save normals
-			char pcnormNameStr[100] = {};
-			sprintf(pcnormNameStr, "/home/hri/Samples/FPFH/hri_apartment/%d/pcfpfh-%d-%d.txt", instance, instance, sample);
-			string pcfpfsName(pcnormNameStr);
+			char pcfpfhNameStr[100] = {};
+			sprintf(pcfpfhNameStr, "/home/hri/Samples/FPFH/hri_apartment/%d/pcfpfh-%d-%d.txt", instance, instance, sample);
+			string pcfpfsName(pcfpfhNameStr);
 			cout << "saving " << pcfpfsName << endl;
-			save_pc_fpfh(pcfpfsName, cloud, fpfhs);
+			save_pc_fpfh(pcfpfsName, cloud, feature);
 			cout << "save done. " << endl;
 		}
 	}
-	
-	
+}
+
+void get_rgbd_scene_dataset_feature()
+{
+	string CAT[4] = {"coffee_table", "office_chair", "sofa", "table"};
+	for (int n = 0; n < 4; n++)
+	{
+	  	vector<string> fileList;
+		string catogeryDir = "/home/hri/Samples/PCD/rgbd_scene/" + CAT[n];
+		DIR *pDIR;
+		struct dirent *entry;
+		if( pDIR=opendir(catogeryDir.c_str()) )
+		{
+			while(entry = readdir(pDIR))
+			{
+				if( strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 )
+				{
+					string str(entry->d_name);
+					if (str.find(".pcd") != string::npos)
+					{
+						fileList.push_back(str);
+						cout << str << "\n";
+					}
+				}
+			}
+			closedir(pDIR);
+		}
+		
+		for (int i = 0; i < fileList.size(); i++)
+		{
+			//read PCD
+			char pcdNameStr[100] = {};
+			sprintf(pcdNameStr, "%s/%s", catogeryDir.c_str(), fileList[i].c_str());
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+			pcl::io::loadPCDFile<pcl::PointXYZ> (pcdNameStr, *cloud);
+				
+			//get fpfh feature
+			pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature (new pcl::PointCloud<pcl::FPFHSignature33>);
+			build_fpfh_feature(cloud, feature);
+				
+			//save normals
+			string txtFileName((fileList[i]).begin(), (fileList[i]).end()-4);
+			char pcfpfhNameStr[100] = {};
+			sprintf(pcfpfhNameStr, "/home/hri/Samples/FPFH/rgbd_scene/%s/pcfpfh-%s.txt", CAT[n].c_str(), txtFileName.c_str());
+			string pcfpfsName(pcfpfhNameStr);
+			cout << "saving " << pcfpfsName << endl;
+			save_pc_fpfh(pcfpfsName, cloud, feature);
+			cout << "save done. " << endl;
+		}
+	}
+}
+
+int main()
+{
+	//get_apartment_dataset_feature();
+	get_rgbd_scene_dataset_feature();
 	return 0;
 }
