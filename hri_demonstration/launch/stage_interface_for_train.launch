@@ -1,0 +1,6 @@
+<launch>
+	<param name="root_dir" value="/home/hri/hri_DATA/pbd/" />
+	<param name="save_folder_name" value="Human_Demo_Rec_4" />
+	<param name="map_file_name" value="train.world" />
+	<node name="stageros" pkg="stage_ros" type="stageros" args="/home/hri/hri_DATA/pbd/train.world" />
+</launch>

@@ -187,7 +187,7 @@ int Robot::KeyBoardAction()
 		m_frRec.push_back(m_fr);
 		vector<string> tStr(1, m_key);
 		m_cmdRec.push_back(tStr);	
-		string mainDirStr = m_storeDir;
+		string mainDirStr = m_saveDir;
 		
 		time_t _tm =time(NULL );
 		struct tm * curtime = localtime ( &_tm );
@@ -325,7 +325,7 @@ int Robot::KeyBoardControl()
 	
 	else if (m_mission.compare("save_data_to_file") == 0)
 	{	
-		string mainDirStr = m_storeDir;
+		string mainDirStr = m_saveDir;
 		
 		time_t _tm =time(NULL );
 		struct tm * curtime = localtime ( &_tm );
@@ -460,7 +460,7 @@ int Robot::PathRec()
 	
 	else if (m_mission.compare("save_data_to_file") == 0)
 	{	
-		string mainDirStr = "/home/hri/HRI_Doc/Path Rec/";
+		string mainDirStr = m_saveDir + "Path Rec/";
 		
 		time_t _tm =time(NULL );
 		struct tm * curtime = localtime ( &_tm );

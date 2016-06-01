@@ -74,6 +74,7 @@ class Robot
 {
 public:
 	Robot();
+	Robot(string rootDir, string saveDir, string mapFile);
 	~Robot();
 	
 public:
@@ -182,7 +183,7 @@ public:	//robot behavior
 	
 	//Robot Intelligence 
 	VecPosition m_posRobotLast;
-	string m_storeDir;
+	string m_saveDir;
 	float m_thetaLast;
 	float m_pathLength;
 	int DecisionMaking();
@@ -197,7 +198,7 @@ public://Show Robot State
 };
 
 Robot::Robot()
-{
+{ 
 	m_counter = 0;
 	m_step = 0;
 	m_cmdID = "";
@@ -221,7 +222,46 @@ Robot::Robot()
 	Mat colorMat = imread("/home/hri/hri_DATA/pbd/room.bmp");
 	cvtColor(colorMat, m_imgOccupy, CV_BGR2GRAY);
 	
-	m_storeDir = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_4/";
+	m_saveDir = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_4/";
+	m_pathLength = 0;
+	
+	m_fr.push_back(-1);
+	m_fr.push_back(201);
+	m_fr.push_back(202);
+}
+
+Robot::Robot(string rootDir, string saveFolder, string mapFile)
+{
+	m_counter = 0;
+	m_step = 0;
+	m_cmdID = "";
+	
+	m_move = "init";
+	m_action = "stop";
+	m_state = "init";	//temporally out of use
+	m_mission = "init";
+	
+	m_posRobot.SetX(0);
+	m_posRobot.SetY(0);
+	m_theta = PI / 2;
+	m_posRobotLast = m_posRobot;
+	m_thetaLast = m_theta;
+	
+	string imgmapDir = rootDir + "map_trainer.bmp";
+	string maskDir = rootDir + "mask.bmp";
+	string latticeDir = rootDir + "lattice.bmp";
+	string robotDir = rootDir + "robot.bmp";
+	string colorDir = rootDir + "room.bmp";
+	
+	m_imgmap = imread(imgmapDir.c_str());
+	m_imgmask = imread(maskDir.c_str());
+	m_imglattice = imread(latticeDir.c_str());
+	m_imgrobot = imread(robotDir.c_str());
+	m_imgshow = m_imgmask.clone();
+	Mat colorMat = imread(colorDir.c_str());
+	cvtColor(colorMat, m_imgOccupy, CV_BGR2GRAY);
+	
+	m_saveDir = rootDir + saveFolder + "/";
 	m_pathLength = 0;
 	
 	m_fr.push_back(-1);

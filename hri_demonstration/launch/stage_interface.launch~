@@ -1,4 +1,5 @@
 <launch>
+	<param name="robot_platform" value="physical" />
 	<arg name="grounding" /> 
-	<node name="stageros" pkg="stage_ros" type="stageros" args="/home/hri/hri_DATA/pbd/trainer.world" />
+	<node name="stageros" pkg="stage_ros" type="stageros" args="/home/hri/hri_DATA/pbd/train.world" />
 </launch>

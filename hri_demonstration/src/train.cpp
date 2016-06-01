@@ -34,7 +34,6 @@ float posX, posY, posTheta;
 vector<vector<float> > laserData;
 geometry_msgs::Twist speedMsg;
 
-Robot _robot;
 string newComeVoiceMsg;
 string spatialCommandStr;
 int ifNewCommand = 0;
@@ -42,7 +41,6 @@ int ifTerminated = 0;
 
 void ListenCallbackLaser(const sensor_msgs::LaserScan& msg);
 void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg);
-void ListenCallbackCMD(const std_msgs::StringPtr& msg);
 
 bool ifGetPose = false;
 bool ifGetLaser = false;
@@ -59,7 +57,6 @@ int main(int argc, char **argv)
 	//Robot Staff
 	ros::Subscriber laserSub = n.subscribe("base_scan", 1000, ListenCallbackLaser);
 	ros::Subscriber poseSub = n.subscribe("base_pose_ground_truth", 1000, ListenCallbackPose);
-	ros::Subscriber cmdSub = n.subscribe("human_cmd", 1000, ListenCallbackCMD);
 	
 	//Odometry
 	posX = 0;
@@ -69,27 +66,59 @@ int main(int argc, char **argv)
 	//Motor Pub
 	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
 	
+	//directory 
+	string rootDir;
+	string saveFolder;
+	string mapFile;
+	
+	string key;
+	if (n.searchParam("root_dir", key))
+	{
+	    n.getParam(key, rootDir);
+	}
+	if (n.searchParam("save_folder_name", key))
+	{
+	    n.getParam(key, saveFolder);
+	}
+	if (n.searchParam("map_file_name", key))
+	{
+	    n.getParam(key, mapFile);
+	}
+	
 	ros::Rate loopRate(10);
 	while(ros::ok() && (!ifGetPose || !ifGetLaser))
 	{
 		ros::spinOnce();
 	}
+	
+	Robot _robot(rootDir, saveFolder, mapFile);
 
 	string groundingFileName;
 	if (argc > 1)
 	{
 		string strID(argv[1]);
 		_robot.m_cmdID = strID;
-		string name = "/home/hri/hri_DATA/pbd/Human_Demo_Rec_4/grounding - " + strID + ".txt";
+		string name = rootDir + saveFolder + "/" + strID + ".txt";
 		groundingFileName.assign(name);	
 		cout << groundingFileName << endl;
+		
+		string demoRecordDir = rootDir + saveFolder + "/" + strID + "/";
+		cout << demoRecordDir << endl;
+		DIR *pDir = opendir (demoRecordDir.c_str());
+		if (pDir == NULL)
+		{
+			mkdir(demoRecordDir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
+		}
 	}
 	else
 	{
 		cout << "no file name!!\n";
 		return 0;
 	}
-	_robot.ReadGOInformation("/home/hri/hri_DATA/pbd/train.world");
+	
+	string mapDir = rootDir + saveFolder + "/" + mapFile;
+	cout << mapDir << endl;
+	_robot.ReadGOInformation(mapDir);
 	_robot.GetGroundingInfo(groundingFileName);
 	
 	while (ros::ok() && ifTerminated == 0)
@@ -100,11 +129,11 @@ int main(int argc, char **argv)
 		_robot.m_posRobot.SetY(posY);
 		_robot.m_theta = posTheta;	
 		
-////Robot Main Loop
+	    ////Robot Main Loop
 		//_robot.KeyBoardControl();
 		_robot.KeyBoardAction();
 		
-////Robot Main Loop End
+	    ////Robot Main Loop End
 	
 		speedMsg.linear.x = _robot.m_linearSpeed;
 		speedMsg.angular.z = _robot.m_angularSpeed;
@@ -166,12 +195,6 @@ void ListenCallbackPose(const nav_msgs::OdometryConstPtr& msg)
 	posY = y;
 	posTheta = theta;
 	ifGetPose = true;
-}
-
-void ListenCallbackCMD(const std_msgs::StringPtr& msg)
-{
-	string cmd = msg->data;
-	_robot.m_humanCmd = cmd;
 }
 
 

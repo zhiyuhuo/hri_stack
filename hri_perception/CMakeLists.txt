@@ -77,4 +77,7 @@ target_link_libraries (get_pcd_sample_normal ${OpenCV_LIBS} ${PCL_LIBRARIES} ${c
 add_executable (get_pcd_sample_fpfh src/get_pcd_sample_fpfh.cpp)
 target_link_libraries (get_pcd_sample_fpfh ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 
+add_executable (get_pcd_sample_narf src/get_pcd_sample_narf.cpp)
+target_link_libraries (get_pcd_sample_narf ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+
 
