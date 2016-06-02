@@ -1,3 +1,6 @@
+#ifndef _GAZEBO_KINECT_TILT_PLUGIN_HH_
+#define _GAZEBO_KINECT_TILT_PLUGIN_HH_
+
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
@@ -102,3 +105,4 @@ namespace gazebo
 	GZ_REGISTER_MODEL_PLUGIN(GazeboROSKinectTilt)
 }
 
+#endif

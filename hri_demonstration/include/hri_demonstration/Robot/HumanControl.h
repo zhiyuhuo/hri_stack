@@ -129,6 +129,7 @@ int Robot::KeyBoardAction()
 		vector<string> tStr(1, m_key);
 		m_cmdRec.push_back(tStr);
 		
+		cout << "Entities Detected:   ";
 		for (int i = 0; i < m_fr.size(); i++)
 		{
 			if (m_fr[i] > 0)
@@ -138,7 +139,7 @@ int Robot::KeyBoardAction()
 				//cout << "visible - id:" << m_fr[i] << " name:" << f.name << " pose: " << f.posedim[0] << " " << f.posedim[1] << " " << f.posedim[2] << endl;
 			}
 		}
-		cout << "____________________________________________________" << endl;
+		cout << endl;
 		//cout << "m_pathLength: " << m_pathLength << endl;
 		m_posRobotLast = m_posRobot;
 		
