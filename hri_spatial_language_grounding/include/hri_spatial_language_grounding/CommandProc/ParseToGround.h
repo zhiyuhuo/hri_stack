@@ -79,7 +79,6 @@ public:
 	int SearchDeeperChunk(string chunkName, XMLNode* node);
 	int DealWithChunk(XMLNode* node);
 
-	int GenerateGroundingDictionayFromTXT(string rootDir);
 	int GenerateAGroundingDictionay(string rootDir, string groundingType, string groundingVariable);
 
 	int LoadGroundingDictionaryFromXml(string rootDir);

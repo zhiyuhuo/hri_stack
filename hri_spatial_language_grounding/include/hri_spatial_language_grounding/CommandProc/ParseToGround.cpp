@@ -145,39 +145,6 @@ int ParseToGround::DealWithChunk(XMLNode* node)
 	return 0;
 }
 
-int ParseToGround::GenerateGroundingDictionayFromTXT(string rootDir)
-{
-	string GroundingType[] = {"target room", "target object", "reference", "direction", "target"};
-	string TargetRoom[] = {"living room", "bedroom"};
-	string TargetObject[] = {"fork", "glasses case", "laptop", "monitor", "statue", "mug"};
-	string Reference[] = {"move", "room", "wall", "door", "robot", "table", "chair", "couch", "bed"};
-	string Direction[] = {"front", "left", "back", "right", "central", "beside", "between"};
-	string Target[] = {"table", "chair", "couch", "bed"};
-
-	for (int i = 0; i < 2; i++)
-	{
-		GenerateAGroundingDictionay(rootDir, GroundingType[0], TargetRoom[i]);
-	}
-	for (int i = 0; i < 6; i++)
-	{
-		GenerateAGroundingDictionay(rootDir, GroundingType[1], TargetObject[i]);
-	}
-	for (int i = 0; i < 9; i++)
-	{
-		GenerateAGroundingDictionay(rootDir, GroundingType[2], Reference[i]);
-	}
-	for (int i = 0; i < 7; i++)
-	{
-		GenerateAGroundingDictionay(rootDir, GroundingType[3], Direction[i]);
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		GenerateAGroundingDictionay(rootDir, GroundingType[4], Target[i]);
-	}
-
-	return 1;
-}
-
 int ParseToGround::GenerateAGroundingDictionay(string rootDir, string groundingType, string groundingVariable)
 {
 	char fName[100] = {0};
@@ -326,7 +293,7 @@ int ParseToGround::LoadAGoundingDictionary(string rootDir, string groundingType,
 	XMLDocument doc;
 	if(doc.LoadFile(fNameXML) != 0)
 	{
-		printf("%s %s, Fuck off! Can not Load File!\n", groundingType.c_str(), groundingVariable.c_str());
+		printf("%s %s, Er! Can not Load File!\n", groundingType.c_str(), groundingVariable.c_str());
 		return 0;
 	}
 	XMLElement* node = doc.FirstChildElement();
