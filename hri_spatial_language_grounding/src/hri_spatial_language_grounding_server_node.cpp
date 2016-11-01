@@ -85,18 +85,27 @@ bool Grounding(hri_spatial_language_grounding::SpatialLanguageGrounding::Request
 	return true;
 }
 
+int Test()
+{
+	ParseToGround _parser;
+	_parser.LoadGroundingDictionaryFromXml("/home/hri/hri_DATA/Grounding");
+	exit(1);
+}
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "hri_spatial_language_grounding_server_node");
 	ros::NodeHandle n;
 
+	//Test();
+	
 	ros::ServiceServer service = n.advertiseService("hri_spatial_language_grounding", Grounding);
 	ROS_INFO("Ready to ground spatial language.");
 	ros::spin();
 
 	return 0;
 }
+
 
 
 

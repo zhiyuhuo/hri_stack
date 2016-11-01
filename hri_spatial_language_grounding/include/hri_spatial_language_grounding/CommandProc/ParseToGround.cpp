@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <map>
 #include <vector>
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <iostream>
 #include "ParseToGround.h"
 
 using namespace std;
@@ -38,7 +42,8 @@ int ParseToGround::ParseXml(string xmlFileName, int id)
 		return 0;
 	}
 	int t = 1;
-	LoadGroundingDictionaryFromXml("/home/hri/hri_DATA");
+	LoadGroundingDictionaryFromXml("/home/hri/hri_DATA/Grounding/");
+	//OutputInfo();
 	for (XMLNode* note = nodes->FirstChildElement(); note != NULL; note = note->NextSiblingElement())
 	{
 		string noteName = note->Value();
@@ -251,44 +256,46 @@ int ParseToGround::GenerateAGroundingDictionay(string rootDir, string groundingT
 	return 1;
 }
 
-int ParseToGround::LoadGroundingDictionaryFromXml(string rootDir)
-{
-	string GroundingType[] = {"target room", "target object", "reference", "direction", "target"};
-	string TargetRoom[] = {"living room", "bedroom"};
-	string TargetObject[] = {"fork", "glasses case", "laptop", "monitor", "statue", "mug"};
-	string Reference[] = {"move", "room", "wall", "door", "robot", "table", "chair", "couch", "bed"};
-	string Direction[] = {"front", "left", "back", "right", "center", "beside", "between"};
-	string Target[] = {"table", "chair", "couch", "bed"};
-
-	for (int i = 0; i < 2; i++)
+int ParseToGround::LoadGroundingDictionaryFromXml(string rootDir) {
+	
+	m_groundingChunks.clear();
+	DIR *dp;
+	struct dirent *dirp;
+	if((dp  = opendir(rootDir.c_str())) == NULL) 
 	{
-		LoadAGoundingDictionary(rootDir, GroundingType[0], TargetRoom[i]);
+		cout << "Error(" << errno << ") opening " << rootDir << endl;
+		return errno;
 	}
-	for (int i = 0; i < 6; i++)
+	vector<string> files;
+	while ((dirp = readdir(dp)) != NULL) 
 	{
-		LoadAGoundingDictionary(rootDir, GroundingType[1], TargetObject[i]);
+		//cout << string(dirp->d_name) << endl;
+		if (string(dirp->d_name).size() > 2 && string(dirp->d_name).find('~') == string::npos)
+			files.push_back(string(dirp->d_name));
 	}
-	for (int i = 0; i < 9; i++)
+	closedir(dp);
+	string groundingType;
+	string groundingVariable;
+	for (int i = 0; i < files.size(); i++) 
 	{
-		LoadAGoundingDictionary(rootDir, GroundingType[2], Reference[i]);
+		//cout << files[i] << endl;
+		string file = files[i].substr(0,files[i].size()-4);
+		int dashPos = file.find('-');
+		//cout << file << " " << dashPos << endl;
+		groundingType = file.substr(0,dashPos);
+		groundingVariable = file.substr(dashPos+1);
+		//cout << "|" << groundingType << "|" << groundingVariable <<"|" << endl;
+		LoadAGoundingDictionary(rootDir, groundingType, groundingVariable);
 	}
-	for (int i = 0; i < 7; i++)
-	{
-		LoadAGoundingDictionary(rootDir, GroundingType[3], Direction[i]);
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		LoadAGoundingDictionary(rootDir, GroundingType[4], Target[i]);
-	}
-
-	return 1;
+	
+	return files.size()-2;
 }
 
 int ParseToGround::LoadAGoundingDictionary(string rootDir, string groundingType, string groundingVariable)
 {
 	//printf("%s - %s\n", groundingType.c_str(), groundingVariable.c_str());
 	char fNameXML[100] = {0};
-	sprintf(fNameXML, "%s/Grounding/%s-%s.xml", rootDir.c_str(), groundingType.c_str(), groundingVariable.c_str());
+	sprintf(fNameXML, "%s/%s-%s.xml", rootDir.c_str(), groundingType.c_str(), groundingVariable.c_str());
 
 	XMLDocument doc;
 	if(doc.LoadFile(fNameXML) != 0)
@@ -342,7 +349,7 @@ int ParseToGround::ParseCommnad()
 SampleChunk ParseToGround::ParseAChunk(SampleChunk sample)
 {
 	SampleChunk res = sample;
-	string GroundingTypeList[5] = {"target room", "target object", "reference", "direction", "target"};
+	string groundingTypeList[5] = {"target room", "target object", "reference", "direction", "target"};
 	float bestScoreList[5] = {MAXSCORE, MAXSCORE, MAXSCORE, MAXSCORE, MAXSCORE}; //m_targetRoom, m_targetObject, m_ref, m_dir, m_tar
 	int bestScoreGrounding[5] = {0};
 	for (int i = 0; i < m_groundingChunks.size(); i++)
@@ -350,7 +357,7 @@ SampleChunk ParseToGround::ParseAChunk(SampleChunk sample)
 		float score = MatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
 		for (int j = 0; j < 5; j++)
 		{
-			if (m_groundingChunks[i].m_groundingType.compare(GroundingTypeList[j]) == 0 && score <= bestScoreList[j])
+			if (m_groundingChunks[i].m_groundingType.compare(groundingTypeList[j]) == 0 && score <= bestScoreList[j])
 			{
 				bestScoreList[j] = score;
 				bestScoreGrounding[j] = i;
@@ -449,7 +456,7 @@ int ParseToGround::BuildCommandGrounding()
 		}
 	}
 	m_sampleChunks.erase(m_sampleChunks.begin() + targetRoomBestScoreSample);
-	//cout << "bug" << endl;
+// 	cout << "bug0" << endl;
 	//target object
 	float targetObjectBestScore = MAXSCORE;
 	int targetObjectBestScoreSample = -1;
@@ -467,7 +474,7 @@ int ParseToGround::BuildCommandGrounding()
 		}
 	}
 	m_sampleChunks.erase(m_sampleChunks.begin() + targetObjectBestScoreSample);
-	//cout << "bug" << endl;	
+// 	cout << "bug1" << endl;	
 	//Delete Nosense node
 	for (int i = 0; i < m_sampleChunks.size(); i++)
 	{
@@ -480,7 +487,7 @@ int ParseToGround::BuildCommandGrounding()
 		}
 
 	}
-	//cout << "bug" << endl;
+// 	cout << "bug2" << endl;
 	//RDT
 	vector<RDTNode> rdtNodeChain;
 	for (int i = 0; i < m_sampleChunks.size(); i++)
@@ -508,7 +515,7 @@ int ParseToGround::BuildCommandGrounding()
 		
 	}
 	m_RDTNodeSet = rdtNodeChain;
-	//cout << "bug" << endl;
+// 	cout << "bug3" << endl;
 	int n = 0;
 	int t = 1;
 	while (n < m_RDTNodeSet.size())
@@ -529,7 +536,48 @@ int ParseToGround::BuildCommandGrounding()
 			n++;
 		}
 	}
+	ReGroupRDTNodes();
 
+	return 0;
+}
+
+int ParseToGround::ReGroupRDTNodes()
+{
+	int n = 0; 
+	vector<RDTNode>::iterator it = m_RDTNodeSet.begin();
+	while (it+1 != m_RDTNodeSet.end()) 
+	{
+		RDTNode nd = *it;
+		RDTNode nd1 = *(it+1);
+		if (nd.m_tar != ""
+		 && nd.m_refList.size() == 0
+		 && nd.m_dirList.size() == 0
+		 && nd1.m_tar == ""
+		 && nd1.m_refList.size() > 0
+		 && nd1.m_refList[0] != "move"
+		)
+		{
+			it->m_refList = nd1.m_refList;
+			it->m_dirList = nd1.m_dirList;
+			m_RDTNodeSet.erase(it+1);
+		}
+		else
+		{
+			it++;
+		}
+	}
+	
+	return m_RDTNodeSet.size();
+}
+
+int ParseToGround::OutputInfo()
+{
+	cout << "m_groundingChunks.size(): " << m_groundingChunks.size() << endl;
+	for (int i = 0; i < m_groundingChunks.size(); i++) 
+	{
+		cout << "i: " << i << endl;
+		cout << m_groundingChunks[i].m_groundingType << " " << m_groundingChunks[i].m_groundingVariable << " " << m_groundingChunks[i].m_chunkName << endl;
+	}
 	return 0;
 }
 

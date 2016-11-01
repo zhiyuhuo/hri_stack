@@ -90,6 +90,9 @@ public:
 	float LevenshteinDistance(vector<string> s1, vector<string> s2);
 
 	int BuildCommandGrounding();
+	int ReGroupRDTNodes();
+	
+	int OutputInfo();
 }; 
 
 #endif
