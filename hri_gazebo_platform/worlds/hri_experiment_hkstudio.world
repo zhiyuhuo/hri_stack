@@ -114,6 +114,37 @@
 			<uri>model://hri_coffeetable</uri>
 			<pose>1 -3.5 0 0 0 0</pose>
 		</include>
+
+		<include>
+			<uri>model://hri_obj_laptop</uri>
+			<pose>-4 -3 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_mug</uri>
+			<pose>1 -3.5 0.5 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_glassescase</uri>
+			<pose>4 -4.5 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_wallet</uri>
+			<pose>-4.5 1 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_cellphone</uri>
+			<pose>-4.5 6 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_bowl</uri>
+			<pose>2 1.75 0.9 0 0 0</pose>
+		</include>
+
 	</world>
 </sdf>
 

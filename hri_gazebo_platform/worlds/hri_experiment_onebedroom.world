@@ -90,6 +90,35 @@
 			<pose>0.5 6 0 0 0 1.5708</pose>
 		</include>
 	
+		<include>
+			<uri>model://hri_obj_laptop</uri>
+			<pose>0 0.5 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_mug</uri>
+			<pose>4.5 1 0.5 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_glassescase</uri>
+			<pose>3.5 3 0.6 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_wallet</uri>
+			<pose>3 7 0.6 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_cellphone</uri>
+			<pose>4.5 5.9 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_bowl</uri>
+			<pose>0.5 7.8 0.6 0 0 0</pose>
+		</include>
 		
 	</world>
 </sdf>
