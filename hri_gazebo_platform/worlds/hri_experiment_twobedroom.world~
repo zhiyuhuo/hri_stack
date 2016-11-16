@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+	<world name="myworld">
+	  
+		<include>
+			<uri>model://sun</uri>
+		</include>
+
+		<include>
+			<uri>model://ground_plane</uri>
+		</include>
+	  
+		<include>
+			<uri>model://hri_two_bedrooms</uri>
+			<pose>0 0 0 0 0 0</pose>
+		</include>	
+		
+		<include>
+			<uri>model://hri_couch</uri>
+			<pose>1.25 2 0 0 0 3.1416</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_couch</uri>
+			<pose>0 0.5 0 0 0 1.5708</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_hexagontable</uri>
+			<pose>-1.25 2 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_roundtable</uri>
+			<pose>0.5 2.5 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_roundtable</uri>
+			<pose>-1.25 0.5 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_dinnertable</uri>
+			<pose>1 6 0 0 0 1.5708</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>1 5.5 0 0 0 3.1416</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>1 6.5 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_bed</uri>
+			<pose>3.5 0.75 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_roundtable</uri>
+			<pose>4 1.75 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_desk</uri>
+			<pose>2.5 7.5 0 0 0 1.5708</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>3 7.5 0 0 0 -1.5708</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_roundtable</uri>
+			<pose>4.25 6 0 0 0 0</pose>
+		</include>
+		
+	</world>
+</sdf>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
