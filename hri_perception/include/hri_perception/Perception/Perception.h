@@ -93,17 +93,24 @@ int Perception::ReadDetectors(string rootDir)
 {	
 	int res = 0;
 	
-	FurnitureDetector fd;
-	fd = ReadOneFurnitureDetector(rootDir, "table_low");
-	m_detectorSet["table_low"] = fd;
-	fd = ReadOneFurnitureDetector(rootDir, "table_high");
-	m_detectorSet["table_high"] = fd;
-	fd = ReadOneFurnitureDetector(rootDir, "chair");
-	m_detectorSet["chair"] = fd;
-	fd = ReadOneFurnitureDetector(rootDir, "couch");
-	m_detectorSet["couch"] = fd;
-	fd = ReadOneFurnitureDetector(rootDir, "bed");
-	m_detectorSet["bed"] = fd;
+	FurnitureDetector fd1;
+	fd1 = ReadOneFurnitureDetector(rootDir, "table_low");
+	m_detectorSet["table_low"] = fd1;
+	FurnitureDetector fd2;
+	fd2 = ReadOneFurnitureDetector(rootDir, "table_high");
+	m_detectorSet["table_high"] = fd2;
+// 	FurnitureDetector fd3;
+// 	fd3 = ReadOneFurnitureDetector(rootDir, "table");
+// 	m_detectorSet["table"] = fd3;
+	FurnitureDetector fd4;
+	fd4 = ReadOneFurnitureDetector(rootDir, "chair");
+	m_detectorSet["chair"] = fd4;
+	FurnitureDetector fd5;
+	fd5 = ReadOneFurnitureDetector(rootDir, "couch");
+	m_detectorSet["couch"] = fd5;
+	FurnitureDetector fd6;
+	fd6 = ReadOneFurnitureDetector(rootDir, "bed");
+	m_detectorSet["bed"] = fd6;
 	
 	
 	return res;
@@ -154,7 +161,7 @@ int Perception::Process()
 	
 	//Generate Furniture Samples and Add them to Robot Vars.
 	int ct = 0;
-	cout << "Processing Data...: " << endl;
+	cout << "Processing Data...: " << Num << " items." << endl;
         #ifdef DRAW_TAG
 	m_imgTag.setTo(cv::Scalar(0, 0, 0));
 	#endif

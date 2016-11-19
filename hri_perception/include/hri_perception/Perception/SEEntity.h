@@ -55,7 +55,8 @@ public:
 	string m_name;
 	string m_rawnameStr;
 	float m_confidence;
-
+	vector<float> m_feature200;
+	
 public:
 	void ImportPt(vector<int> index, vector<float> pt);
 	void ImportPt(vector<float> pt);
@@ -70,6 +71,7 @@ public:
 	vector<float> BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals);
 	float GetTilt(float nx, float ny, float nz);	
 	string Classify(vector<float> feature, map<string, FurnitureDetector> detectors);
+	float BinaryClassifyOneSampleUsingLinearSVM(vector<float> feature, FurnitureDetector model);
         float LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model);
 	float KernelRBF(vector<float> u, vector<float> v, float sigma);
 	
@@ -226,7 +228,8 @@ vector<float> SE::GetAdjustCentroidPt(vector<float> pt, vector<float> centroid)
 
 vector<float> SE::BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::PointCloud<pcl::Normal> normals)
 {
-	vector<float> res(100, -1);
+	vector<float> res(100, -1); // for rbf detector
+// 	vector<float> res(200, 0); // for linear detector
 	
 	vector<float> M(100, 0);
 	vector<float> T(100, 0);
@@ -234,6 +237,7 @@ vector<float> SE::BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::
 	float F = 0.1;
 	int ID, D, H;
 	float tilt;
+// 	cout << normals.width << endl;
 	for (int i = 0; i < normals.width; i++)
 	{
 		if (!isnan(normals.points[i].normal_x) && !isnan(normals.points[i].normal_y) && !isnan(normals.points[i].normal_z))
@@ -241,18 +245,33 @@ vector<float> SE::BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::
 			tilt = GetTilt(normals.points[i].normal_x, normals.points[i].normal_y, normals.points[i].normal_z);
 			D = (int)(sqrt(cloud.points[i].x * cloud.points[i].x + cloud.points[i].y * cloud.points[i].y) / F);
 			H = (int)(cloud.points[i].z / F);
-			if (D >= 0 && D < 10 && H > 0 && H < 10)
+			//cout << "<" << D << "," << H << ">" << " ";
+			if (D >= 0 && D < 10 && H >= 0 && H < 10)
 			{
-				ID = D + H * 10;
+// 				ID = H + D * 10; // for linear detector
+				ID = D + H * 10; // for rbf detector
 				M[ID] += tilt;
 				T[ID] ++;
 			}
 		}
 	}
 	
-	for (int i = 0; i < res.size(); i++)
+	for (int i = 0; i < T.size(); i++)
 	{
-		if (T[i] > 0)
+	  // for linear
+// 		if (T[i] > 0)
+// 		{
+// 			res[2*i] = M[i] / T[i];
+// 			res[2*i+1] = 0;
+// 		}
+// 		else 
+// 		{
+// 			res[2*i] = 0;
+// 			res[2*i+1] = 1;
+// 		}
+	  
+	  // for rbf
+	  	if (T[i] > 0)
 		{
 			res[i] = M[i] / T[i];
 		}
@@ -263,29 +282,68 @@ vector<float> SE::BuildDHTiltFeature(pcl::PointCloud<pcl::PointXYZ> cloud, pcl::
 
 float SE::GetTilt(float nx, float ny, float nz)
 {
-	return fabs(nz) / sqrt(nx*nx + ny*ny + nz*nz);
+	return fabs(nz) / sqrt(nx*nx + ny*ny + nz*nz); // for rbf detector
+// 	return abs(atan(nz / sqrt(nx*nx + ny*ny))) / (PI/2); // for linear detector
 }
 
 string SE::Classify(vector<float> feature, map<string, FurnitureDetector> detectors)
 {
 	string name = "unknown";
 	map<string, FurnitureDetector>::iterator iter;
+	float maxr = 0;
+// 	cout << detectors.size() << endl;
 	for (iter = detectors.begin(); iter != detectors.end(); ++iter)
 	{
 		string keystr = iter->first;
 		FurnitureDetector dct = iter->second;
 		
-		float r = LogisticClassifyOneSample(feature, dct);
-// 		cout << keystr << ": " << r << endl;
+		float r = LogisticClassifyOneSample(feature, dct); // for rbf detector
+// 		float r = BinaryClassifyOneSampleUsingLinearSVM(feature, dct); // for linear detector
 		
-		if (r > 0 && m_highestHeight < 1.0)
+		if (r > maxr && m_highestHeight < 1.0)
 		{
+			maxr = r;
 			name = keystr;
-			break;
 		}
+	}
+	if (maxr < 0)
+	{
+		name = "unknown";
 	}
 	
 	return name;
+}
+
+float SE::BinaryClassifyOneSampleUsingLinearSVM(vector<float> feature, FurnitureDetector model)
+{
+	vector<float> sample(feature.size(), 0);
+	for (int k = 0; k < sample.size(); k++)
+	{
+// 		cout << feature[k] << " ";
+		sample[k] = (feature[k] + model.sh[k]) * model.sf[k];
+//  		sample[k] = feature[k];
+	}  
+	m_feature200 = feature;
+	  
+	float r = 0;
+	for (int i = 0; i < model.sv.size(); i++)
+	{
+		vector<float> sv = model.sv[i];
+		float xxs = 0;
+		for (int k = 0; k < sv.size(); k++) 
+		{
+			xxs += sv[k] * sample[k];
+		}
+		r += xxs * model.a[i];
+	}
+	
+	r += model.b;
+	r = -r;
+	//if (r > 2) r = 0;
+	//float res = (r>0)?1:-1;
+	cout << "     " << model.name << ": " << r << endl;
+	float res = r;
+	return res;
 }
 
 float SE::LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model)
