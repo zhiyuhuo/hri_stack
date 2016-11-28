@@ -130,7 +130,7 @@ void Robot::CallForPercepstionService()
 	}
 	else
 	{
-		ROS_ERROR("Failed to call service Perception");
+		ROS_DEBUG_ONCE("Failed to call service Perception");
 		return;
 	}
   

@@ -1,0 +1,7 @@
+<launch>	        
+	
+	<node pkg="hri_perception" name="hri_perception_server" type="hri_perception_server"/>
+	<node pkg="hri_robot" name="rebuild_environment_and_generate_spl" type="rebuild_environment_and_generate_spl"/>
+	<node pkg="hri_language_generation" name="hri_language_generation_server" type="hri_language_generation_server_node.py"/>  
+
+</launch>

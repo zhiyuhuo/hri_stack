@@ -220,6 +220,7 @@ public:	//Robot Strategy
 	int TestRead();
 	int UpdatePerception();
 	int KeyboardControlForLanguageGeneration();
+	int AutomaticLanguageGenerationFromVideo();
 	
 	int BuildGroundingList();
 	int BuildFakeGroundingList();

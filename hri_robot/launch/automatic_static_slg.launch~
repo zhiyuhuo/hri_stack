@@ -1,0 +1,7 @@
+<launch>	        
+	
+	<node pkg="hri_perception" name="hri_perception_server" type="hri_perception_server"/>
+	<node pkg="hri_nav" name="hri_nav_action_server" type="hri_nav_action_server"/>
+	<node pkg="hri_language_generation" name="hri_language_generation_server" type="hri_language_generation_server_node.py"/>  
+
+</launch>

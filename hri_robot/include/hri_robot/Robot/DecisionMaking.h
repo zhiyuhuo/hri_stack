@@ -379,5 +379,92 @@ int Robot::KeyboardControlForLanguageGeneration()
 	return res;
 }
 
+int Robot::AutomaticLanguageGenerationFromVideo()
+{
+	int res = 0;
+	//m_targetObject = "mug";
+	
+	while (ros::ok())
+	{
+		imshow("grid map", m_imgGrid);
+		char c = waitKey(30);
+        
+		if (m_mission == "init") 
+		{
+			CallForPercepstionService();
+			if (m_ifGetPerception && m_ifGetPose) 
+			{
+			    m_tempSEList.clear();
+			    m_mission = "get_first_perception";	
+			}
+		}
+
+		if (m_mission.compare("get_first_perception") == 0)
+		{
+			cout << "real robot pose: " << m_posRobot.GetX() << "    " << m_posRobot.GetY() << "    " << m_theta << endl; 
+			CallForPercepstionService();
+			Perception();
+			m_entities = GetVisiableEntities();
+			SetOccupancyMap(400, 400, 0.25, -50, -50);
+            
+			m_mission = "receive_keyboard_action";
+		}
+        
+		else if (m_mission.compare("receive_keyboard_action") == 0)
+		{
+			switch (c)
+			{
+				case 'l':
+				{
+					//AnalyseEntityRelation();
+					//break;
+				      
+					map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
+					vector<string> dscpSet = GenerateStaticDescription(dcts);		
+					dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+					    
+					hri_language_generation::GenerateSpatialLanguage srv;
+					for (int i = 0; i < dscpSet.size(); i++)
+					{
+					    cout << i << ": " << dscpSet[i] << endl;
+					    srv.request.groundings.push_back(dscpSet[i]);
+					}
+					  
+					if (m_generatingLanguageClient.call(srv))
+					{
+					    cout << srv.response.language << endl;
+					}
+					else
+					{
+					    ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
+					}
+    
+					break;
+					
+				}
+				default:
+				{	
+					cout << "real robot pose: " << m_posRobot.GetX() << "    " << m_posRobot.GetY() << "    " << m_theta << endl; 
+					CallForPercepstionService();
+					Perception();
+					m_entities = GetVisiableEntities();
+					SetOccupancyMap(400, 400, 0.25, -50, -50);
+					DrawOccupancyGrid();
+                    
+					cout << "The entities in the map: " << endl;
+					for (int i = 0; i < m_entities.size(); i++)
+					{
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].vec.size()/2 << ", " << m_entities[i].x << ", " << m_entities[i].y << ",   " << m_entities[i].dir << endl;
+ 					}
+					break;			  
+				}
+			}
+		}	
+		
+		ros::spinOnce();
+	}
+	return res;	
+}
+
 
 #endif

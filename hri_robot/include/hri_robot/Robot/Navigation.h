@@ -65,7 +65,7 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 			m_occupiedMap[u + v * width] = 255;
 		}
 	}
-	
+	/*
 	nav_msgs::SetMap srvSetMap;
 	srvSetMap.request.map.info.resolution = resolution; 
 	srvSetMap.request.map.info.width = width; 
@@ -89,7 +89,7 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 		ROS_ERROR("Failed to call set map");
 		return -1;
 	}
-	
+	*/
 	return 1;
 }
 
