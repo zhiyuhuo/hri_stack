@@ -12,7 +12,7 @@
 
 		<include>
 			<uri>model://hri_robot</uri>
-			<pose>-1 8 0 0 0 -1.5708</pose>
+			<pose>2 0.5 0 0 0 1.5708</pose>
 		</include>
 	  
 		<include>
@@ -52,7 +52,7 @@
 
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>0 1 0 0 0 0</pose>
+			<pose>0 1.5 0 0 0 0</pose>
 		</include>
 
 		<include>
@@ -62,21 +62,21 @@
 
 		<include>
 			<uri>model://hri_roundtable</uri>
-			<pose>3 7 0 0 0 0</pose>
+			<pose>2.75 7 0 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_desk</uri>
-			<pose>4.5 6 0 0 0 1.5708</pose>
+			<uri>model://hri_coffeetable</uri>
+			<pose>4.5 5.5 0 0 0 3.1416</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>3.5 6 0 0 0 1.5708</pose>
+			<pose>4.5 6.5 0 0 0 -1.5708</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_hexagontable</uri>
+			<uri>model://hri_roundtable</uri>
 			<pose>0.5 8 0 0 0 0</pose>
 		</include>
 
@@ -90,6 +90,35 @@
 			<pose>0.5 6 0 0 0 1.5708</pose>
 		</include>
 	
+		<include>
+			<uri>model://hri_obj_laptop</uri>
+			<pose>0 0.5 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_mug</uri>
+			<pose>4.5 1 0.5 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_glassescase</uri>
+			<pose>3.5 3 0.6 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_wallet</uri>
+			<pose>2.75 7 0.6 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_bowl</uri>
+			<pose>4.5 5.4 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_cellphone</uri>
+			<pose>0.5 8 0.6 0 0 0</pose>
+		</include>
 		
 	</world>
 </sdf>

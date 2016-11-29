@@ -72,6 +72,15 @@ namespace gazebo
 			pub = nh->advertise<std_msgs::Float64>("/cur_tilt_angle", 100);
 			inputAngle = 0;
 			tiltAngle = 0;
+			
+			double initTiltAngle;
+			
+			string key;
+			if (nh->searchParam("tilt_angle", key))
+			{
+			    nh->getParam(key, initTiltAngle);
+			    inputAngle = initTiltAngle;
+			}
 		}
 
 // 		Called by the model update start event

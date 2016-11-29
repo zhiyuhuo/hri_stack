@@ -1,6 +1,7 @@
 <launch>	  
+	<param name="tilt_angle" value=20/>
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">	    
-		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/hri_experiment_apartment.world"/>	    
+		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/hri_experiment_hkstudio.world"/>	    
 		<arg name="gui" value="true"/>	  
 	</include>	
 </launch>
