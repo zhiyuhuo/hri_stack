@@ -77,7 +77,7 @@
 		
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>3 7.5 0 0 0 -1.5708</pose>
+			<pose>3.5 7.5 0 0 0 -1.5708</pose>
 		</include>
 		
 		<include>

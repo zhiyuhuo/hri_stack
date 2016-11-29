@@ -91,5 +91,10 @@
 			<pose>4.5 4 1 0 0 0</pose>
 		</include>
 
+		<include>
+			<uri>model://hri_obj_statue</uri>
+			<pose>-1.2 -5 0.6 0 0 0</pose>
+		</include>
+
 	</world>
 </sdf>

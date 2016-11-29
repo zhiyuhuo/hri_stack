@@ -5,7 +5,7 @@
   <static>true</static>
 
     <link name="wall1">
-      <pose>0 0 0.885 0 0 0</pose>
+      <pose>0 0 0.685 0 0 0</pose>
       <inertial>
         <mass>1000.0</mass>
         <inertia> <!-- interias are tricky to compute -->
@@ -41,7 +41,7 @@
     </link>
 
     <link name="wall2">
-      <pose>0.6    0.475    0.43 0 0 0</pose>
+      <pose>0.6    0.475    0.33 0 0 0</pose>
       <inertial>
         <mass>1000.0</mass>
         <inertia> <!-- interias are tricky to compute -->
@@ -57,14 +57,14 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
       </collision>
       <visual name="visual">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
 	<material>
@@ -77,7 +77,7 @@
     </link>
 
     <link name="wall3">
-      <pose>0.6    -0.475    0.43 0 0 0</pose>
+      <pose>0.6    -0.475    0.33 0 0 0</pose>
       <inertial>
         <mass>1000.0</mass>
         <inertia> <!-- interias are tricky to compute -->
@@ -93,14 +93,14 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
       </collision>
       <visual name="visual">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
 	<material>
@@ -113,7 +113,7 @@
     </link>
     
     <link name="wall4">
-      <pose>-0.6    -0.475    0.43 0 0 0</pose>
+      <pose>-0.6    -0.475    0.33 0 0 0</pose>
       <inertial>
         <mass>1000.0</mass>
         <inertia> <!-- interias are tricky to compute -->
@@ -129,14 +129,14 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
       </collision>
       <visual name="visual">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
 	<material>
@@ -149,7 +149,7 @@
     </link>
     
     <link name="wall5">
-      <pose>-0.6    0.475    0.43 0 0 0</pose>
+      <pose>-0.6    0.475    0.33 0 0 0</pose>
       <inertial>
         <mass>1000.0</mass>
         <inertia> <!-- interias are tricky to compute -->
@@ -165,14 +165,14 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
       </collision>
       <visual name="visual">
         <geometry>
           <box>
-            <size>0.0500    0.0500    0.86</size>
+            <size>0.0500    0.0500    0.66</size>
           </box>
         </geometry>
 	<material>

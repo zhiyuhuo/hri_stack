@@ -18,7 +18,7 @@
 
 		<include>
 			<uri>model://hri_robot</uri>
-			<pose>0 0 0 0 0 0</pose>
+			<pose>5 0 0 0 0 3.1416</pose>
 		</include>
 
 		<include>
@@ -88,31 +88,31 @@
 
 		<include>
 			<uri>model://hri_obj_laptop</uri>
-			<pose>4.5 7 0.9 0 0 0</pose>
-		</include>
-
-		<include>
-			<uri>model://hri_obj_mug</uri>
-			<pose>4.5 4 0.6 0 0 0</pose>
+			<pose>4.5 7 0.9 0 0 2.8624</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_obj_glassescase</uri>
+			<pose>4.5 4 0.6 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_fork</uri>
 			<pose>4 2 0.6 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_obj_wallet</uri>
+			<uri>model://hri_obj_monitor</uri>
 			<pose>6.2 -2 0.5 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_obj_cellphone</uri>
+			<uri>model://hri_obj_statue</uri>
 			<pose>4 -1.9 0.6 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_obj_bowl</uri>
+			<uri>model://hri_obj_mug</uri>
 			<pose>-1.2 -5 0.6 0 0 0</pose>
 		</include>
 

@@ -101,17 +101,17 @@
 		</include>
 
 		<include>
-			<uri>model://hri_obj_wallet</uri>
+			<uri>model://hri_obj_statue</uri>
 			<pose>4 1.7 0.6 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_obj_cellphone</uri>
+			<uri>model://hri_obj_fork</uri>
 			<pose>4.1 6 0.6 0 0 0</pose>
 		</include>
 
 		<include>
-			<uri>model://hri_obj_bowl</uri>
+			<uri>model://hri_obj_monitor</uri>
 			<pose>2.5 7.2 0.9 0 0 0</pose>
 		</include>
 		
