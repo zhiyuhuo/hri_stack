@@ -37,12 +37,12 @@
 		
 		<include>
 			<uri>model://hri_desk</uri>
-			<pose>-4.5 1 0 0 0 1.57</pose>
+			<pose>-4 0.75 0 0 0 0</pose>
 		</include>
 		
 		<include>
 			<uri>model://hri_woodchair</uri>
-			<pose>-3.5 1 0 0 0 -1.57</pose>
+			<pose>-4 2 0 0 0 0</pose>
 		</include>
 		
 		<include>
@@ -56,43 +56,13 @@
 		</include>
 		
 		<include>
-			<uri>model://hri_desk</uri>
-			<pose>2 2 0 0 0 0</pose>
+			<uri>model://hri_hexagontable</uri>
+			<pose>4.5 4 0 0 0 0</pose>
 		</include>
 		
 		<include>
 			<uri>model://hri_woodchair</uri>
-			<pose>2 1 0 0 0 3.14</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_desk</uri>
-			<pose>2 5 0 0 0 0</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_woodchair</uri>
-			<pose>2 6 0 0 0 0</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_desk</uri>
-			<pose>4 2 0 0 0 0</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_woodchair</uri>
-			<pose>4 1 0 0 0 3.14</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_desk</uri>
-			<pose>4 5 0 0 0 0</pose>
-		</include>
-		
-		<include>
-			<uri>model://hri_woodchair</uri>
-			<pose>4 6 0 0 0 0</pose>
+			<pose>4.5 3 0 0 0 4.71</pose>
 		</include>
 
 		<include>
@@ -102,7 +72,7 @@
 
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>4 -4 0 0 0 0</pose>
+			<pose>4 -3.5 0 0 0 0</pose>
 		</include>
 
 		<include>
@@ -142,7 +112,7 @@
 
 		<include>
 			<uri>model://hri_obj_bowl</uri>
-			<pose>2 1.75 0.9 0 0 0</pose>
+			<pose>4.25 4 0.6 0 0 0</pose>
 		</include>
 
 	</world>
