@@ -52,7 +52,6 @@ Mat imgMap;
 string leName;
 float mapHeight[400][400] = {};
 geometry_msgs::Twist speedMsg;
-
 string LEDir;
 
 
