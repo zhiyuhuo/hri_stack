@@ -70,19 +70,27 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "hri_perception");
 	ros::NodeHandle n;
 	
-	// subscribed topics
+	// topics
+  	string platformStr;
+	string ptTopicStr;
 	
-	#ifdef GAZEBO
+	string key;
+	if (n.searchParam("robot_platform", key))
+	{
+	    n.getParam(key, platformStr);
+	}
+	if (platformStr.compare("physical") == 0)
+	{
+	    ptTopicStr = "/camera/depth_registered/points";
+	}
+	else
+	{
+	    ptTopicStr = "/camera/depth/points";
+	}
+	
 	ros::Subscriber pt2Sub = n.subscribe("/camera/depth/points", 10, ListenCallbackPt2);
-	#else
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth_registered/points", 10, ListenCallbackPt2);
-	#endif
 	
-	#ifdef GAZEBO
 	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 1000, ListenCallbackTilt);
-	#else
-	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 1000, ListenCallbackTilt);
-	#endif
 	
 	// published tilt topic
 	ros::Publisher envPub = n.advertise<hri_perception::Env>("/env", 10);

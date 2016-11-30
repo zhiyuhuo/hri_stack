@@ -53,6 +53,8 @@ string leName;
 float mapHeight[400][400] = {};
 geometry_msgs::Twist speedMsg;
 
+string LEDir;
+
 
 void ListenCallbackTilt(const std_msgs::Float64& msg);
 void ListenCallbackPt2(const sensor_msgs::PointCloud2::ConstPtr& msg);
@@ -87,32 +89,54 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "hri_collect_le_map");
 	ros::NodeHandle n;
 	
-	// subscribed topics
+	// topics
 	
-	#ifdef GAZEBO
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth/points", 10, ListenCallbackPt2);
-	#else
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth_registered/points", 10, ListenCallbackPt2);
-	#endif
+  	string platformStr;
+	string ptTopicStr;
+	string poseTopicStr;
+	string cmdvelTopicStr;
 	
-	#ifdef GAZEBO
-	ros::Subscriber pose2Sub = n.subscribe("/hri_robot/odom", 10, ListenPoseCallback);
-	#else
-	ros::Subscriber pose2Sub = n.subscribe("/pose", 10, ListenPoseCallback);
-	#endif
+	string key;
+	if (n.searchParam("robot_platform", key))
+	{
+	    n.getParam(key, platformStr);
+	}
+	if (platformStr.compare("physical") == 0)
+	{
+	    ptTopicStr = "/camera/depth_registered/points";
+	    poseTopicStr = "/pose";
+	    cmdvelTopicStr = "/cmd_vel";
+	}
+	else
+	{
+	    ptTopicStr = "/camera/depth/points";
+	    poseTopicStr = "/hri_robot/odom";
+	    cmdvelTopicStr = "/hri_robot/cmd_vel";  
+	}
+	
+	ros::Subscriber pt2Sub = n.subscribe(ptTopicStr.c_str(), 10, ListenCallbackPt2);
+	
+	ros::Subscriber pose2Sub = n.subscribe(poseTopicStr.c_str(), 10, ListenPoseCallback);
 
 	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 100, ListenCallbackTilt);
 	
 	ros::Publisher tiltPub = n.advertise<std_msgs::Float64>("/tilt_angle", 100);
 	
-	#ifdef GAZEBO
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("hri_robot/cmd_vel", 100);
-	#else
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 100);
-	#endif
+	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>(cmdvelTopicStr.c_str(), 100);
 	
 	// Define messages
 	std_msgs::Float64 tiltMsg;
+	
+	//LE
+	string worldNameStr;
+	if (n.searchParam("world_name", key))
+	{
+	    n.getParam(key, worldNameStr);
+	}
+	
+	//Get Le
+	string LEDirStr("/home/hri/hri_DATA/LE_" + worldNameStr + "/");
+	LEDir = LEDirStr;
 	
 	// PreProcessing
 	printf("start robot...\n");
@@ -379,7 +403,7 @@ void KeyControl()
 		
 		case 'y':
 		{
-			SaveLE(rawPoints, "/home/hri/hri_DATA/Map", leName);
+			SaveLE(rawPoints, LEDir.c_str(), leName);
 			exit(0);
 			break;
 		}

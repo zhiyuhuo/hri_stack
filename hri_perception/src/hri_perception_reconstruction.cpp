@@ -89,43 +89,47 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "hri_perception");
 	ros::NodeHandle n;
 	
-	// subscribed topics
+	// topics
+  	string platformStr;
+	string ptTopicStr;
+	string poseTopicStr;
+	string cmdvelTopicStr;
 	
-	#ifdef GAZEBO
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth/points", 10, ListenCallbackPt2);
-	#else
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth_registered/points", 10, ListenCallbackPt2);
-	#endif
+	string key;
+	if (n.searchParam("robot_platform", key))
+	{
+	    n.getParam(key, platformStr);
+	}
+	if (platformStr.compare("physical") == 0)
+	{
+	    ptTopicStr = "/camera/depth_registered/points";
+	    poseTopicStr = "/pose";
+	    cmdvelTopicStr = "/cmd_vel";
+	}
+	else
+	{
+	    ptTopicStr = "/camera/depth/points";
+	    poseTopicStr = "/hri_robot/odom";
+	    cmdvelTopicStr = "/hri_robot/cmd_vel";  
+	}
 	
-	#ifdef GAZEBO
-	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 1000, ListenCallbackTilt);
-	#else
-	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 1000, ListenCallbackTilt);
-	#endif
+	ros::Subscriber pt2Sub = n.subscribe(ptTopicStr.c_str(), 10, ListenCallbackPt2);
 	
-	#ifdef GAZEBO
-	ros::Subscriber pose2Sub = n.subscribe("/hri_robot/odom", 10, ListenCallbackPose);
-	#else
-	ros::Subscriber pose2Sub = n.subscribe("/pose", 10, ListenCallbackPose);
-	#endif
-    
-    #ifdef GAZEBO
-	ros::Subscriber speed2Sub = n.subscribe("/hri_robot/cmd_vel", 10, ListenCallbackSpeed);
-	#else
-	ros::Subscriber speed2Sub = n.subscribe("/cmd_vel", 10, ListenCallbackSpeed);
-	#endif
+	ros::Subscriber pose2Sub = n.subscribe(poseTopicStr.c_str(), 10, ListenCallbackPose);
+
+	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 100, ListenCallbackTilt);
+	
+	ros::Publisher tiltPub = n.advertise<std_msgs::Float64>("/tilt_angle", 100);
+	
+	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>(cmdvelTopicStr.c_str(), 100);
+	
+	ros::Subscriber speedSub = n.subscribe(cmdvelTopicStr.c_str(), 10, ListenCallbackSpeed);
 	
 	// published tilt topic
 	ros::Publisher envPub = n.advertise<hri_perception::Env>("/env", 10);
-	
-	// published env model topic
-	ros::Publisher tiltPub = n.advertise<std_msgs::Float64>("/tilt_angle", 100);
-	
-    // published env model topic
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/hri_robot/cmd_vel", 100);
     
-    // publish scene point cloud
-    ros::Publisher pclPub = n.advertise<pcl::PointCloud<pcl::PointXYZ> > ("/scene_points", 10);
+	// publish scene point cloud
+	ros::Publisher pclPub = n.advertise<pcl::PointCloud<pcl::PointXYZ> > ("/scene_points", 10);
     
 	// Define messages
 	std_msgs::Float64 tiltMsg; 

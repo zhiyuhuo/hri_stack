@@ -75,32 +75,41 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "hri_nav");
 	ros::NodeHandle n;
 	
-	// subscribed topics
+	// topics
+  	string platformStr;
+	string ptTopicStr;
+	string poseTopicStr;
+	string cmdvelTopicStr;
+	
+	string key;
+	if (n.searchParam("robot_platform", key))
+	{
+	    n.getParam(key, platformStr);
+	}
+	if (platformStr.compare("physical") == 0)
+	{
+	    ptTopicStr = "/camera/depth_registered/points";
+	    poseTopicStr = "/pose";
+	    cmdvelTopicStr = "/cmd_vel";
+	}
+	else
+	{
+	    ptTopicStr = "/camera/depth/points";
+	    poseTopicStr = "/hri_robot/odom";
+	    cmdvelTopicStr = "/hri_robot/cmd_vel";  
+	}
+	
+	ros::Subscriber pt2Sub = n.subscribe(ptTopicStr.c_str(), 10, ListenCallbackPt2);
+	
+	ros::Subscriber pose2Sub = n.subscribe(poseTopicStr.c_str(), 10, ListenCallbackPose);
 
-	#ifdef GAZEBO
-	ros::Subscriber poseSub = n.subscribe("hri_robot/odom", 1000, ListenCallbackPose);
-	#else
-	ros::Subscriber poseSub = n.subscribe("/pose", 1000, ListenCallbackPose);
-	#endif
-	
-	#ifdef GAZEBO
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth/points", 10, ListenCallbackPt2);
-	#else
-	ros::Subscriber pt2Sub = n.subscribe("/camera/depth_registered/points", 10, ListenCallbackPt2);
-	#endif
-	
-	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 1000, ListenCallbackTilt);
-	
-	// published topics
-	ros::Publisher motorstatePub = n.advertise<p2os_msgs::MotorState>("/cmd_motor_state", 10);
+	ros::Subscriber tiltSub = n.subscribe("cur_tilt_angle", 100, ListenCallbackTilt);
 	
 	ros::Publisher tiltPub = n.advertise<std_msgs::Float64>("/tilt_angle", 100);
 	
-	#ifdef GAZEBO
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("hri_robot/cmd_vel", 10);
-	#else
-	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
-	#endif
+	ros::Publisher speedPub = n.advertise<geometry_msgs::Twist>(cmdvelTopicStr.c_str(), 100);
+	
+	ros::Publisher motorstatePub = n.advertise<p2os_msgs::MotorState>("/cmd_motor_state", 10);
 	
 	ros::Publisher scanPub = n.advertise<sensor_msgs::LaserScan>("scan", 50);
 	

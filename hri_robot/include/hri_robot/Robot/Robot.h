@@ -270,9 +270,6 @@ Robot::Robot()
 	m_ifGetPerception = false;
 	m_ifGetPose = false;
 	
-	//Get Le
-	ImportLEList("/home/hri/hri_DATA/Map");
-	
 }
 
 Robot::~Robot()
@@ -328,6 +325,17 @@ int Robot::ConnectToServer()
 	m_perceptionClient = m_nh->serviceClient<hri_perception::Perception>("hri_perception");
 	m_setMapClient = m_nh->serviceClient<nav_msgs::SetMap>("nav_set_map");
 	m_getPlanClient = m_nh->serviceClient<nav_msgs::GetPlan>("nav_get_plan");
+	
+	//LE
+	string worldNameStr;
+	if (m_nh->searchParam("world_name", key))
+	{
+	    m_nh->getParam(key, worldNameStr);
+	}
+	
+	//Get Le
+	string LEDir("/home/hri/hri_DATA/LE_" + worldNameStr + "/");
+	ImportLEList(LEDir.c_str());
 	
 	return 1;
 }

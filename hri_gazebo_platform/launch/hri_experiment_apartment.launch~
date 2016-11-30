@@ -1,5 +1,5 @@
 <launch>	  
-	<param name="tilt_angle" value= "20.0" type="double" />
+	<param name="tilt_angle" value= "-20.0" type="double" />
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">	    
 		<arg name="world_name" value="$(find hri_gazebo_platform)/worlds/hri_experiment_apartment.world"/>	    
 		<arg name="gui" value="true"/>	  
