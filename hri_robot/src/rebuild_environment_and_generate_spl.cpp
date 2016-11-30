@@ -12,11 +12,14 @@ int main(int argc, char **argv)
 	if (argc > 1)
 	{
 	      string targetObject(argv[1]);
-	      _robot.m_targetObject = targetObject;
+	      //_robot.m_targetObject = targetObject;
+	      _robot.ConnectToServer();
+	      _robot.AutomaticLanguageGenerationFromVideo(targetObject);
 	}
-	
-	_robot.ConnectToServer();
-	_robot.AutomaticLanguageGenerationFromVideo();
+	else 
+	{
+	      cout << "no target object!\n";
+	}
 
 	return 0;
 }

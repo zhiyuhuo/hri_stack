@@ -379,10 +379,10 @@ int Robot::KeyboardControlForLanguageGeneration()
 	return res;
 }
 
-int Robot::AutomaticLanguageGenerationFromVideo()
+int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
 {
 	int res = 0;
-	//m_targetObject = "mug";
+	m_targetObject = targetObject;
 	
 	while (ros::ok())
 	{

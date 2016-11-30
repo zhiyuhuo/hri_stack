@@ -417,7 +417,7 @@ void KeyControl()
 void SaveLE(vector<float> pts, string rootDir, string name)
 {
 	ofstream myfile;
-	string filename = rootDir + "/" + name;
+	string filename = rootDir + name + ".le";
 	cout << "Saving to: " << filename << endl;
 	myfile.open (filename.c_str());
 

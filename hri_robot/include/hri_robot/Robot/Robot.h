@@ -220,7 +220,7 @@ public:	//Robot Strategy
 	int TestRead();
 	int UpdatePerception();
 	int KeyboardControlForLanguageGeneration();
-	int AutomaticLanguageGenerationFromVideo();
+	int AutomaticLanguageGenerationFromVideo(string targetObject);
 	
 	int BuildGroundingList();
 	int BuildFakeGroundingList();
@@ -334,7 +334,8 @@ int Robot::ConnectToServer()
 	}
 	
 	//Get Le
-	string LEDir("/home/hri/hri_DATA/LE_" + worldNameStr + "/");
+	string LEDir("/home/hri/hri_DATA/LE_" + worldNameStr);
+	cout << "loading le from " << LEDir << endl;
 	ImportLEList(LEDir.c_str());
 	
 	return 1;

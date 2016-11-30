@@ -34,11 +34,11 @@ int Robot::ImportLEList(string rootDir)
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
-			//printf ("%s\n", ent->d_name);
 			string fname(ent->d_name);
 			if (fname.find(".le") != string::npos && fname.find(".le~") == string::npos)
 			{
 				string fullfname = rootDir + "/" + fname;
+				printf ("%s\n", fullfname.c_str());
 				size_t nk = fname.find(".le");
 				string lename = fname.substr(0, nk);
 				cout << fullfname << ":        " << lename << endl;
@@ -46,6 +46,7 @@ int Robot::ImportLEList(string rootDir)
 				m_LEList.push_back(ent);
 			}
 		}
+		cout << "finish loading" << endl;
 		closedir (dir);
 	} 
 	else 
@@ -75,7 +76,7 @@ Ent Robot::GetWallEntity(float x, float y, float theta)
 			in += spr.indirw[k];
 		}
         
-        cout << m_LEList[i].name << " " << in << " " << out << endl;
+                cout << m_LEList[i].name << " " << in << " " << out << endl;
         
 		if (in > 0 && out <= 0)
 		{
@@ -99,50 +100,50 @@ Ent Robot::GetLE(string fullfname, string lename)
 		float xc = 0;
 		float yc = 0;
 		float ct = 0;
-        int Head = 1;
+		int Head = 1;
 		while ( getline (myfile,line) )
 		{
-            // if dir
-            if (Head == 1)
-            {
-                res.dir = (float)atof(line.c_str());
-                Head = 0;
-                continue;
-            }
-           
-            // else vector
-			string strx = "";
-			string stry = "";
-			float x,y;
-			int k = 0;
-			
-			while (k < line.size())
-			{
-				if (line[k] == ' ')
-				{
-					x = (float)atof(strx.c_str());
-					break;				
-				}
-				else
-				{
-					strx.push_back(line[k]);
-				}
-				k++;
-			}
-			k++;
-			
-			while (k < line.size())
-			{
-				stry.push_back(line[k]);
-				k++;
-			}
-			y = (float)atof(stry.c_str());
-			res.vec.push_back(x);
-			res.vec.push_back(y);
-			xc += x;
-			yc += y;
-			ct ++;
-		}
+		      // if dir
+		      if (Head == 1)
+		      {
+			  res.dir = (float)atof(line.c_str());
+			  Head = 0;
+			  continue;
+		      }
+		    
+		      // else vector
+		      string strx = "";
+		      string stry = "";
+		      float x,y;
+		      int k = 0;
+				  
+		      while (k < line.size())
+		      {
+			      if (line[k] == ' ')
+			      {
+				      x = (float)atof(strx.c_str());
+				      break;				
+			      }
+			      else
+			      {
+			              strx.push_back(line[k]);
+			      }
+		              k++;
+		      }
+		      k++;
+				  
+		      while (k < line.size())
+		      {
+		              stry.push_back(line[k]);
+		              k++;
+		      }
+		      y = (float)atof(stry.c_str());
+		      res.vec.push_back(x);
+		      res.vec.push_back(y);
+		      xc += x;
+		      yc += y;
+		      ct ++;
+	        }
 		res.x = xc / ct;
 		res.y = yc / ct;
 		myfile.close();

@@ -423,7 +423,7 @@ int Robot::DrawOccupancyGrid()
 		{
 			u = (int)((ent.vec[2*i] - originX) / resolution);
 			v = (int)((ent.vec[2*i+1] - originY) / resolution);
-			cout << u << ", " << v << endl;
+			//cout << u << ", " << v << endl;
 			if (u >= 0 && u < m_imgGrid.cols && v >= 0 && v < m_imgGrid.rows)
 			{			
 				p = u + v * 200;
