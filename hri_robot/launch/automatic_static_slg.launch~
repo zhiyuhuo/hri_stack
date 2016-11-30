@@ -1,7 +1,7 @@
 <launch>	        
 	<param name="world_name" value= "apartment" />
 	<arg name="name" value="apartment_fork.bag" />
-	<node pkg="rosbag" name="play" type="play" args="/home/hri/bag_data/$(arg name) />  
+	<node pkg="rosbag" name="play" type="play" args="/home/hri/bag_data/$(arg name)" />  
 	<node pkg="hri_perception" name="hri_perception_server" type="hri_perception_server"/>
 	<node pkg="hri_language_generation" name="hri_language_generation_server" type="hri_language_generation_server_node.py"/>  
 	
