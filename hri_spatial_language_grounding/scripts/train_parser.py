@@ -203,7 +203,7 @@ def nested_word_chunks(chunk_sents):
 	return [[(w, c) for (w, t, c) in chunk_tags] for chunk_tags in tag_sents]	
 			
 def chunk_word(cmdstr):
-    thefile = "/home/hri/hri_DATA/Fixedunique149.xml"
+    thefile = "/home/hri/hri_DATA/ExtendedTemplate.xml"
     percent_training = 0.9
 ##    cmdstr = "Go forward and turn right and go straight until you are at the wall and you will find the laptop on the table with the chairs"
 #def main_function(training_file, test_file):
@@ -393,19 +393,19 @@ def show_leave(tree):
 
 def raw_to_xml(cmdstr, filename):
     tree = raw_to_tree(cmdstr)
-##    print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-##    tree.draw()
+    #print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+    #tree.draw()
     Height = tree.height()
     treepos = tree.treepositions()
-##    print Height, treepos
+    #print Height, treepos
     NODE = [[]]*Height
-##    print NODE
+    #print NODE
     L = len(treepos)
 
     ALL = ET.Element("ALL")
     heightset = show_height(tree)
     leaveset = show_leave(tree)
-##    print leaveset
+    #print leaveset
 
     level = 0
     idx = 0
@@ -414,32 +414,32 @@ def raw_to_xml(cmdstr, filename):
     
     for i in treepos:
         idx = treepos.index(i)
-##        print "i:", idx
+        #print "i:", idx
         idx2 = idx
         hgt = len(i)
-##        print node
-##        print "node idx: ", node[idx]
+        #print node
+        #print "node idx: ", node[idx]
         for j in range(idx+1, L):
             if heightset[j] <= hgt or j == L-1:
                 idx2 = j-1
                 if j == L-1:
                     idx2 = L - 1
                 break
-##        print idx+1, idx2
+        #print idx+1, idx2
         subnodeset = []
         for p in range(idx+1, idx2+1):
             if heightset[p] == hgt + 1:
                 subtext = ""
                 if leaveset[p] == 0:
                     subtext = tree[treepos[p]].label()
-                    print subtext
+                    #print subtext
                     if '$' in subtext:
 			subtext = subtext.replace('$', '');
                     node[p] = ET.SubElement(node[idx], subtext)
                 else:
                     subtext = tree[treepos[p]]
                     node[idx].text = subtext
-##                print idx, p, subtext
+                #print idx, p, subtext
                 
 
     xmltree = ET.ElementTree(ALL)
@@ -448,8 +448,8 @@ def raw_to_xml(cmdstr, filename):
 
 
 if __name__ == '__main__':
-    cmdstr = "the fork will be on the table to the right"
-    filename = "/home/hri/hri_DATA/Fixedunique149.xml"
+    cmdstr = "the fork will be on the table to the right in the office room"
+    #filename = "/home/hri/hri_DATA/Fixedunique149.xml"
     chunker = chunk_word(cmdstr)
     ##tree = raw_to_xml(cmdstr, filename)
     ##tree.draw()
