@@ -65,16 +65,16 @@ if __name__ == "__main__":
     extended = []
     for l in lines:
       
-        #string, ifchange = copy_and_replace_word(l)
-        #if ifchange == 1:
-            #extended = extended + [string]
+        string, ifchange = copy_and_replace_word(l)
+        if ifchange == 1:
+            extended = extended + [string]
             
-        string = add_ormtp(l)
-        extended = extended + [string]
+        #string = add_ormtp(l)
+        #extended = extended + [string]
     print extended
     print len(extended)
     
-    lines = lines + extended
+    lines = extended #lines + extended
     print lines
     print len(lines)
     linesstr = ''.join(lines)

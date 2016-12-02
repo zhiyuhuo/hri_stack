@@ -203,7 +203,7 @@ def nested_word_chunks(chunk_sents):
 	return [[(w, c) for (w, t, c) in chunk_tags] for chunk_tags in tag_sents]	
 			
 def chunk_word(cmdstr):
-    thefile = "/home/hri/hri_DATA/ExtendedTemplate.xml"
+    thefile = "/home/hri/hri_DATA/SpatialLanguageTemplate.xml"
     percent_training = 0.9
 ##    cmdstr = "Go forward and turn right and go straight until you are at the wall and you will find the laptop on the table with the chairs"
 #def main_function(training_file, test_file):

@@ -32,6 +32,7 @@ struct Ent{
 	string name;
 	float x;
 	float y;
+	float confidence;
 };
 
 class Perception
@@ -209,7 +210,7 @@ int Perception::Process()
 				#endif
 			
 				Ent en = GenerateEnt(g);
-				cout << "   " << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << endl;
+				cout << "   " << en.name << "	" << en.x << ", " << en.y << ", " << en.dir << " - " << en.vec.size()/2 << " " << en.confidence << endl;
 				m_SEList.push_back(en);	
 				res++;
 			}
@@ -231,6 +232,7 @@ Ent Perception::GenerateEnt(SE g)
 	en.dir = g.m_dir;
 	en.x = g.m_centroid[0];
 	en.y = g.m_centroid[1];
+	en.confidence = g.m_confidence;
 	
 	vector<double> vec;
 	float map[(int)(LOCALMAP_HEIGHT)][(int)(LOCALMAP_WIDTH)] = {};

@@ -211,6 +211,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name0 = _perception.m_SEList[0].name;
 		env.dir0 = _perception.m_SEList[0].dir;
 		env.vec0 = _perception.m_SEList[0].vec;
+		env.conf0 = _perception.m_SEList[0].confidence;
 	}
 	
 	if (L >= 2)
@@ -218,6 +219,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name1 = _perception.m_SEList[1].name;
 		env.dir1 = _perception.m_SEList[1].dir;
 		env.vec1 = _perception.m_SEList[1].vec;
+		env.conf1 = _perception.m_SEList[1].confidence;
 	}
 	
 	if (L >= 3)
@@ -225,6 +227,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name2 = _perception.m_SEList[2].name;
 		env.dir2 = _perception.m_SEList[2].dir;
 		env.vec2 = _perception.m_SEList[2].vec;
+		env.conf2 = _perception.m_SEList[2].confidence;
 	}
 	
 	if (L >= 4)
@@ -232,6 +235,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name3 = _perception.m_SEList[3].name;
 		env.dir3 = _perception.m_SEList[3].dir;
 		env.vec3 = _perception.m_SEList[3].vec;
+		env.conf3 = _perception.m_SEList[3].confidence;
 	}
 	
 	if (L >= 5)
@@ -239,6 +243,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name4 = _perception.m_SEList[4].name;
 		env.dir4 = _perception.m_SEList[4].dir;
 		env.vec4 = _perception.m_SEList[4].vec;
+		env.conf4 = _perception.m_SEList[4].confidence;
 	}
 	
 	if (L >= 6)
@@ -246,6 +251,7 @@ hri_perception::Env BuildEnvMsg()
 		env.name5 = _perception.m_SEList[5].name;
 		env.dir5 = _perception.m_SEList[5].dir;
 		env.vec5 = _perception.m_SEList[5].vec;
+		env.conf5 = _perception.m_SEList[5].confidence;
 	}
 	
 	return env;

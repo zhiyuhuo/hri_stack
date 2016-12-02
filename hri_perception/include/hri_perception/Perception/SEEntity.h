@@ -74,6 +74,7 @@ public:
 	float BinaryClassifyOneSampleUsingLinearSVM(vector<float> feature, FurnitureDetector model);
         float LogisticClassifyOneSample(vector<float> feature, FurnitureDetector model);
 	float KernelRBF(vector<float> u, vector<float> v, float sigma);
+	float GetExtrinsicConfidence();
 	
 	//orientation 
 	float GetDir(float nx, float ny, float nz);
@@ -176,6 +177,8 @@ void SE::ProceedData(map<string, FurnitureDetector> detectors)
 	{
 		m_dir = GetChairOrientation(featureAngle, detectors[m_rawnameStr]);
 	}
+	
+	m_confidence = GetExtrinsicConfidence();
 }
 
 vector<float> SE::GetPtCentroid(vector<float> pt)
@@ -522,6 +525,36 @@ float SE::GetOrientation(vector<float> feature, FurnitureDetector detector)
 	}
 	
 	
+	return res;
+}
+
+float SE::GetExtrinsicConfidence()
+{
+	float res = 0;
+	if (m_name == "unknown")
+	{
+		res = 0.5;
+	}
+	else 
+	{
+		if (fabs(m_centroid[0])<0.1 && m_centroid[1] < 3)
+		{
+			res = 1;
+		}
+		else
+		{
+			res = (1.2 - fabs(m_centroid[0])) / 1.1;
+			if (res < 0)
+			{
+				res = 0;
+			}
+		}
+	}
+	
+	if (m_dir < 1.33 * PI && m_dir > 1.67 * PI && m_dir >= 0)
+	{
+		res = 0.5;
+	}
 	return res;
 }
 

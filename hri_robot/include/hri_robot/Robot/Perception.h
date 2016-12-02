@@ -147,6 +147,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name0;
 		ent.dir = msg->dir0;
+		ent.confidence = msg->conf0;
 		ent.vec.insert(ent.vec.end(), &msg->vec0[0], &msg->vec0[msg->vec0.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -163,6 +164,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name1;
 		ent.dir = msg->dir1;
+		ent.confidence = msg->conf1;
 		ent.vec.insert(ent.vec.end(), &msg->vec1[0], &msg->vec1[msg->vec1.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -179,6 +181,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name2;
 		ent.dir = msg->dir2;
+		ent.confidence = msg->conf2;
 		ent.vec.insert(ent.vec.end(), &msg->vec2[0], &msg->vec2[msg->vec2.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -195,6 +198,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name3;
 		ent.dir = msg->dir3;
+		ent.confidence = msg->conf3;
 		ent.vec.insert(ent.vec.end(), &msg->vec3[0], &msg->vec3[msg->vec3.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -211,6 +215,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name4;
 		ent.dir = msg->dir4;
+		ent.confidence = msg->conf4;
 		ent.vec.insert(ent.vec.end(), &msg->vec4[0], &msg->vec4[msg->vec4.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -227,6 +232,7 @@ void Robot::EnvCallback(const hri_perception::Env::ConstPtr& msg)
 		Ent ent;
 		ent.name = msg->name5;
 		ent.dir = msg->dir5;
+		ent.confidence = msg->conf5;
 		ent.vec.insert(ent.vec.end(), &msg->vec5[0], &msg->vec5[msg->vec5.size()]);
 		for (int i = 0; i < ent.vec.size()/2; i++)
 		{
@@ -274,13 +280,15 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 		for (int i = 0; i < tempEntList.size(); i++)
 		{
 			float m = 0;
+			float bestj = 0;
 			for (int j = 0; j < m_SEList.size(); j++)
 			{
 				float sim = CompareTwoGOs(tempEntList[i], m_SEList[j]);
 				if (sim > m)
 				{
 					m = sim;
-					m_SEList[j] = tempEntList[i];
+					//m_SEList[j] = tempEntList[i];
+					bestj = j;
 				}
 			}
 			if (m < 0.1 )
@@ -288,6 +296,15 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 				if (tempEntList[i].name.compare("unknown") != 0)
 				{
 					m_SEList.push_back(tempEntList[i]);
+				}
+			}
+			else if (m > 0.5)
+			{
+				if (tempEntList[i].confidence > m_SEList[bestj].confidence
+				  && tempEntList[i].vec.size() > 0.67 * m_SEList[bestj].vec.size()
+				)
+				{
+					m_SEList[bestj] = tempEntList[i];
 				}
 			}
 		}
@@ -398,8 +415,8 @@ int Robot::DrawOccupancyGrid()
 	m_imgGrid = cv::Scalar(0, 0, 0);
 	
 	map<string, vector<unsigned char> > colorTuple;
-	unsigned char bgrTable[3] = {0, 255, 0};
-	unsigned char bgrChair[3] = {255, 0, 0};
+	unsigned char bgrTable[3] = {255, 0, 0};
+	unsigned char bgrChair[3] = {0, 255, 0};
 	unsigned char bgrCouch[3] = {0, 0, 255};
 	unsigned char bgrBed[3] = {255, 255, 0};
 	unsigned char bgrRoom[3] = {150, 150, 255};

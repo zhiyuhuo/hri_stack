@@ -63,9 +63,10 @@ public:
 	string name;
 	float x;
 	float y;
+	float confidence;
     
-    int id;
-    string tag;
+	int id;
+	string tag;
 };
 
 class SpR{
