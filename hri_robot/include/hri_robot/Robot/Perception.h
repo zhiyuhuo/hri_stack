@@ -27,6 +27,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name0;
 			ent.dir = msg.dir0;
+			ent.confidence = msg.conf0;
 			ent.vec.insert(ent.vec.end(), &msg.vec0[0], &msg.vec0[msg.vec0.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -43,6 +44,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name1;
 			ent.dir = msg.dir1;
+			ent.confidence = msg.conf1;
 			ent.vec.insert(ent.vec.end(), &msg.vec1[0], &msg.vec1[msg.vec1.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -59,6 +61,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name2;
 			ent.dir = msg.dir2;
+			ent.confidence = msg.conf2;
 			ent.vec.insert(ent.vec.end(), &msg.vec2[0], &msg.vec2[msg.vec2.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -75,6 +78,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name3;
 			ent.dir = msg.dir3;
+			ent.confidence = msg.conf3;
 			ent.vec.insert(ent.vec.end(), &msg.vec3[0], &msg.vec3[msg.vec3.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -91,6 +95,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name4;
 			ent.dir = msg.dir4;
+			ent.confidence = msg.conf4;
 			ent.vec.insert(ent.vec.end(), &msg.vec4[0], &msg.vec4[msg.vec4.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -107,6 +112,7 @@ void Robot::CallForPercepstionService()
 			Ent ent;
 			ent.name = msg.name5;
 			ent.dir = msg.dir5;
+			ent.confidence = msg.conf5;
 			ent.vec.insert(ent.vec.end(), &msg.vec5[0], &msg.vec5[msg.vec5.size()]);
 			for (int i = 0; i < ent.vec.size()/2; i++)
 			{
@@ -124,7 +130,7 @@ void Robot::CallForPercepstionService()
 		cout << "m_tempSEList" << endl;
 		for (int i = 0; i < m_tempSEList.size(); i++)
 		{
-			  cout << m_tempSEList[i].name << " " << m_tempSEList[i].x << " " << m_tempSEList[i].y << " " << m_tempSEList[i].dir << endl;
+			  cout << m_tempSEList[i].name << " " << m_tempSEList[i].x << " " << m_tempSEList[i].y << " " << m_tempSEList[i].dir << " " << m_tempSEList[i].confidence << endl;
 		}
 
 	}
@@ -269,7 +275,7 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 	{
 		for (int i = 0; i < tempEntList.size(); i++)
 		{
-			if (tempEntList[i].name.compare("unknown") != 0)
+			if (tempEntList[i].name.compare("unknown") != 0 && tempEntList[i].confidence > 0.6)
 			{
 				m_SEList.push_back(tempEntList[i]);
 			}
@@ -280,32 +286,23 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 		for (int i = 0; i < tempEntList.size(); i++)
 		{
 			float m = 0;
-			float bestj = 0;
+			float besti = 0;
 			for (int j = 0; j < m_SEList.size(); j++)
 			{
 				float sim = CompareTwoGOs(tempEntList[i], m_SEList[j]);
 				if (sim > m)
 				{
 					m = sim;
-					//m_SEList[j] = tempEntList[i];
 					bestj = j;
 				}
 			}
-			if (m < 0.1 )
+			if (m > 0.75)
 			{
-				if (tempEntList[i].name.compare("unknown") != 0)
-				{
-					m_SEList.push_back(tempEntList[i]);
-				}
+				m_SEList[j] = tempEntList[i];
 			}
-			else if (m > 0.5)
+			if (m < 0.1)
 			{
-				if (tempEntList[i].confidence > m_SEList[bestj].confidence
-				  && tempEntList[i].vec.size() > 0.67 * m_SEList[bestj].vec.size()
-				)
-				{
-					m_SEList[bestj] = tempEntList[i];
-				}
+				m_SEList.push_back(tempEntList[i]);
 			}
 		}
 	}
@@ -326,13 +323,44 @@ float Robot::CompareTwoGOs(Ent go1, Ent go2)
 	float res = 0;
 	float dist = sqrt((go1.x - go2.x)*(go1.x - go2.x) + (go1.y - go2.y)*(go1.y - go2.y));
 	
+	//calculate the probability to decide if the go2 should be replaced by go1.
+	float map1and2[200][200] = {};
+	float map1or2[200][200] = {};
+	float map1[200][200] = {};
+	float map2[200][200] = {};
+	
+	for (int i = 0; i < go1.vec.size()/2; i++)
+	{
+		int x = (int)(go1.vec[2*i] / (GLMAP_RESOLUTION*2) + 100);
+		int y = (int)(go1.vec[2*i+1] / (GLMAP_RESOLUTION*2) + 100);
+		if (x < 200 && x > 0 && y < 200 && y > 0 && map1[y][x] == 0)
+		{
+			map1[y][x] = 1;
+			map1or2[y][x] = 1;
+			if (map2[y][x] == 1)
+			tt++;
+		}
+	}
+	for (int i = 0; i < go2.vec.size()/2; i++)
+	{
+		int x = (int)(go2.vec[2*i] / (GLMAP_RESOLUTION*2) + 100);
+		int y = (int)(go2.vec[2*i+1] / (GLMAP_RESOLUTION*2) + 100);
+		if (x < 200 && x > 0 && y < 200 && y > 0 && map2[y][x] == 0)
+		{
+			map2[y][x] = 1;
+			map1or2[y][x] = 1;
+			tt++;
+		}
+	}
+	
+	// old code
 	if (go1.name.compare(go2.name) != 0 && dist < 0.4)
 	{
 		res = 1;
 	}
 	else
 	{
-		float map[200][200] = {};
+		float map1[200][200] = {};
 		int tc = 0;
 		int tt = 0;
 		for (int i = 0; i < go1.vec.size()/2; i++)

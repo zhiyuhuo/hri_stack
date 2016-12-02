@@ -92,7 +92,7 @@
 
 		<include>
 			<uri>model://hri_obj_mug</uri>
-			<pose>-1 2 0.6 0 0 0</pose>
+			<pose>-1.2 2 0.6 0 0 0</pose>
 		</include>
 
 		<include>
