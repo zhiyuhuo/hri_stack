@@ -39,6 +39,7 @@
         </camera>
       </sensor>
 
+      <!--
       <plugin name="${link_name}_controller" filename="libgazebo_ros_openni_kinect.so">
 	    <baseline>0.2</baseline>
 	    <alwaysOn>true</alwaysOn>
@@ -62,6 +63,7 @@
 	    <focalLength>0</focalLength>
 	    <hackBaseline>0</hackBaseline>
        </plugin>
+       -->
 
     </link>
   </model>

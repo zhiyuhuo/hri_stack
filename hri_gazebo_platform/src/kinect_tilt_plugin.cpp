@@ -53,8 +53,8 @@ namespace gazebo
 			this->model = _parent;
 			gazeboROS = GazeboRosPtr ( new GazeboRos ( _parent, _sdf, "KinectTilt" ) );
 			joint = gazeboROS->getJoint ( model, "tiltJoint", "kinect_joint" );
-			joint->SetForce ( 0, 0.1 );            // for gazebo 7
-			//joint->SetMaxForce ( 0, 0.1 );       // for gazebo 6
+			//joint->SetForce ( 0, 0.1 );            // for gazebo 7
+			joint->SetMaxForce ( 0, 0.1 );       // for gazebo 6
 
 // 			Listen to the update event. This event is broadcast every
 // 			simulation iteration.
