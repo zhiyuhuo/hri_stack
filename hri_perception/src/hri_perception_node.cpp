@@ -58,7 +58,7 @@ hri_perception::Env BuildEnvMsg();
 int main(int argc, char **argv)
 {
 	// initialization global variables
-	curTiltAngle = -20;
+	curTiltAngle = 20;
 	tiltAngle = -20;
 	cameraHeight = 1.105;
 	imgRGB = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
@@ -129,6 +129,7 @@ int main(int argc, char **argv)
 	cout << "robot loop start..." << endl;
 	while (ros::ok())
 	{	
+		//cout << cameraHeight << " " << curTiltAngle << endl;
 		vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
 		
 		_perception.ImportKinectData(imgRGB, pts);

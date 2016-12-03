@@ -58,12 +58,15 @@ target_link_libraries (build_semantic_map ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catk
 
 add_executable (hri_perception_node src/hri_perception_node.cpp)
 target_link_libraries (hri_perception_node ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+add_dependencies(hri_perception_node ${hri_perception_EXPORTED_TARGETS})
 
 add_executable (hri_perception_reconstruction src/hri_perception_reconstruction.cpp)
 target_link_libraries (hri_perception_reconstruction ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+add_dependencies(hri_perception_reconstruction ${hri_perception_EXPORTED_TARGETS})
 
 add_executable (hri_perception_server src/hri_perception_server.cpp)
-target_link_libraries (hri_perception_server ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})	
+target_link_libraries (hri_perception_server ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(hri_perception_server ${hri_perception_EXPORTED_TARGETS})	
 
 add_executable(hri_perception_test src/hri_perception_test.cpp)
 target_link_libraries(hri_perception_test ${OpenCV_LIBS} ${catkin_LIBRARIES})

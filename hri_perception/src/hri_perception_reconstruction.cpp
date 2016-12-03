@@ -77,7 +77,7 @@ bool CheckIfPoseChange();
 int main(int argc, char **argv)
 {
 	// initialization global variables
-	curTiltAngle = -10;
+	curTiltAngle = 10;
 	tiltAngle = -10;
 	cameraHeight = 1.105;
 	imgRGB = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);

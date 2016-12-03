@@ -59,7 +59,7 @@ bool CallPerception(hri_perception::Perception::Request  &req, hri_perception::P
 int main(int argc, char **argv)
 {
 	// initialization global variables
-	curTiltAngle = -20;
+	curTiltAngle = 20;
 	tiltAngle = -20;
 	cameraHeight = 1.105;
 	imgRGB = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);

@@ -143,15 +143,19 @@ include_directories(include
 ## Declare a C++ executable
 add_executable(hri_robot_node src/hri_robot_node.cpp)
 target_link_libraries(hri_robot_node ${catkin_LIBRARIES})
+add_dependencies(hri_robot_node ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 add_executable(control src/control.cpp)
 target_link_libraries(control ${catkin_LIBRARIES})
+add_dependencies(control ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 add_executable(speak src/speak.cpp)
 target_link_libraries(speak ${catkin_LIBRARIES})
+add_dependencies(speak ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 add_executable(rebuild_environment_and_generate_spl src/rebuild_environment_and_generate_spl.cpp)
 target_link_libraries(rebuild_environment_and_generate_spl ${catkin_LIBRARIES})
+add_dependencies(rebuild_environment_and_generate_spl ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

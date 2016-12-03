@@ -8,6 +8,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
+//#include <gazebo/common/common.hh>
 
 #include <stdio.h>
 #include <ros/ros.h>
@@ -52,12 +53,15 @@ namespace gazebo
 			this->model = _parent;
 			gazeboROS = GazeboRosPtr ( new GazeboRos ( _parent, _sdf, "KinectTilt" ) );
 			joint = gazeboROS->getJoint ( model, "tiltJoint", "kinect_joint" );
-			joint->SetMaxForce ( 0, 0.1 );
+			joint->SetForce ( 0, 0.1 );            // for gazebo 7
+			//joint->SetMaxForce ( 0, 0.1 );       // for gazebo 6
+
 // 			Listen to the update event. This event is broadcast every
 // 			simulation iteration.
 			this->updateConnection = event::Events::ConnectWorldUpdateBegin(
 			      boost::bind(&GazeboROSKinectTilt::OnUpdate, this, _1));
 			
+
 			if (!ros::isInitialized())
 			{
 				ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
@@ -73,14 +77,15 @@ namespace gazebo
 			inputAngle = 0;
 			tiltAngle = 0;
 			
+
 			double initTiltAngle;
-			
 			string key;
 			if (nh->searchParam("tilt_angle", key))
 			{
 			    nh->getParam(key, initTiltAngle);
 			    inputAngle = initTiltAngle;
 			}
+
 		}
 
 // 		Called by the model update start event
