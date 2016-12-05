@@ -146,7 +146,7 @@ public:	//robot sensor data processing
 	void EnvCallback(const hri_perception::Env::ConstPtr& msg);
 	int Perception();
 	int UpdateSEMap(vector<Ent> tempEntList);
-	float CompareTwoGOs(Ent go1, Ent go2);
+	int CompareTwoGOs(Ent go1, Ent go2);
 	Ent GenerateGlobalEnt(Ent le);
 	int DrawOccupancyGrid();
 	

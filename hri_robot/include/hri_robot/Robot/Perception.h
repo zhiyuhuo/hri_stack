@@ -287,22 +287,24 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 		{
 			float m = 0;
 			float besti = 0;
+			int r = 0;
+			int r2 = 0;
 			for (int j = 0; j < m_SEList.size(); j++)
 			{
-				float sim = CompareTwoGOs(tempEntList[i], m_SEList[j]);
-				if (sim > m)
+				r =  CompareTwoGOs(tempEntList[i], m_SEList[j]);
+				if (r == 1)
 				{
-					m = sim;
-					bestj = j;
+				    m_SEList[j] = tempEntList[i];
+				    break;
+				}  
+				if (r == 2)
+				{
+				    r2++;
 				}
 			}
-			if (m > 0.75)
+			if (r2 == m_SEList.size())
 			{
-				m_SEList[j] = tempEntList[i];
-			}
-			if (m < 0.1)
-			{
-				m_SEList.push_back(tempEntList[i]);
+				m_SEList.push_back(tempEntList[i]);  
 			}
 		}
 	}
@@ -318,9 +320,9 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 	return res;
 }
 
-float Robot::CompareTwoGOs(Ent go1, Ent go2)
+int Robot::CompareTwoGOs(Ent go1, Ent go2)
 {
-	float res = 0;
+	int res = 0;
 	float dist = sqrt((go1.x - go2.x)*(go1.x - go2.x) + (go1.y - go2.y)*(go1.y - go2.y));
 	
 	//calculate the probability to decide if the go2 should be replaced by go1.
@@ -338,7 +340,7 @@ float Robot::CompareTwoGOs(Ent go1, Ent go2)
 			map1[y][x] = 1;
 			map1or2[y][x] = 1;
 			if (map2[y][x] == 1)
-			tt++;
+				map1and2[y][x] = 1;
 		}
 	}
 	for (int i = 0; i < go2.vec.size()/2; i++)
@@ -349,53 +351,49 @@ float Robot::CompareTwoGOs(Ent go1, Ent go2)
 		{
 			map2[y][x] = 1;
 			map1or2[y][x] = 1;
-			tt++;
+			if (map1[y][x] == 1)
+				map1and2[y][x] = 1;
 		}
 	}
 	
-	// old code
-	if (go1.name.compare(go2.name) != 0 && dist < 0.4)
+	float area1 = 0;
+	float area2 = 0;
+	float areaand = 0;
+	float areaor = 0;
+	for (int y = 0; y < 200; y++)
 	{
-		res = 1;
+		for (int x = 0; x < 200; x++)
+		{
+			if (map1[y][x] == 1)
+				area1++;
+			if (map2[y][x] == 1)
+				area2++;
+			if (map1and2[y][x] == 1)
+				areaand++;
+			if (map1or2[y][x] == 1)
+				areaor++;
+		}
 	}
-	else
+	
+	if (go1.name != "unknown")
 	{
-		float map1[200][200] = {};
-		int tc = 0;
-		int tt = 0;
-		for (int i = 0; i < go1.vec.size()/2; i++)
+		if (areaand > 0.5 * area1)
 		{
-			int x = (int)(go1.vec[2*i] / (GLMAP_RESOLUTION*2) + 100);
-			int y = (int)(go1.vec[2*i+1] / (GLMAP_RESOLUTION*2) + 100);
-			if (x < 200 && x > 0 && y < 200 && y > 0 && map[y][x] == 0)
+			if (areaand > 0.3 * area2)
 			{
-				map[y][x] = 1;
-				tt++;
+				if (go1.confidence > 1.2 * go2.confidence)
+				{
+					res = 1;
+				}
 			}
 		}
-		for (int j = 0; j < go2.vec.size()/2; j++)
-		{
-			int x = (int)(go2.vec[2*j] / (GLMAP_RESOLUTION*2) + 100);
-			int y = (int)(go2.vec[2*j+1] / (GLMAP_RESOLUTION*2) + 100);
-			if (x < 200 && x > 0 && y < 200 && y > 0 && map[y][x] == 0)
-			{
-				map[y][x] += 2;
-				tt++;
-			}
-			if (x < 200 && x > 0 && y < 200 && y > 0 && map[y][x] == 1)
-			{
-				map[y][x] += 2;
-				tc++;
-			}
-		}
-		float t = tc / tt;
-		res = t;
 		
-		if (dist < 0.2)
+		if (areaand <= 0.1 * area1 && areaand < 0.1 * area2)
 		{
-			res = 1;
+			res = 2;
 		}
-	}
+		cout << area1 << " " << area2 << " " << areaand << " " << areaor << " " << res << endl;
+	} 
 	
 	return res;
 }

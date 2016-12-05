@@ -454,7 +454,8 @@ int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
 					cout << "The entities in the map: " << endl;
 					for (int i = 0; i < m_entities.size(); i++)
 					{
-						cout << " -" << m_entities[i].name << ": " << m_entities[i].vec.size()/2 << ", " << m_entities[i].x << ", " << m_entities[i].y << ",   " << m_entities[i].dir << endl;
+						cout << " -" << m_entities[i].name << ": " << m_entities[i].vec.size()/2 << ", " << m_entities[i].x << ", " << m_entities[i].y
+						     << ",   " << m_entities[i].dir << ",   " << m_entities[i].confidence << endl;
  					}
 					break;			  
 				}
