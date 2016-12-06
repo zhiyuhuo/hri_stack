@@ -147,6 +147,9 @@ target_link_libraries(hri_spatial_language_grounding_server ${catkin_LIBRARIES})
 add_executable(client_test src/client_test.cpp)
 target_link_libraries(client_test ${catkin_LIBRARIES})
 
+add_executable(batch_xml_to_rdt_test src/batch_xml_to_rdt_test.cpp)
+target_link_libraries(batch_xml_to_rdt_test ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
