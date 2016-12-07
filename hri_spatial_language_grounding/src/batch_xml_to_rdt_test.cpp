@@ -1,15 +1,18 @@
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
 #include "ros/ros.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include <time.h>
 #include <sys/timeb.h>
 #include <unistd.h>
 #include <pthread.h>
 
-#include "std_msgs/String.h"
 #include "hri_spatial_language_grounding/CommandProc/Header.h"
 #include "hri_spatial_language_grounding/SpatialLanguageGrounding.h"
 #include "hri_spatial_language_grounding/PartOfSpeech.h"
@@ -33,7 +36,7 @@ void ShowRobotCmdInfo(ParseToGround _parser)
 	}
 }
 
-vector<string> Parse(ParseToGround _parser)
+vector<string> GenerateStringVectorRes(ParseToGround _parser)
 {
 	vector<string> res;
 	
@@ -53,49 +56,57 @@ vector<string> Parse(ParseToGround _parser)
  	return res;
 }
 
-bool Grounding(hri_spatial_language_grounding::SpatialLanguageGrounding::Request  &req, hri_spatial_language_grounding::SpatialLanguageGrounding::Response &res)
-{
+vector<string> Grounding(string posXmlAddr)
+{		
 	ParseToGround _parser;
-	string spatialCommandStr = req.str;
-	string chunkingTreeFileNameStr = "";
-
-	ros::NodeHandle nh;
-	ros::ServiceClient client = nh.serviceClient<hri_spatial_language_grounding::PartOfSpeech>("hri_part_of_speech");
-	hri_spatial_language_grounding::PartOfSpeech srv;
-	srv.request.str = spatialCommandStr;
-	
-	if (client.call(srv))
-	{
-		cout << "msg receive: " << (string)srv.response.str << endl;;
-		chunkingTreeFileNameStr = (string)srv.response.str;
-	}
-	else
-	{
-		ROS_ERROR("Failed to call service SpatialLanguageGrounding");
-		return 1;
-	}
-		
-	string posXmlAddr = chunkingTreeFileNameStr;
 	printf("posXmlAddr:%s\n", posXmlAddr.c_str());
 	_parser.ParseXml(posXmlAddr, 1);
 	ShowRobotCmdInfo(_parser);
 	
-	vector<string> groundings = generate_resp(_parser);
-	res.strarr = groundings;
-	return true;
+	vector<string> grounding = GenerateStringVectorRes(_parser);
+	return grounding;
+}
+
+int SaveGroundings(string filename, vector<string> grounding)
+{
+	ofstream myfile;
+	myfile.open (filename.c_str());
+	for (int i = 0; i < grounding.size(); i++)
+		myfile << grounding[i].c_str() << ",";
+	myfile.close();
+}
+
+int Batch_Grounding_Editing(string srcfolder, string dstfolder)
+{
+	DIR *dp;
+	struct dirent *dirp;
+	if((dp  = opendir(srcfolder.c_str())) == NULL) {
+	    cout << "Error(" << errno << ") opening " << srcfolder << endl;
+	    return errno;
+	}
+	vector<string> files;
+	while ((dirp = readdir(dp)) != NULL) {
+		string filedir = string(dirp->d_name);
+		if (filedir.find("~") == string::npos && filedir.size() > 3)
+		{
+			 files.push_back(filedir);
+		}
+	}
+	
+	for (int i = 0; i < files.size(); i++) 
+	{
+		vector<string> grounding = Grounding(srcfolder + files[i]);
+		string dstname = files[i].substr(0,files[i].size()-4) + ".txt";
+		SaveGroundings(dstfolder + dstname, grounding);
+	}
+	
+	closedir(dp);
+	return files.size();
 }
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "hri_spatial_language_grounding_server_node");
-	ros::NodeHandle n;
-
-	//Test();
-	
-	ros::ServiceServer service = n.advertiseService("hri_spatial_language_grounding", Grounding);
-	ROS_INFO("Ready to ground spatial language.");
-	ros::spin();
-
+	Batch_Grounding_Editing("/home/hri/hri_DATA/new_three_worlds_pos_res/", "/home/hri/hri_DATA/new_three_worlds_grounding_res/");
 	return 0;
 }
 

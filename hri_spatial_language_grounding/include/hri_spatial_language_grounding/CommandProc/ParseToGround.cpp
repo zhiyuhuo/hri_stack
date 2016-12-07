@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <iostream>
+#include <fstream>
 #include "ParseToGround.h"
 
 using namespace std;
@@ -43,6 +44,7 @@ int ParseToGround::ParseXml(string xmlFileName, int id)
 	}
 	int t = 1;
 	LoadGroundingDictionaryFromXml("/home/hri/hri_DATA/Grounding/");
+	LoadGroundingWordWeightsFromTXT("/home/hri/hri_DATA/Grounding_wordweights/");
 	//OutputInfo();
 	for (XMLNode* note = nodes->FirstChildElement(); note != NULL; note = note->NextSiblingElement())
 	{
@@ -107,7 +109,6 @@ int ParseToGround::SearchDeeperChunk(string chunkName, XMLNode* node)
 	}
 	return 0;
 }
-
 
 int ParseToGround::DealWithChunk(XMLNode* node)
 {
@@ -285,13 +286,13 @@ int ParseToGround::LoadGroundingDictionaryFromXml(string rootDir) {
 		groundingType = file.substr(0,dashPos);
 		groundingVariable = file.substr(dashPos+1);
 		//cout << "|" << groundingType << "|" << groundingVariable <<"|" << endl;
-		LoadAGoundingDictionary(rootDir, groundingType, groundingVariable);
+		LoadAGroundingDictionary(rootDir, groundingType, groundingVariable);
 	}
 	
 	return files.size()-2;
 }
 
-int ParseToGround::LoadAGoundingDictionary(string rootDir, string groundingType, string groundingVariable)
+int ParseToGround::LoadAGroundingDictionary(string rootDir, string groundingType, string groundingVariable)
 {
 	//printf("%s - %s\n", groundingType.c_str(), groundingVariable.c_str());
 	char fNameXML[100] = {0};
@@ -336,6 +337,99 @@ int ParseToGround::LoadAGoundingDictionary(string rootDir, string groundingType,
 	return 1;
 }
 
+int ParseToGround::LoadGroundingWordWeightsFromTXT(string rootDir)
+{
+	DIR *dp;
+	struct dirent *dirp;
+	
+	if((dp  = opendir(rootDir.c_str())) == NULL) 
+	{
+		cout << "Error(" << errno << ") opening " << rootDir << endl;
+		return errno;
+	}
+
+	vector<string> files;
+	while ((dirp = readdir(dp)) != NULL) 
+	{
+		cout << string(dirp->d_name) << endl;
+		if (string(dirp->d_name).size() > 2 && string(dirp->d_name).find('~') == string::npos)
+			files.push_back(string(dirp->d_name));
+	}
+	closedir(dp);
+	string groundingType;
+	string groundingVariable;
+	for (int i = 0; i < files.size(); i++) 
+	{
+		//cout << files[i] << endl;
+		string file = files[i].substr(0,files[i].size()-4);
+		int dashPos = file.find('-');
+		//cout << file << " " << dashPos << endl;
+		groundingType = file.substr(0,dashPos);
+		groundingVariable = file.substr(dashPos+1);
+		//cout << "|" << groundingType << "|" << groundingVariable <<"|" << endl;
+		LoadAGroundingWordWeights(rootDir, groundingType, groundingVariable);
+	}
+	cout << "m_groundingWordWeights.size(): " << m_groundingWordWeights.size() << endl;
+	for(map<string,GroundingWordWeights>::iterator it = m_groundingWordWeights.begin(); it != m_groundingWordWeights.end(); ++it) 
+	{
+		cout << it->first << "\n";
+		map<string,float> w = it->second.m_weights;
+		for (map<string,float>::iterator it2 = w.begin(); it2 != w.end(); ++it2)
+		{
+			cout << it2->first << " " << it2->second << "\n";
+		}
+	}
+	return files.size();
+}
+
+int ParseToGround::LoadAGroundingWordWeights(string rootDir, string groundingType, string groundingVariable)
+{
+	string name = groundingType + "-" + groundingVariable;
+	string filename = rootDir + name + ".txt";
+	cout << filename << endl;
+	ifstream infile(filename.c_str());
+	vector<string> lines;
+	string line;
+	while (getline(infile, line))
+	{
+		lines.push_back(line);
+	}
+
+	vector<int> chunknameNodes;
+	for (int i = 0; i < lines.size(); i++)
+	{
+		string line = lines[i];
+		if (line.find(":") != string::npos)
+		{
+		    chunknameNodes.push_back(i);
+		}
+	}
+	chunknameNodes.push_back(lines.size());
+	for (int i = 0; i < chunknameNodes.size()-1; i++)
+	{
+		GroundingWordWeights g;
+		string chunkName = lines[chunknameNodes[i]].substr(0,lines[chunknameNodes[i]].size()-1);
+		string key = name + "-" + chunkName;
+		g.m_chunkName = chunkName;
+		g.m_groundingType = groundingType;
+		g.m_groundingVariable = groundingVariable;
+		for (int j = chunknameNodes[i]+1; j < chunknameNodes[i+1]; j++)
+		{
+			string line = lines[j];
+			istringstream iss(line);
+			string word;
+			float weight;
+			if (!(iss >> word >> weight)) { break; } // error
+			cout << word << " " << weight << endl;
+			g.m_weights[word] = weight;
+		}
+		
+		m_groundingWordWeights[key] = g;
+	}
+	
+	return 1;
+}
+
 int ParseToGround::ParseCommnad()
 {
 	for (int i = 0; i < m_sampleChunks.size(); i++)
@@ -354,7 +448,9 @@ SampleChunk ParseToGround::ParseAChunk(SampleChunk sample)
 	int bestScoreGrounding[5] = {0};
 	for (int i = 0; i < m_groundingChunks.size(); i++)
 	{
-		float score = MatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
+		//float score = MatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
+		float score = 1 - WeightedMatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
+		//cout << "score: " << score << endl;
 		for (int j = 0; j < 5; j++)
 		{
 			if (m_groundingChunks[i].m_groundingType.compare(groundingTypeList[j]) == 0 && score <= bestScoreList[j])
@@ -363,14 +459,7 @@ SampleChunk ParseToGround::ParseAChunk(SampleChunk sample)
 				bestScoreGrounding[j] = i;
 			}
 		}
-		//printf("%d: %f\n", i, score);
 	}
-
-	//printf("\n------------------\n");
-	//for (int i = 0; i < 5; i++)
-	//{
-	//	printf("%s: %f %d %s\n", m_groundingChunks[bestScoreGrounding[i]].m_groundingType.c_str(), bestScoreList[i], bestScoreGrounding[i], m_groundingChunks[bestScoreGrounding[i]].m_groundingVariable.c_str());
-	//}
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -393,16 +482,6 @@ float ParseToGround::MatchBetweenASampleAndAGrounding(SampleChunk sample, Ground
 	vector<string> sTags = sample.m_tags;
 	vector<string> gWords = grounding.m_words;
 	vector<string> gTags = grounding.m_tags;
-
-	//for (int i = 0; i < sWords.size(); i++)
-	//{
-	//	printf("%s ", sWords[i].c_str());
-	//}
-	//printf("--");
-	//for (int i = 0; i < gWords.size(); i++)
-	//{
-	//	printf("%s ", gWords[i].c_str());
-	//}
 	
 	float ld = LevenshteinDistance(sWords, gWords);
 	res = ld;
@@ -437,6 +516,101 @@ float ParseToGround::LevenshteinDistance(vector<string> s1, vector<string> s2)
 	return res;
 }
 
+float ParseToGround::WeightedMatchBetweenASampleAndAGrounding(SampleChunk sample, GroundingChunk grounding)
+{	
+	float res = 0;
+	if (sample.m_chunkName.compare(grounding.m_chunkName) != 0)
+	{
+		return 0;
+	}
+	vector<string> sWords = sample.m_words;
+	vector<string> gWords = grounding.m_words;
+	string key = grounding.m_groundingType + "-" + grounding.m_groundingVariable + "-" + grounding.m_chunkName;
+	//cout << "key: " << key << endl;
+	GroundingWordWeights groundingWeights;
+	if (m_groundingWordWeights.find(key) != m_groundingWordWeights.end())
+	{
+		groundingWeights = m_groundingWordWeights[key];
+	}
+	
+// 	map<string,float> wm = groundingWeights.m_weights;
+// 	for (map<string,float>::iterator it = wm.begin(); it != wm.end(); ++it)
+// 	{
+// 		cout << it->first << " " << it->second << endl;
+// 	}
+
+	vector<float> sWeights(sWords.size(), 0.01);
+	vector<float> gWeights(gWords.size(), 0.01);
+	for (int i = 0; i < sWords.size(); i++)
+	{
+		if (groundingWeights.m_weights.find(sWords[i]) != groundingWeights.m_weights.end())
+		{
+			sWeights[i] = groundingWeights.m_weights[sWords[i]];
+		}
+	}
+	
+	for (int i = 0; i < gWords.size(); i++)
+	{
+		if (groundingWeights.m_weights.find(gWords[i]) != groundingWeights.m_weights.end())
+		{
+			gWeights[i] = groundingWeights.m_weights[gWords[i]];
+		}
+	}
+	
+// 	cout << "grounding: ";
+// 	for (int i = 0; i < gWeights.size(); i++)
+// 	{	cout << gWords[i] << " " << gWeights[i] << ", ";} cout << endl;
+// 	cout << "sample: ";
+// 	for (int i = 0; i < sWeights.size(); i++)
+// 	{	cout << sWords[i] << " " << sWeights[i] << ", ";} cout << endl;
+	
+	res = WeightedLevenshteinDistance(sWords, gWords, sWeights, gWeights);
+
+	return res; 
+}
+
+float ParseToGround::WeightedLevenshteinDistance(vector<string> s1, vector<string> s2, vector<float> w1, vector<float> w2)
+{
+	float res = 0;
+	const size_t len1 = s1.size(), len2 = s2.size();
+	vector<vector<int> > L(len1 + 1, vector<int>(len2 + 1, 0));
+	w1.insert(w1.begin(), 0);
+	w2.insert(w2.begin(), 0);
+	float g = 1;
+	float m = 0;
+	float d = 1;
+	L[0][0] = 0;
+	for(int i = 0; i <= len1; ++i) 
+	{
+		L[i][0] = i * w1[i];
+	}
+	for(int i = 0; i <= len2; ++i) 
+	{
+		L[0][i] = i * w2[i];
+	}
+	for(int i = 1; i <= len1; ++i)
+	{
+		for(int j = 1; j <= len2; ++j)
+		{
+			float score = 0;
+			if (s1[i-1].compare(s2[j-1]) == 0 )
+			{
+				score = m;
+			}
+			else
+			{
+				score = max(w1[i-1], w2[j-1]);
+			}
+			float m1 = L[i-1][j-1] + score;
+			float m2 = L[i-1][j] + (len1+1) * w1[i-1];
+                        float m3 = L[i][j-1] + (len2+1) * w2[j-1];
+			L[i][j] = min(m1, min(m2, m3));
+		}
+	}
+	res = L[len1][len2];
+	return res;
+}
+
 int ParseToGround::BuildCommandGrounding()
 {
 	//target room
@@ -455,8 +629,8 @@ int ParseToGround::BuildCommandGrounding()
 			}
 		}
 	}
-	m_sampleChunks.erase(m_sampleChunks.begin() + targetRoomBestScoreSample);
-// 	cout << "bug0" << endl;
+	if (targetRoomBestScoreSample >= 0)
+		m_sampleChunks.erase(m_sampleChunks.begin() + targetRoomBestScoreSample);
 	//target object
 	float targetObjectBestScore = MAXSCORE;
 	int targetObjectBestScoreSample = -1;
@@ -474,7 +648,6 @@ int ParseToGround::BuildCommandGrounding()
 		}
 	}
 	m_sampleChunks.erase(m_sampleChunks.begin() + targetObjectBestScoreSample);
-// 	cout << "bug1" << endl;	
 	//Delete Nosense node
 	for (int i = 0; i < m_sampleChunks.size(); i++)
 	{
@@ -487,7 +660,6 @@ int ParseToGround::BuildCommandGrounding()
 		}
 
 	}
-// 	cout << "bug2" << endl;
 	//RDT
 	vector<RDTNode> rdtNodeChain;
 	for (int i = 0; i < m_sampleChunks.size(); i++)
@@ -515,7 +687,6 @@ int ParseToGround::BuildCommandGrounding()
 		
 	}
 	m_RDTNodeSet = rdtNodeChain;
-// 	cout << "bug3" << endl;
 	int n = 0;
 	int t = 1;
 	while (n < m_RDTNodeSet.size())

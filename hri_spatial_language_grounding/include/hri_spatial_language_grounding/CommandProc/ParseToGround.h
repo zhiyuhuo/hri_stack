@@ -28,6 +28,16 @@ public:
 	int m_ifModTarget;
 };
 
+class GroundingWordWeights
+{
+public: 
+	string m_chunkName;
+	string m_groundingType;
+	string m_groundingVariable;
+	
+	map<string, float> m_weights;
+};
+
 class GroundingChunk
 {
 public:
@@ -65,6 +75,7 @@ public:
 	vector<pair<string, string> > m_refdirPair;
 
 	vector<GroundingChunk> m_groundingChunks;
+	map<string, GroundingWordWeights> m_groundingWordWeights;
 	vector<SampleChunk> m_sampleChunks;
 
 	vector<RDTNode> m_RDTNodeSet;
@@ -82,12 +93,17 @@ public:
 	int GenerateAGroundingDictionay(string rootDir, string groundingType, string groundingVariable);
 
 	int LoadGroundingDictionaryFromXml(string rootDir);
-	int LoadAGoundingDictionary(string rootDir, string groundingType, string groundingVariable);
+	int LoadAGroundingDictionary(string rootDir, string groundingType, string groundingVariable);
+	
+	int LoadGroundingWordWeightsFromTXT(string rootDir);
+	int LoadAGroundingWordWeights(string rootDir, string groundingType, string groundingVariable);
 
 	int ParseCommnad();
 	SampleChunk ParseAChunk(SampleChunk sample);
 	float MatchBetweenASampleAndAGrounding(SampleChunk sample, GroundingChunk grounding);
 	float LevenshteinDistance(vector<string> s1, vector<string> s2);
+	float WeightedMatchBetweenASampleAndAGrounding(SampleChunk sample, GroundingChunk grounding);
+	float WeightedLevenshteinDistance(vector<string> s1, vector<string> s2, vector<float> w1, vector<float> w2);
 
 	int BuildCommandGrounding();
 	int ReGroupRDTNodes();
