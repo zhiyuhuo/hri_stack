@@ -16,7 +16,7 @@ using namespace std;
 int Robot::RunCommand(vector<string> cmd)
 {
 	int res = 0;
-	cout << m_state << endl;
+	//cout << m_state << endl;
 	if (m_state.compare("init") == 0)
 	{
 		CallForPercepstionService();
@@ -33,6 +33,12 @@ int Robot::RunCommand(vector<string> cmd)
 	else if (m_state.compare("read_dct") == 0)
 	{
 		m_currentDct = ReadDetector(cmd);
+		if (m_currentDct.size() <= 0)
+		{
+			cout << "can not load grounding detector!" << endl;
+			res = -1;
+			m_state = "end";
+		}
 		m_state = "navigation";
 	}
 	
@@ -76,7 +82,8 @@ int Robot::RunCommand(vector<string> cmd)
 	
 	else if (m_state.compare("search") == 0)
 	{
-		int r = Search90();
+// 		int r = Search90();
+		int r = SearchAround();
 		if (r == 1)
 		{
 			m_state = "navigation";
@@ -155,6 +162,8 @@ int Robot::Search90()
 {
 	int res = 0;
 	float rotc = PI / 4;
+	CallForPercepstionService();
+	Perception();
 	if (m_action.compare("init") == 0)
 	{
 	  	CallForPercepstionService();
@@ -225,8 +234,80 @@ int Robot::Search90()
 	{
 		res = 1;
 	}
+	SetRobotVelocity();
 	
 	return res;
+}
+
+int Robot::SearchAround()
+{
+	int res = 0;
+	float rotc = PI / 6;
+	float searchScale = PI * (2.0/3);
+	static float startingAngle;
+	if (m_action.compare("init") == 0)
+	{
+	  	CallForPercepstionService();
+		Perception();
+		startingAngle = m_theta;
+		cout << "searchScale: " << searchScale << endl;
+		cout << "startingAngle: " << startingAngle << endl;
+		m_turnTarget = startingAngle + searchScale;
+		m_action = "rotate_to_start";
+		cout << "m_action: " << m_action << " " << m_turnTarget << endl;
+	}
+	
+	else if (m_action.compare("rotate_to_start") == 0)
+	{
+		if (ToAngle(m_turnTarget) == 1)
+		{
+			CallForPercepstionService();
+			Perception();
+			m_turnTarget = m_theta - rotc;
+			m_action = "search_and_rotate";
+			cout << "m_action: " << m_action << " " << m_turnTarget << endl;
+		}
+	}
+	
+	else if (m_action.compare("search_and_rotate") == 0)
+	{
+		if (ToAngle(m_turnTarget) == 1)
+		{
+			CallForPercepstionService();
+			Perception();
+			m_turnTarget = m_theta - rotc;
+			m_action = "search_and_rotate";
+			
+			float diff = m_theta - startingAngle;
+			cout << "diff: " << diff << endl;
+			while (diff > PI) diff -= 2*PI;
+			while (diff < -PI) diff += 2*PI;
+			if (diff < -searchScale)
+			{
+				m_turnTarget = startingAngle;
+				m_action = "rotate_back";
+				cout << "m_action: " << m_action << " " << m_turnTarget << endl;
+			}
+			cout << "m_action: " << m_action << " " << m_turnTarget << endl;
+		}
+	}
+	
+	else if (m_action.compare("rotate_back") == 0)
+	{
+		if (ToAngle(m_turnTarget) == 1)
+		{
+			m_action = "stop";
+			cout << "m_action: " << m_action << " " << m_turnTarget << endl;
+		}
+	}
+	
+	else if (m_action.compare("stop") == 0)
+	{
+		res = 1;
+	}
+	SetRobotVelocity();
+	
+	return res;	
 }
 
 vector<Dct> Robot::ReadDetector(vector<string> cmd)
@@ -252,6 +333,10 @@ vector<Dct> Robot::ReadDetector(vector<string> cmd)
 				cout << "required sp name:" << featureName << endl;
 			}
 		}
+	}
+	else
+	{
+		return res;
 	}
 	
 	for (int i = 0; i < fileList.size(); i++)

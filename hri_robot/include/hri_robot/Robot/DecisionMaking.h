@@ -15,6 +15,7 @@ int Robot::TestFromRDT(vector<string> groundings)
 {
 	BuildGroundingList(groundings);
 	ShowRobotCmdInfo();
+	FormatGroundings();
   
 	while (ros::ok()) 
 	{
@@ -66,8 +67,8 @@ int Robot::RunNode()
 
 int Robot::HomeFetchTask()
 {
-	//cout << m_ifGetPerception << " " << m_ifGetPose << endl;
-	cout << "m_mission: " << m_mission << endl;
+	// cout << m_ifGetPerception << " " << m_ifGetPose << endl;
+	// cout << "m_mission: " << m_mission << endl;
 	if (m_mission == "init") 
 	{
 		CallForPercepstionService();
@@ -114,6 +115,11 @@ int Robot::HomeFetchTask()
 			//cout << " m_pathLength: " << m_pathLength << endl;
 			//cout << "Finished" << endl;
 			cout << "Final Robot Pose For This RDT: " << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta*180/PI << endl;
+			m_mission = "jump_to_next";
+		}
+		else if (r == -1)
+		{
+			cout << "Cannot run this command. Skip to the next\n";
 			m_mission = "jump_to_next";
 		}
 	}

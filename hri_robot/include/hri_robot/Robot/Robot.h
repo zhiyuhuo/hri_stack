@@ -84,7 +84,7 @@ public:
 };
 
 class Dct{
-public:
+public:  
 	string nameA;
 	string nameB;
 	
@@ -188,6 +188,7 @@ public:	//Robot Behavior
 	vector<Dct> m_currentDct;
 	int RunCommand(vector<string> cmd);
 	int Search90();
+	int SearchAround();
 	int GotoRoom(string room);
 	int RDTIndoorNavigation(RDTNode rdt);
 	vector<Dct> ReadDetector(vector<string> cmd);
@@ -228,6 +229,7 @@ public:	//Robot Strategy
 	
 	int BuildGroundingList(vector<string> groundings);
 	int BuildFakeGroundingList();
+	int FormatGroundings();
 	
 public:	//Grounding Generation (Generate RDT from Path)
   	ros::ServiceClient m_generatingLanguageClient; 

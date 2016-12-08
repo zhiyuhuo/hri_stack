@@ -1,0 +1,4 @@
+<launch>	  	
+	<node pkg="hri_perception" name="hri_perception_server" type="hri_perception_server"/>
+	<node pkg="hri_nav" name="hri_nav_action_server" type="hri_nav_action_server"/>
+</launch>

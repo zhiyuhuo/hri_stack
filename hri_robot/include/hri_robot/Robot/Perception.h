@@ -275,7 +275,8 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 	{
 		for (int i = 0; i < tempEntList.size(); i++)
 		{
-			if (tempEntList[i].name.compare("unknown") != 0 && tempEntList[i].confidence > 0.6)
+			//cout << "tmp: " << tempEntList[i].name << " " << tempEntList[i].confidence << " " << tempEntList[i].name.compare("unknown") << endl;
+			if (tempEntList[i].name.compare("unknown") != 0 && tempEntList[i].confidence > 0.25)
 			{
 				m_SEList.push_back(tempEntList[i]);
 			}
@@ -407,7 +408,7 @@ Ent Robot::GenerateGlobalEnt(Ent le)
 	Ent ge;
 	
 	ge.name = le.name;
-	//ge.confidence = g.m_confidence;
+	ge.confidence = le.confidence;
 	vector<float> xyth = LocalToGlobal(le.x, le.y, le.dir);
 	ge.x = xyth[0];
 	ge.y = xyth[1];

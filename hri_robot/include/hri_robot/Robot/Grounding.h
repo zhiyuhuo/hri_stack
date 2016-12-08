@@ -99,29 +99,11 @@ int Robot::AskGroundingService(string cmd)
 		}
 		
 	}
-	rdtList.push_back(rdt);
-	
+	rdtList.push_back(rdt);	
 	m_RDTList = rdtList;
-	return 0;
-}
-
-void Robot::ShowRobotCmdInfo()
-{
 	
-	cout << "Command Grouding Info: " << endl;
-	printf("m_targetObject: %s\n", m_targetObject.c_str());
-	printf("m_targetORoom: %s\n", m_targetRoom.c_str());
-	cout << "RDT list size: " << m_RDTList.size() << endl;
-	for (int i = 0; i < m_RDTList.size(); i++)
-	{
-		printf("Node %d:\n", i);
-		printf("-m_tar: %s\n", m_RDTList[i].m_tar.c_str());
-		for (int j = 0; j < m_RDTList[i].m_refList.size(); j++)
-		{
-			printf("-m_refList[%d]: %s\n", j, m_RDTList[i].m_refList[j].c_str());
-			printf("-m_dirList[%d]: %s\n", j, m_RDTList[i].m_dirList[j].c_str());
-		}
-	}
+	
+	return 0;
 }
 
 int Robot::BuildGroundingList(vector<string> groundings)
@@ -195,9 +177,79 @@ int Robot::BuildGroundingList(vector<string> groundings)
 		
 	}
 	rdtList.push_back(rdt);
-	
 	m_RDTList = rdtList;
+	
 	return 0;
+}
+
+int Robot::FormatGroundings()
+{
+	//transfer m_targetObject, m_targetRoom, m_RDTList to string_format groundings.
+	m_groundings.clear();
+	
+	if (m_targetRoom.size() > 1)
+	{
+		vector<string> groundingObject(5, "non");
+		groundingObject[0] = m_targetRoom;
+		m_groundings.push_back(groundingObject);
+	}
+	
+	if (m_targetObject.size() > 1)
+	{
+		vector<string> groundingObject(5, "non");
+		groundingObject[1] = m_targetObject;
+		m_groundings.push_back(groundingObject);
+	}
+	
+	for (int i = 0; i < m_RDTList.size(); i++)
+	{
+		RDTNode node = m_RDTList[i];
+		if (node.m_refList.size() != 0)
+		{
+			if (node.m_refList[0].size() > 1 && node.m_refList[0] != "non"
+			    && node.m_dirList[0].size() > 1 && node.m_dirList[0] != "non"
+			)
+			{
+				vector<string> groundingObject(5, "non");
+				groundingObject[2] = node.m_refList[0];
+				groundingObject[3] = node.m_dirList[0];
+				if (node.m_tar.size() > 1 && node.m_tar != "non")
+					groundingObject[4] = node.m_tar;
+				m_groundings.push_back(groundingObject);				
+			}
+		}
+	}
+	
+	for (int i = 0; i < m_groundings.size(); i++)
+	{
+		cout << "cmd " << i << ": ";
+		for (int j = 0; j < m_groundings[i].size(); j++)
+		{
+			cout << m_groundings[i][j] << " ";
+		}
+		cout << endl;
+	}
+	
+	return m_groundings.size();
+}
+
+void Robot::ShowRobotCmdInfo()
+{
+	
+	cout << "Command Grouding Info: " << endl;
+	printf("m_targetObject: %s\n", m_targetObject.c_str());
+	printf("m_targetRoom: %s\n", m_targetRoom.c_str());
+	cout << "RDT list size: " << m_RDTList.size() << endl;
+	for (int i = 0; i < m_RDTList.size(); i++)
+	{
+		printf("Node %d:\n", i);
+		printf("-m_tar: %s\n", m_RDTList[i].m_tar.c_str());
+		for (int j = 0; j < m_RDTList[i].m_refList.size(); j++)
+		{
+			printf("-m_refList[%d]: %s\n", j, m_RDTList[i].m_refList[j].c_str());
+			printf("-m_dirList[%d]: %s\n", j, m_RDTList[i].m_dirList[j].c_str());
+		}
+	}
 }
 
 int Robot::BuildFakeGroundingList()
