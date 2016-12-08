@@ -16,7 +16,7 @@ using namespace std;
 int Robot::RunCommand(vector<string> cmd)
 {
 	int res = 0;
-	
+	cout << m_state << endl;
 	if (m_state.compare("init") == 0)
 	{
 		CallForPercepstionService();
@@ -49,7 +49,7 @@ int Robot::RunCommand(vector<string> cmd)
 		else
 		{
 //			float r2 = IterateltSearchTarget(m_currentDct);
-            float r2 = IterateSearchTargetOptimized(m_currentDct);
+			float r2 = IterateSearchTargetOptimized(m_currentDct);
 			cout << "r2 = " << r2 << endl;
 			if (r2 < 0)
 			{

@@ -157,6 +157,10 @@ add_executable(rebuild_environment_and_generate_spl src/rebuild_environment_and_
 target_link_libraries(rebuild_environment_and_generate_spl ${catkin_LIBRARIES})
 add_dependencies(rebuild_environment_and_generate_spl ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
+add_executable(run_rdt_commands src/run_rdt_commands.cpp)
+target_link_libraries(run_rdt_commands ${catkin_LIBRARIES})
+add_dependencies(run_rdt_commands ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(hri_robot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

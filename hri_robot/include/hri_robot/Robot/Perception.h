@@ -302,7 +302,7 @@ int Robot::UpdateSEMap(vector<Ent> tempEntList)
 				    r2++;
 				}
 			}
-			if (r2 == m_SEList.size())
+			if (r2 > 0 && r2 == m_SEList.size())
 			{
 				m_SEList.push_back(tempEntList[i]);  
 			}
@@ -394,6 +394,10 @@ int Robot::CompareTwoGOs(Ent go1, Ent go2)
 		}
 		cout << area1 << " " << area2 << " " << areaand << " " << areaor << " " << res << endl;
 	} 
+	else
+	{
+		res = 0;
+	}
 	
 	return res;
 }

@@ -151,6 +151,8 @@ public:	//robot sensor data processing
 	int DrawOccupancyGrid();
 	
 public:	//parsing chunking tree
+	ros::Subscriber m_cmdSub;
+	void cmdstrCallback(const std_msgs::StringConstPtr& msg);
 	string m_spatialCommand;
 	int m_counter;
 	ros::ServiceClient m_groundingClient; 
@@ -214,6 +216,7 @@ public:	//Robot Strategy
 	int ConnectToServer();
 	int RunNode();
 	
+	int TestFromRDT(vector<string> groundings);
 	int HomeFetchTask();
 	int DecisionMaking();
 	int Test();
@@ -223,7 +226,7 @@ public:	//Robot Strategy
 	int KeyboardControlForLanguageGeneration();
 	int AutomaticLanguageGenerationFromVideo(string targetObject);
 	
-	int BuildGroundingList();
+	int BuildGroundingList(vector<string> groundings);
 	int BuildFakeGroundingList();
 	
 public:	//Grounding Generation (Generate RDT from Path)
@@ -316,6 +319,7 @@ int Robot::ConnectToServer()
 	m_poseSub = m_nh->subscribe(poseTopicStr.c_str(), 1000, &Robot::poseCallback, this);
 	m_envSub = m_nh->subscribe("/env", 10, &Robot::EnvCallback, this);
 	m_speedPub = m_nh->advertise<geometry_msgs::Twist>(cmdvelTopicStr.c_str(), 100);
+	m_cmdSub = m_nh->subscribe("recognizer/output", 10, &Robot::cmdstrCallback, this);
 	
 	
 	cout <<poseTopicStr << " " << cmdvelTopicStr << endl;

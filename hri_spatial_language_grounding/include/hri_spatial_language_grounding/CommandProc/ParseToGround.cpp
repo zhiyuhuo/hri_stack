@@ -44,7 +44,7 @@ int ParseToGround::ParseXml(string xmlFileName, int id)
 	}
 	int t = 1;
 	LoadGroundingDictionaryFromXml("/home/hri/hri_DATA/Grounding/");
-	LoadGroundingWordWeightsFromTXT("/home/hri/hri_DATA/Grounding_wordweights/");
+	//LoadGroundingWordWeightsFromTXT("/home/hri/hri_DATA/Grounding_wordweights/");
 	//OutputInfo();
 	for (XMLNode* note = nodes->FirstChildElement(); note != NULL; note = note->NextSiblingElement())
 	{
@@ -351,7 +351,7 @@ int ParseToGround::LoadGroundingWordWeightsFromTXT(string rootDir)
 	vector<string> files;
 	while ((dirp = readdir(dp)) != NULL) 
 	{
-		cout << string(dirp->d_name) << endl;
+		//cout << string(dirp->d_name) << endl;
 		if (string(dirp->d_name).size() > 2 && string(dirp->d_name).find('~') == string::npos)
 			files.push_back(string(dirp->d_name));
 	}
@@ -369,14 +369,14 @@ int ParseToGround::LoadGroundingWordWeightsFromTXT(string rootDir)
 		//cout << "|" << groundingType << "|" << groundingVariable <<"|" << endl;
 		LoadAGroundingWordWeights(rootDir, groundingType, groundingVariable);
 	}
-	cout << "m_groundingWordWeights.size(): " << m_groundingWordWeights.size() << endl;
+	//cout << "m_groundingWordWeights.size(): " << m_groundingWordWeights.size() << endl;
 	for(map<string,GroundingWordWeights>::iterator it = m_groundingWordWeights.begin(); it != m_groundingWordWeights.end(); ++it) 
 	{
-		cout << it->first << "\n";
+		//cout << it->first << "\n";
 		map<string,float> w = it->second.m_weights;
 		for (map<string,float>::iterator it2 = w.begin(); it2 != w.end(); ++it2)
 		{
-			cout << it2->first << " " << it2->second << "\n";
+			//cout << it2->first << " " << it2->second << "\n";
 		}
 	}
 	return files.size();
@@ -420,7 +420,7 @@ int ParseToGround::LoadAGroundingWordWeights(string rootDir, string groundingTyp
 			string word;
 			float weight;
 			if (!(iss >> word >> weight)) { break; } // error
-			cout << word << " " << weight << endl;
+			//cout << word << " " << weight << endl;
 			g.m_weights[word] = weight;
 		}
 		
@@ -448,8 +448,8 @@ SampleChunk ParseToGround::ParseAChunk(SampleChunk sample)
 	int bestScoreGrounding[5] = {0};
 	for (int i = 0; i < m_groundingChunks.size(); i++)
 	{
-		//float score = MatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
-		float score = 1 - WeightedMatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
+		float score = MatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
+		//float score = 1 - WeightedMatchBetweenASampleAndAGrounding(sample, m_groundingChunks[i]);
 		//cout << "score: " << score << endl;
 		for (int j = 0; j < 5; j++)
 		{

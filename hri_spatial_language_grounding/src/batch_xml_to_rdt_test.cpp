@@ -67,13 +67,16 @@ vector<string> Grounding(string posXmlAddr)
 	return grounding;
 }
 
-int SaveGroundings(string filename, vector<string> grounding)
+int SaveGroundings(string filename, vector<string> grounding, string rawcmdtxtline)
 {
 	ofstream myfile;
 	myfile.open (filename.c_str());
 	for (int i = 0; i < grounding.size(); i++)
 		myfile << grounding[i].c_str() << ",";
+	myfile << endl;
+	myfile << rawcmdtxtline;
 	myfile.close();
+	return 0;
 }
 
 int Batch_Grounding_Editing(string srcfolder, string dstfolder)
@@ -87,7 +90,7 @@ int Batch_Grounding_Editing(string srcfolder, string dstfolder)
 	vector<string> files;
 	while ((dirp = readdir(dp)) != NULL) {
 		string filedir = string(dirp->d_name);
-		if (filedir.find("~") == string::npos && filedir.size() > 3)
+		if (filedir.find("~") == string::npos && filedir.size() > 3 && filedir.find("xml") != string::npos)
 		{
 			 files.push_back(filedir);
 		}
@@ -95,9 +98,24 @@ int Batch_Grounding_Editing(string srcfolder, string dstfolder)
 	
 	for (int i = 0; i < files.size(); i++) 
 	{
+		string txtfile = files[i].substr(0, files[i].size()-4) + "_rawcmd.txt";
+		cout << files[i] << ", " << txtfile << endl;
+		ifstream myfile ((srcfolder + txtfile).c_str());
+		string rawcmdtxtline;
+		if (myfile.is_open())
+		{
+			getline (myfile, rawcmdtxtline);
+			myfile.close();
+		}
+		else 
+		{
+			cout << "can not load file " << (srcfolder + txtfile) << endl;
+			exit(1);
+		}	
+		cout << rawcmdtxtline << endl;
 		vector<string> grounding = Grounding(srcfolder + files[i]);
-		string dstname = files[i].substr(0,files[i].size()-4) + ".txt";
-		SaveGroundings(dstfolder + dstname, grounding);
+		string dstname = files[i].substr(0, files[i].size()-4) + ".txt";
+		SaveGroundings(dstfolder + dstname, grounding, rawcmdtxtline);
 	}
 	
 	closedir(dp);

@@ -37,6 +37,9 @@ if __name__ == "__main__":
 	    linestr = lines[j]
 	    linestr.replace(",", " ")
 	    linestr.replace(".", " ")
+	    txtfile = "/home/hri/hri_DATA/new_three_worlds_pos_res/" + worldobjstr + "_" + str(j - (typeindices[i]+1)) + "_rawcmd.txt"
+	    with open(txtfile, "w") as text_file:
+	        text_file.write(linestr)
 	    xmlfile = "/home/hri/hri_DATA/new_three_worlds_pos_res/" + worldobjstr + "_" + str(j - (typeindices[i]+1)) + ".xml"
 	    print [xmlfile, linestr]
 	    tree = raw_to_xml(linestr,xmlfile)

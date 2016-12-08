@@ -11,6 +11,21 @@
 
 #include "hri_language_generation/GenerateSpatialLanguage.h"
 
+int Robot::TestFromRDT(vector<string> groundings)
+{
+	BuildGroundingList(groundings);
+	ShowRobotCmdInfo();
+  
+	while (ros::ok()) 
+	{
+		HomeFetchTask();
+		ros::spinOnce();
+	}
+  
+  
+	return 0;	
+}
+
 int Robot::RunNode()
 {
 // 	m_spatialCommand = "the mug is on the table on the right in the bedroom";
@@ -30,7 +45,14 @@ int Robot::RunNode()
 // 		DecisionMaking();
 // 		ros::spinOnce();
 // 	}
-	BuildFakeGroundingList();
+// 	BuildFakeGroundingList();
+
+	while (ros::ok() && m_spatialCommand.size() == 0) 
+	{
+		ros::spinOnce();
+	}
+	AskGroundingService(m_spatialCommand);
+	ShowRobotCmdInfo();
   
 	while (ros::ok()) 
 	{
@@ -45,6 +67,7 @@ int Robot::RunNode()
 int Robot::HomeFetchTask()
 {
 	//cout << m_ifGetPerception << " " << m_ifGetPose << endl;
+	cout << "m_mission: " << m_mission << endl;
 	if (m_mission == "init") 
 	{
 		CallForPercepstionService();
@@ -57,7 +80,6 @@ int Robot::HomeFetchTask()
 		
 	else if (m_mission == "wait_for_command")
 	{
-		BuildFakeGroundingList();
 		m_mission = "init_task";
 	}
 	  
@@ -66,11 +88,20 @@ int Robot::HomeFetchTask()
 		m_posRobotLast = m_posRobot;
 		m_action = "init";
 		m_step = 0;
+		
+		if (m_groundings.size() <= 0)
+		{
+			exit(1);
+		}
+		
 		vector<string> cmdVec = m_groundings[m_step];
 		cout << "-----------------------------------------:\n";
-		for (int i = 0; i < cmdVec.size(); i++)	{	cout << cmdVec[i] << " ";	}	cout << endl;
-			
-			m_mission = "follow_command";
+		for (int i = 0; i < cmdVec.size(); i++)	
+		{
+			cout << cmdVec[i] << " ";	
+		}	
+		cout << endl;	
+		m_mission = "follow_command";
 	}
 
 	else if (m_mission == "follow_command")
