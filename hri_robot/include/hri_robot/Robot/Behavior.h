@@ -98,6 +98,11 @@ int Robot::RunCommand(vector<string> cmd)
 		SetOccupancyMap(400, 400, 0.25, -50, -50);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+		/*show the information*/
+		cout << "--- m_posRobot: " << m_posRobot.GetX() << " " << m_posRobot.GetY() << " " << m_theta << endl;
+		cout << "m_pathPoints.size(): " << m_pathPoints.size() << endl;
+		for (int i = 0; i < m_pathPoints.size(); i++)
+			cout << "    " << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
 		m_path = 1;
 		m_state = "move_to_targert";
 	}
@@ -1053,7 +1058,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				      
 			score = score1;
 			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
-			cout << "move to pose1: " << movePose[0] << " " << movePose[1] << " " << movePose[2] << ", score1: " << score1 << endl;
+			cout << "move to pose 1: " << movePose[0] << " " << movePose[1] << " " << movePose[2] << ", score1: " << score1 << endl;
 				    
 			// shrink the interval. the second CR set
 			float score2 = 0;
@@ -1183,7 +1188,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 				}
 			}
 		      
-			cout << "respadd" << respadd << endl;
+			cout << "respadd: " << respadd << endl;
 		      
 			respadd += maxCRResult2;
 			respbbb.push_back(maxCRResult2);
@@ -1205,7 +1210,7 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			}
 			
 			for (int i = 0; i < respset.size(); i++) {	cout << respset[i] << " ";	}	cout << endl;
-			cout << "move to pose2: " << movePose2[0] << " " << movePose2[1] << " " << movePose2[2] << ", score2: " << score2 << endl;
+			cout << "move to pose 2: " << movePose2[0] << " " << movePose2[1] << " " << movePose2[2] << ", score2: " << score2 << endl;
 			    
 			if (score2 > score)
 			{

@@ -71,7 +71,7 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 			m_occupiedMap[u + v * width] = 255;
 		}
 	}
-	/*
+	
 	nav_msgs::SetMap srvSetMap;
 	srvSetMap.request.map.info.resolution = resolution; 
 	srvSetMap.request.map.info.width = width; 
@@ -92,10 +92,10 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 	}
 	else
 	{
-		ROS_ERROR("Failed to call set map");
+		ROS_ERROR("Failed to call the service of ""set map""");
 		return -1;
 	}
-	*/
+	
 	return 1;
 }
 
@@ -120,7 +120,7 @@ vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition pos
 	}
 	else
 	{
-		ROS_ERROR("Failed to call service get path");
+		ROS_ERROR("Failed to call service ""get path""");
 	}		
 	
 	return res;

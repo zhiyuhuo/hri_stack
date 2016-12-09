@@ -47,17 +47,17 @@
 		
 		<include>
 			<uri>model://hri_dinnertable</uri>
-			<pose>1 6 0 0 0 1.5708</pose>
+			<pose>1 6 0 0 0 0</pose>
 		</include>
 		
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>1 5.25 0 0 0 3.1416</pose>
+			<pose>1 4.75 0 0 0 3.1416</pose>
 		</include>
 		
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>1 6.75 0 0 0 0</pose>
+			<pose>1 7.25 0 0 0 0</pose>
 		</include>
 		
 		<include>

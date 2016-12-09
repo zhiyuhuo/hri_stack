@@ -76,7 +76,7 @@ Ent Robot::GetWallEntity(float x, float y, float theta)
 			in += spr.indirw[k];
 		}
         
-                cout << m_LEList[i].name << " " << in << " " << out << endl;
+                cout << m_LEList[i].name << " in: " << in << " out : " << out << endl;
         
 		if (in > 0 && out <= 0)
 		{

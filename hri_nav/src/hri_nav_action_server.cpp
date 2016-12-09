@@ -70,6 +70,7 @@ int main(int argc, char **argv)
 
 bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response &res)
 {
+	cout << "Got a request for Map Setting\n";
 	double mapResolution = (double)req.map.info.resolution;
 	long mapWidth = req.map.info.width;
 	long mapHeight = req.map.info.height;
@@ -93,6 +94,7 @@ bool SetMapCallback(nav_msgs::SetMap::Request  &req, nav_msgs::SetMap::Response 
 
 bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Response &res)
 {
+	cout << "Got a request for Path Planning\n";
 	VecPosition posStart(req.start.pose.position.x, req.start.pose.position.y);
 	VecPosition posTarget(req.goal.pose.position.x, req.goal.pose.position.y);
 	
