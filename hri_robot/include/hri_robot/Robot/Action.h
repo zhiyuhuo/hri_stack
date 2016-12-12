@@ -104,7 +104,7 @@ int Robot::ToPos(VecPosition posTarget)
 		m_angularSpeed = - deltaAngle * kA;		
 	}*/
 
-	if (deltaDist < 0.1)
+	if (deltaDist < 0.2)
 	{
 		m_linearSpeed = 0;
 		m_angularSpeed = 0;

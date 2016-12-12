@@ -66,11 +66,11 @@ int Robot::BuildGroundingList(vector<string> groundings)
 	RDTNode rdt;
 	while (i < groundings.size())
 	{
-		if(groundings[i].find("tar") != string::npos)
+		if(groundings[i].find("tar:") != string::npos)
 		{
 			rdt.m_tar = groundings[i].substr(4);
 			i++;
-			while (i < groundings.size() && groundings[i].find("tar") == string::npos)
+			while (i < groundings.size() && groundings[i].find("tar:") == string::npos)
 			{
 				if (groundings[i].find("ref:") != string::npos)
 				{

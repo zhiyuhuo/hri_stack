@@ -88,8 +88,9 @@ bool findPathViaDijkstra(const cv::Mat& gridMap, cv::Point2i start, cv::Point2i 
         // 1. The cell is not in visited cell
         // 2. The cell is not out of bounds
         // 3. The cell is free
-        for (int x = current.x-1; x <= current.x+1; x++)
-            for (int y = current.y-1; y <= current.y+1; y++)
+	int Bump = 1;
+        for (int x = current.x-Bump; x <= current.x+Bump; x+=Bump)
+            for (int y = current.y-Bump; y <= current.y+Bump; y+=Bump)
             {
 
                 if (checkIfNotOutOfBounds(cv::Point2i(x, y), gridMap.rows, gridMap.cols) &&
@@ -182,6 +183,28 @@ int path_planner_test()
     cv::imshow("Map with path", image);
     cv::waitKey();
     return 0;
+}
+
+int show_path(Mat image, Mat show, std::vector<cv::Point2i> path)
+{
+    int cn = show.channels();
+    int imgSize = image.cols * image.rows;
+    for (int i = 0; i < imgSize; i++)
+    {
+	    show.data[i*cn+0] = image.data[i];
+            show.data[i*cn+1] = image.data[i];
+            show.data[i*cn+2] = image.data[i];	    
+    }
+    for (int i = 0; i < path.size(); i++)
+    {
+	    show.data[path[i].x*cn*show.cols+path[i].y*cn+0] = 0;
+            show.data[path[i].x*cn*show.cols+path[i].y*cn+1] = 255;
+            show.data[path[i].x*cn*show.cols+path[i].y*cn+2] = 0;
+	    cout << path[i].x << "  " << path[i].y << endl;
+    }
+    cv::imshow("Map with path", show);
+    cv::waitKey(2000);
+    return 0;   
 }
 
 #endif

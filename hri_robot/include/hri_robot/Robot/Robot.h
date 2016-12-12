@@ -38,11 +38,11 @@
 #include "../Universal/Header.h"
 #include "Header.h"
 
-#define OCCUPANCYMAP_W 100
-#define OCCUPANCYMAP_H 100
-#define OCCUPANCYMAP_X -12.5
-#define OCCUPANCYMAP_Y -12.5
-#define OCCUPANCYMAP_RL 0.25
+#define OCCUPANCYMAP_W 200
+#define OCCUPANCYMAP_H 200
+#define OCCUPANCYMAP_X -10
+#define OCCUPANCYMAP_Y -10
+#define OCCUPANCYMAP_RL 0.1
 
 using namespace std;
 using namespace cv;

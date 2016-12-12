@@ -49,6 +49,8 @@ public:
 	VecPosition m_origin;
 	
 	cv::Mat m_map;
+	cv::Mat m_show;
+	cv::Mat m_tmp;
 	
 public:
 	int PathPlanningTest();
@@ -70,7 +72,9 @@ private:
 
 Planner::Planner()
 {	
-	m_map = cv::Mat::zeros(100, 100, CV_8UC1);
+	m_map = cv::Mat::zeros(200, 200, CV_8UC1);
+	m_show = cv::Mat::zeros(m_map.rows, m_map.cols, CV_8UC3);
+	m_tmp = cv::Mat::zeros(m_map.rows, m_map.cols, CV_8UC1);
 }
 
 Planner::~Planner()
@@ -95,16 +99,20 @@ int Planner::SetMap(int width, int height, double resolution, VecPosition origin
 	m_height = height;
 	m_resolution = resolution;
 	m_origin = origin;
+	
 	m_map = cv::Mat::zeros(m_width, m_height, CV_8UC1);
 	for (int i = 0; i < m_width; i++)
 	{
 		for (int j = 0; j < m_height; j++)
 		{
-			m_map.data[i+j*m_width] = (unsigned char)(data[i+j*m_width]);
+			m_tmp.data[i+j*m_width] = (unsigned char)(data[i+j*m_width]);
+			//m_map.data[i+j*m_width] = (unsigned char)(data[i+j*m_width]);
 		}
 	}
+	cv::dilate(m_tmp, m_map, cv::Mat(), cv::Point(-1,-1), 2, 1, 1);	
 	cv::imshow("m_map", m_map);
 	cv::waitKey(1000);
+	//m_tmp.release();
 	return 0;
 }
 
@@ -192,20 +200,21 @@ vector<VecPosition> Planner::DijkstraSearchPath(cv::Mat map, VecPosition posStar
 	vector<cv::Point2i> path;
 	
 	// Start top right
-	cv::Point2i start(uvS[0], uvS[1]);
+	cv::Point2i start(uvS[1], uvS[0]);
 	// Goal bottom left
-	cv::Point2i goal(uvT[0], uvT[1]);
-	cout << uvS[0] << "  " << uvS[1] << "  " << map.at<uint8_t>(uvS[1], uvS[0]) << endl;
-	cout << uvT[0] << "  " << uvT[1] << "  " << map.at<uint8_t>(uvT[1], uvT[0]) << endl;
+	cv::Point2i goal(uvT[1], uvT[0]);
+	cout << posStart.GetX() << " " << posStart.GetY() << " " << uvS[0] << "  " << uvS[1]  << endl;
+	cout << posTarget.GetX() << " " << posTarget.GetY() << " " << uvT[0] << "  " << uvT[1] << endl;
 
 	findPathViaDijkstra(map, start, goal, path);
 	cout << "here path has " << path.size() << " nodes" << endl;
 	for (int i = 0; i < path.size(); i++)
 	{
-		VecPosition p = PixelToVecPosition(path[i].x, path[i].y);
+		VecPosition p = PixelToVecPosition(path[i].y, path[i].x);
 		res.push_back(p);
 	}
-	
+	res.push_back(posTarget);
+	show_path(m_tmp, m_show, path);
 	return res;
 }
 

@@ -88,7 +88,7 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 		}
 		srvSetMap.request.map.data.push_back(m_occupancyMap[i]);
 	}
-	cout << "occupancyNum: " << occupancyNum << endl;
+	//cout << "occupancyNum: " << occupancyNum << endl;
 	srvSetMap.request.initial_pose.pose.pose.position.x = m_posRobot.GetX();
 	srvSetMap.request.initial_pose.pose.pose.position.y = m_posRobot.GetY();
 		
@@ -123,7 +123,7 @@ vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition pos
 			VecPosition step(srvGetPlan.response.plan.poses[i].pose.position.x,
 					srvGetPlan.response.plan.poses[i].pose.position.y);
 			res.push_back(step);
-			cout << step.GetX() << " " << step.GetY() << endl;
+			//cout << step.GetX() << " " << step.GetY() << endl;
 		}
 	}
 	else

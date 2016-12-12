@@ -196,8 +196,8 @@ int Robot::GotoRoom(string worldAndroom)
 		m_moveTarget.SetVecPosition(x,y);
 	  	m_turnTarget = th;
 	      
-		//m_state = "plan_path";
-		m_state = "directly_to_targert";
+		m_state = "plan_path";
+		//m_state = "directly_to_targert";
 	}
 	
 	else if (m_state.compare("plan_path") == 0)
