@@ -474,7 +474,7 @@ int Robot::DrawOccupancyGrid()
 			//cout << u << ", " << v << endl;
 			if (u >= 0 && u < m_imgGrid.cols && v >= 0 && v < m_imgGrid.rows)
 			{			
-				p = u + v * 200;
+				p = u + v * m_imgGrid.cols;
 				m_imgOccupancy.data[p] = 255;
 				
 				if (colorTuple.count(name) == 1)

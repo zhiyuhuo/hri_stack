@@ -124,7 +124,7 @@ int Batch_Grounding_Editing(string srcfolder, string dstfolder)
 
 int main(int argc, char **argv)
 {
-	Batch_Grounding_Editing("/home/hri/hri_DATA/new_three_worlds_pos_res/", "/home/hri/hri_DATA/new_three_worlds_grounding_res/");
+	Batch_Grounding_Editing("/home/hri/hri_DATA/four_worlds_pos_res/", "/home/hri/hri_DATA/four_worlds_grounding_res/");
 	return 0;
 }
 

@@ -164,8 +164,8 @@ target_link_libraries(hri_nav_node ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_executable(collect_le_map src/collect_le_map.cpp)
 target_link_libraries(collect_le_map ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 
-add_executable(hri_nav_action_server src/hri_nav_action_server.cpp)
-target_link_libraries(hri_nav_action_server ${OpenCV_LIBS} ${catkin_LIBRARIES})
+add_executable(hri_nav_server src/hri_nav_server.cpp)
+target_link_libraries(hri_nav_server ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
 add_executable(nav_client_test src/nav_client_test.cpp)
 target_link_libraries(nav_client_test ${catkin_LIBRARIES})

@@ -100,7 +100,6 @@ bool GetPlanCallback(nav_msgs::GetPlan::Request  &req, nav_msgs::GetPlan::Respon
 	
 	vector<VecPosition> stepsVecP = _planner.GetPlan(posStart, posTarget);
 	
-	
 	for (int i = 0; i < stepsVecP.size(); i++)
 	{
 		geometry_msgs::PoseStamped posestamped;

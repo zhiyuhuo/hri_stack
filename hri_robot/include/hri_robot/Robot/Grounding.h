@@ -31,77 +31,7 @@ int Robot::AskGroundingService(string cmd)
 		return 1;
 	}
 	cout << "finish calling: " << endl;
-	
-	vector<RDTNode> rdtList;
-	vector<string> labelList;
-	RDTNode rdt;
-	for (int i = 0; i < groundings.size(); i++)
-	{
-		std::size_t tr;
-		tr = groundings[i].find_last_of(":");
-		labelList.push_back(groundings[i].substr(0, tr));
-		cout << "label to push: " << groundings[i].substr(0, tr) << endl;
-		
-		tr = groundings[i].find("target_room:");	
-		if (tr != string::npos)
-		{
-			m_targetRoom = groundings[i].substr(12);
-			continue;
-		}
-		
-		tr = groundings[i].find("target_object:");	
-		if (tr != string::npos)
-		{
-			m_targetObject = groundings[i].substr(14);
-			continue;
-		}
-		
-		tr = groundings[i].find("tar:");	
-		if (tr != string::npos)
-		{
-			if (labelList[i-1].compare("tar") != 0 && rdtList.size() > 0)
-			{
-				rdtList.push_back(rdt);
-				rdt.m_tar = "";
-				rdt.m_refList.clear();
-				rdt.m_dirList.clear();
-				rdt.m_tar = groundings[i].substr(4);
-			}
-			else
-			{
-				if (groundings[i].substr(4).size() > 0)
-				{
-					rdt.m_tar = groundings[i].substr(4);
-					rdt.m_refList.clear();
-					rdt.m_dirList.clear();
-				}
-				else
-				{
-					rdt.m_refList.clear();
-					rdt.m_dirList.clear();					
-				}
-			}
-			continue;
-		}
-		
-		tr = groundings[i].find("ref:");
-		if (tr != string::npos)
-		{
-			rdt.m_refList.push_back(groundings[i].substr(4));
-			continue;
-		}
-		
-		tr = groundings[i].find("dir:");	
-		if (tr != string::npos)
-		{
-			rdt.m_dirList.push_back(groundings[i].substr(4));
-			continue;
-		}
-		
-	}
-	rdtList.push_back(rdt);	
-	m_RDTList = rdtList;
-	
+	BuildGroundingList(groundings);
 	
 	return 0;
 }
@@ -110,14 +40,11 @@ int Robot::BuildGroundingList(vector<string> groundings)
 {
 	vector<RDTNode> rdtList;
 	vector<string> labelList;
-	RDTNode rdt;
-	for (int i = 0; i < groundings.size(); i++)
+	int i;
+	for (i = 0; i < groundings.size(); i++)
 	{
 		cout << "groundings " << i << ": " << groundings[i] << endl;
 		std::size_t tr;
-		tr = groundings[i].find_last_of(":");
-		labelList.push_back(groundings[i].substr(0, tr));
-		cout << "label to push: " << groundings[i].substr(0, tr) << endl;
 		
 		tr = groundings[i].find("target_room:");	
 		if (tr != string::npos)
@@ -132,54 +59,45 @@ int Robot::BuildGroundingList(vector<string> groundings)
 			m_targetObject = groundings[i].substr(14);
 			continue;
 		}
-		
-		tr = groundings[i].find("tar:");	
-		if (tr != string::npos)
+	}	
+	
+	i = 0;
+	rdtList.clear();
+	RDTNode rdt;
+	while (i < groundings.size())
+	{
+		if(groundings[i].find("tar") != string::npos)
 		{
-			if (labelList[i-1].compare("tar") != 0 && rdtList.size() > 0)
+			rdt.m_tar = groundings[i].substr(4);
+			i++;
+			while (i < groundings.size() && groundings[i].find("tar") == string::npos)
 			{
-				rdtList.push_back(rdt);
-				rdt.m_tar = "";
-				rdt.m_refList.clear();
-				rdt.m_dirList.clear();
-				rdt.m_tar = groundings[i].substr(4);
-			}
-			else
-			{
-				if (groundings[i].substr(4).size() > 0)
+				if (groundings[i].find("ref:") != string::npos)
 				{
-					rdt.m_tar = groundings[i].substr(4);
-					rdt.m_refList.clear();
-					rdt.m_dirList.clear();
+					rdt.m_refList.push_back(groundings[i].substr(4));
 				}
-				else
+					
+				if (groundings[i].find("dir:") != string::npos)
 				{
-					rdt.m_refList.clear();
-					rdt.m_dirList.clear();					
+					rdt.m_dirList.push_back(groundings[i].substr(4));
 				}
+				i++;
 			}
-			continue;
+			rdtList.push_back(rdt);
+			rdt.m_tar = "";
+			rdt.m_refList.clear();
+			rdt.m_dirList.clear();
 		}
-		
-		tr = groundings[i].find("ref:");
-		if (tr != string::npos)
+
+		if (rdtList.size() == 0)
 		{
-			rdt.m_refList.push_back(groundings[i].substr(4));
-			continue;
+			i++;
 		}
-		
-		tr = groundings[i].find("dir:");	
-		if (tr != string::npos)
-		{
-			rdt.m_dirList.push_back(groundings[i].substr(4));
-			continue;
-		}
-		
 	}
-	rdtList.push_back(rdt);
+
 	m_RDTList = rdtList;
 	
-	return 0;
+	return 0;	
 }
 
 int Robot::FormatGroundings()

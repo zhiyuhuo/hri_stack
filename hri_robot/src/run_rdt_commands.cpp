@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	}
 	string roomobjidstr(argv[1]);
 	cout << "room obj: " << roomobjidstr << endl;
-	string fileName = "/home/hri/hri_DATA/new_three_worlds_grounding_res/" + roomobjidstr + ".txt";
+	string fileName = "/home/hri/hri_DATA/four_worlds_grounding_res/" + roomobjidstr + ".txt";
 	cout << fileName << endl;
 	string formattedCmdStr = "";
 	string rawCmdStr = "";

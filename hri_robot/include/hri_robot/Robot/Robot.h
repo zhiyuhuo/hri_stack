@@ -38,6 +38,12 @@
 #include "../Universal/Header.h"
 #include "Header.h"
 
+#define OCCUPANCYMAP_W 100
+#define OCCUPANCYMAP_H 100
+#define OCCUPANCYMAP_X -12.5
+#define OCCUPANCYMAP_Y -12.5
+#define OCCUPANCYMAP_RL 0.25
+
 using namespace std;
 using namespace cv;
 
@@ -126,7 +132,7 @@ public: // robot navigation
 	void poseCallback(const nav_msgs::OdometryConstPtr& msg);
 	ros::ServiceClient m_setMapClient; 
 	ros::ServiceClient m_getPlanClient;
-	vector<uint8_t> m_occupiedMap;
+	vector<uint8_t> m_occupancyMap;
 	int SetOccupancyMap(int width, int height, double resolution, double originX, double originY);
 	vector<VecPosition> CallForPathPlan(VecPosition posStart, VecPosition posTarget);
 	
@@ -157,6 +163,7 @@ public:	//parsing chunking tree
 	int m_counter;
 	ros::ServiceClient m_groundingClient; 
 	int AskGroundingService(string cmd);
+	string m_worldName;
 	string m_targetRoom;
 	string m_targetObject;
 	vector<RDTNode> m_RDTList;
@@ -189,7 +196,7 @@ public:	//Robot Behavior
 	int RunCommand(vector<string> cmd);
 	int Search90();
 	int SearchAround();
-	int GotoRoom(string room);
+	int GotoRoom(string worldAndroom);
 	int RDTIndoorNavigation(RDTNode rdt);
 	vector<Dct> ReadDetector(vector<string> cmd);
 	float ScoreCurrentState(vector<Dct> decisionSpatialRelations);
@@ -341,6 +348,7 @@ int Robot::ConnectToServer()
 	}
 	
 	//Get Le
+	m_worldName = worldNameStr;
 	string LEDir("/home/hri/hri_DATA/LE_" + worldNameStr);
 	cout << "loading le from " << LEDir << endl;
 	ImportLEList(LEDir.c_str());

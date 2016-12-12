@@ -33,6 +33,7 @@
 
 #include "../Universal/Header.h"
 #include "../Geometry/Header.h"
+#include "dijkstra.h"
 
 using namespace std;
 
@@ -58,6 +59,7 @@ public:
 	int SetMap(int width, int height, double resolution, VecPosition origin, vector<uint8_t> data);
 	vector<VecPosition> GetPlan(VecPosition posStart, VecPosition posTarget);
 	vector<VecPosition> AstarSearchPath(cv::Mat map, VecPosition posStart, VecPosition posTarget);
+	vector<VecPosition> DijkstraSearchPath(cv::Mat map, VecPosition posStart, VecPosition posTarget);
 	
 private:
 	double GetPointCost(int u, int v, cv::Mat map, vector<int> uvTarget);
@@ -68,7 +70,7 @@ private:
 
 Planner::Planner()
 {	
-	m_map = cv::Mat::zeros(400, 400, CV_8UC1);
+	m_map = cv::Mat::zeros(100, 100, CV_8UC1);
 }
 
 Planner::~Planner()
@@ -101,12 +103,29 @@ int Planner::SetMap(int width, int height, double resolution, VecPosition origin
 			m_map.data[i+j*m_width] = (unsigned char)(data[i+j*m_width]);
 		}
 	}
+	cv::imshow("m_map", m_map);
+	cv::waitKey(1000);
 	return 0;
 }
 
 vector<VecPosition> Planner::GetPlan(VecPosition posStart, VecPosition posTarget)
 {	
-	return AstarSearchPath(m_map, posStart, posTarget);
+// 	vector<VecPosition> path1 = AstarSearchPath(m_map, posStart, posTarget);
+// 	cout << "path 1_: " << path1.size() << endl;
+// 	for (int i = 0; i < path1.size(); i++)
+// 	{
+// 		cout << path1[i].GetX() << "  " << path1[i].GetY() << endl;
+// 	}
+	
+	
+	vector<VecPosition> path2 = DijkstraSearchPath(m_map, posStart, posTarget);
+	cout << "path 2 : " << path2.size() << endl;
+	for (int i = 0; i < path2.size(); i++)
+	{
+		cout << path2[i].GetX() << "  " << path2[i].GetY() << endl;
+	}
+	
+	return path2;
 }
 
 vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, VecPosition posTarget)
@@ -163,6 +182,33 @@ vector<VecPosition> Planner::AstarSearchPath(cv::Mat map, VecPosition posStart, 
 	return res;
 }
 
+vector<VecPosition> Planner::DijkstraSearchPath(cv::Mat map, VecPosition posStart, VecPosition posTarget)
+{
+	cv::imshow("m_map", map);
+	cv::waitKey(30);
+	vector<VecPosition> res;
+	vector<int> uvS = VecPositionToPixel(posStart);
+	vector<int> uvT = VecPositionToPixel(posTarget);
+	vector<cv::Point2i> path;
+	
+	// Start top right
+	cv::Point2i start(uvS[0], uvS[1]);
+	// Goal bottom left
+	cv::Point2i goal(uvT[0], uvT[1]);
+	cout << uvS[0] << "  " << uvS[1] << "  " << map.at<uint8_t>(uvS[1], uvS[0]) << endl;
+	cout << uvT[0] << "  " << uvT[1] << "  " << map.at<uint8_t>(uvT[1], uvT[0]) << endl;
+
+	findPathViaDijkstra(map, start, goal, path);
+	cout << "here path has " << path.size() << " nodes" << endl;
+	for (int i = 0; i < path.size(); i++)
+	{
+		VecPosition p = PixelToVecPosition(path[i].x, path[i].y);
+		res.push_back(p);
+	}
+	
+	return res;
+}
+
 double Planner::GetPointCost(int u, int v, cv::Mat map, vector<int> uvTarget)
 {
 	double res;
@@ -195,11 +241,6 @@ vector<int> Planner::VecPositionToPixel(VecPosition pos)
 	res[1] = (int)((pos.GetY() - m_origin.GetY()) / m_resolution);
 	return res;
 }
-
-
-
-
-
 
 #endif
 

@@ -65,9 +65,17 @@ int Robot::RunCommand(vector<string> cmd)
 			{
 				if (r2 > m_currentScore || r2 > 0.7)
 				{
-					m_state = "plan_path";
+// 					m_state = "plan_path";
 // 					m_state = "directly_to_targert";
 					cout << "m_moveTarget: " << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << " " << m_turnTarget << endl;
+					if (m_moveTarget.GetDistanceTo(m_posRobot) > 1.5)
+					{
+						m_state = "plan_path";
+					}
+					else
+					{
+						m_state = "directly_to_targert";
+					}
 				}
 				else
 				{
@@ -95,14 +103,11 @@ int Robot::RunCommand(vector<string> cmd)
 		CallForPercepstionService();
 		Perception();
 		m_entities = GetVisiableEntities();
-		SetOccupancyMap(400, 400, 0.25, -50, -50);
+		cout << "m_entities.size(): " << m_entities.size() << endl; 
+		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
 		/*show the information*/
-		cout << "--- m_posRobot: " << m_posRobot.GetX() << " " << m_posRobot.GetY() << " " << m_theta << endl;
-		cout << "m_pathPoints.size(): " << m_pathPoints.size() << endl;
-		for (int i = 0; i < m_pathPoints.size(); i++)
-			cout << "    " << m_pathPoints[i].GetX() << " " << m_pathPoints[i].GetY() << endl;
 		m_path = 1;
 		m_state = "move_to_targert";
 	}
@@ -151,9 +156,105 @@ int Robot::RunCommand(vector<string> cmd)
 	return res;
 }
 
-int Robot::GotoRoom(string room)
+int Robot::GotoRoom(string worldAndroom)
 {
 	int res = 0;
+	//cout << m_state << endl;
+	if (m_state.compare("init") == 0)
+	{
+		CallForPercepstionService();
+		Perception();
+		m_state = "read_room_position";
+	}
+	
+	else if (m_state.compare("read_room_position") == 0)
+	{
+		string keyword;
+		float x = 0;
+		float y = 0;
+		float th = 0;
+		bool ifGetroominfo = false;
+		
+		ifstream file("/home/hri/hri_DATA/worldAndroom.txt");
+		string str; 
+		while (getline(file, str))
+		{
+			if (str.find(worldAndroom) != string::npos)
+			{
+				stringstream ss(str);
+				ss >> keyword >> x >> y >> th;
+				//cout << keyword << " " << x << " " << y << " " << th << endl;
+				ifGetroominfo = true;
+				break;
+			}
+		}
+		
+		if (!ifGetroominfo)
+			return -1;
+		
+		
+		m_moveTarget.SetVecPosition(x,y);
+	  	m_turnTarget = th;
+	      
+		//m_state = "plan_path";
+		m_state = "directly_to_targert";
+	}
+	
+	else if (m_state.compare("plan_path") == 0)
+	{
+		CallForPercepstionService();
+		Perception();
+		m_entities = GetVisiableEntities();
+		cout << "m_entities.size(): " << m_entities.size() << endl; 
+		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
+		m_pathPoints.clear();
+		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+		/*show the information*/
+		m_path = 1;
+		m_state = "move_to_targert";
+	}
+	
+	else if (m_state.compare("move_to_targert") == 0)
+	{
+		if (m_path < m_pathPoints.size())
+		{
+			if (ToPos(m_pathPoints[m_path])) 
+			{
+				cout << ++m_path << endl;
+			}
+			SetRobotVelocity();
+		}
+		else if (m_path == m_pathPoints.size())
+		{
+			if (ToAngle(m_turnTarget)) 
+			{
+				cout << ++m_path << endl;
+			}
+			SetRobotVelocity();
+		}
+		else if (m_path > m_pathPoints.size())
+		{	
+			m_state = "end";
+		}
+	}
+	
+	else if (m_state.compare("directly_to_targert") == 0)
+	{
+		if (ToPosAngle(m_moveTarget, m_turnTarget) > 0) 
+		{
+			m_state = "end";
+		}
+		SetRobotVelocity();
+	}
+	
+	else if (m_state.compare("end") == 0)
+	{
+		m_linearSpeed = 0;
+		m_angularSpeed = 0;
+		SetRobotVelocity();
+		res = 1;
+	}
+	
 	return res;
 }
 
@@ -707,9 +808,9 @@ float Robot::IterateltSearchTarget(vector<Dct> decisionSpatialRelations)
 						
 				if (respadd > score1)
 				{
-					int xi = (int)(x / 0.1) + 100;
-					int yi = (int)(y / 0.1) + 100;
-					if (m_imgOccupancy.data[xi + yi*200] == 0)
+					int xi = (int)(x / 0.1) + m_imgOccupancy.cols/2;
+					int yi = (int)(y / 0.1) + m_imgOccupancy.rows/2;
+					if (m_imgOccupancy.data[xi + yi*m_imgOccupancy.cols] == 0)
 					{
 						respset = respbbb;
 						score1 = respadd;
@@ -793,9 +894,9 @@ float Robot::IterateltSearchTarget(vector<Dct> decisionSpatialRelations)
 						
 						if (respadd > score2)
 						{
-							int xi = (int)(x / 0.1) + 100;
-							int yi = (int)(y / 0.1) + 100;
-							if (m_imgOccupancy.data[xi + yi*200] == 0)
+							int xi = (int)(x / 0.1) + m_imgOccupancy.cols/2;
+							int yi = (int)(y / 0.1) + m_imgOccupancy.rows/2;
+							if (m_imgOccupancy.data[xi + yi*m_imgOccupancy.cols] == 0)
 							{
 								respset = respbbb;
 								score1 = respadd;
@@ -1045,9 +1146,9 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			x = (xythSet[indexMaxCRResult1])[0];
 			y = (xythSet[indexMaxCRResult1])[1];
 			th = (xythSet[indexMaxCRResult1])[2];
-			int xi = (int)(x / 0.1) + 100;
-			int yi = (int)(y / 0.1) + 100;
-			if (m_imgOccupancy.data[xi + yi*200] == 0)
+			int xi = (int)(x / 0.1) + m_imgOccupancy.cols/2;
+			int yi = (int)(y / 0.1) + m_imgOccupancy.rows/2;
+			if (m_imgOccupancy.data[xi + yi*m_imgOccupancy.cols] == 0)
 			{
 				respset = respbbb;
 				score1 = respadd;
@@ -1198,9 +1299,9 @@ float Robot::IterateSearchTargetOptimized(vector<Dct> decisionSpatialRelations)
 			x = (xythSet[indexMaxCRResult2])[0];
 			y = (xythSet[indexMaxCRResult2])[1];
 			th = (xythSet[indexMaxCRResult2])[2];			
-			xi = (int)(x / 0.1) + 100;
-			yi = (int)(y / 0.1) + 100;
-			if (m_imgOccupancy.data[xi + yi*200] == 0)
+			xi = (int)(x / 0.1) + m_imgOccupancy.cols/2;
+			yi = (int)(y / 0.1) + m_imgOccupancy.rows/2;
+			if (m_imgOccupancy.data[xi + yi*m_imgOccupancy.cols] == 0)
 			{
 				respset = respbbb;
 				score2 = respadd;

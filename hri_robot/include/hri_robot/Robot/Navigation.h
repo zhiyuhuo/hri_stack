@@ -51,10 +51,10 @@ void Robot::poseCallback(const nav_msgs::OdometryConstPtr& msg)
 
 int Robot::SetOccupancyMap(int width, int height, double resolution, double originX, double originY)
 {
-        cout << "set grid map" << endl;
-	fill(m_occupiedMap.begin(), m_occupiedMap.end(), 0);
-	m_occupiedMap.resize(width*height, 0);
-  
+        cout << "set occupancy map" << endl;
+	fill(m_occupancyMap.begin(), m_occupancyMap.end(), 0);
+	m_occupancyMap.resize(width*height, 0);
+	int occupancyNum = 0;
 	for (int n = 0; n < m_entities.size(); n++)
 	{
 		if (m_entities[n].name == "CR" || m_entities[n].name == "OR")
@@ -68,7 +68,8 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 		{
 			u = (int)((ent.vec[2*i] - originX) / resolution);
 			v = (int)((ent.vec[2*i+1] - originY) / resolution);
-			m_occupiedMap[u + v * width] = 255;
+			if (u >=0 && u < width && v >= 0 && v < height)
+				m_occupancyMap[u + v * width] = 255;
 		}
 	}
 	
@@ -78,17 +79,22 @@ int Robot::SetOccupancyMap(int width, int height, double resolution, double orig
 	srvSetMap.request.map.info.height = height; 
 	srvSetMap.request.map.info.origin.position.x = originX;
 	srvSetMap.request.map.info.origin.position.y = originY;
-		
-	for (int i = 0; i < m_occupiedMap.size(); i++)
+	ROS_INFO("Sending Set Map Request...");	
+	for (int i = 0; i < m_occupancyMap.size(); i++)
 	{
-		srvSetMap.request.map.data.push_back(m_occupiedMap[i]);
+		if (m_occupancyMap[i] == 255)
+		{
+			occupancyNum++;
+		}
+		srvSetMap.request.map.data.push_back(m_occupancyMap[i]);
 	}
+	cout << "occupancyNum: " << occupancyNum << endl;
 	srvSetMap.request.initial_pose.pose.pose.position.x = m_posRobot.GetX();
 	srvSetMap.request.initial_pose.pose.pose.position.y = m_posRobot.GetY();
 		
 	if (m_setMapClient.call(srvSetMap))
 	{
-		ROS_INFO("Res: %d", (int)srvSetMap.response.success);
+		ROS_INFO("Res: %d. Set the map done.", (int)srvSetMap.response.success);
 	}
 	else
 	{
@@ -108,8 +114,10 @@ vector<VecPosition> Robot::CallForPathPlan(VecPosition posStart, VecPosition pos
 	srvGetPlan.request.goal.pose.position.y = posTarget.GetY(); 
 	
 	vector<VecPosition> res;
+	ROS_INFO("Sending Path Plan Request...");
 	if (m_getPlanClient.call(srvGetPlan))
 	{
+		ROS_INFO("Res: %d mid-points received.", (int)(srvGetPlan.response.plan.poses.size()));
 		for (int i = 0; i < srvGetPlan.response.plan.poses.size(); i++)
 		{
 			VecPosition step(srvGetPlan.response.plan.poses[i].pose.position.x,

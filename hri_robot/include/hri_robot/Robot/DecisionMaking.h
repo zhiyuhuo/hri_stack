@@ -69,6 +69,9 @@ int Robot::HomeFetchTask()
 {
 	// cout << m_ifGetPerception << " " << m_ifGetPose << endl;
 	// cout << "m_mission: " << m_mission << endl;
+  	imshow("grid map", m_imgGrid);
+	waitKey(1);
+	
 	if (m_mission == "init") 
 	{
 		CallForPercepstionService();
@@ -109,7 +112,16 @@ int Robot::HomeFetchTask()
 	{
 		int r = 0;
 		vector<string> cmdVec = m_groundings[m_step];
-		r = RunCommand(cmdVec);
+		
+		if (cmdVec[0] != "non")
+		{
+			string worldAndroom = m_worldName + "_" + cmdVec[0];
+			r = GotoRoom(worldAndroom);
+		}
+		else
+		{
+			r = RunCommand(cmdVec);
+		}
 		if (r == 1)
 		{
 			//cout << " m_pathLength: " << m_pathLength << endl;
@@ -147,14 +159,16 @@ int Robot::HomeFetchTask()
 		      m_mission = "follow_command";
 		}
 	}
+	
+	else if (m_mission == "approach_the_furniture")
+	{
+		
+	}
 		
 	else if (m_mission == "end")
 	{
 		m_mission = "end";
 	}
-		
-	imshow("grid map", m_imgOccupancy);
-	waitKey(1);
 		
 	return 0;
 }
@@ -220,7 +234,7 @@ int Robot::DecisionMaking()
 		m_mission = "end";
 	}
 	
-	imshow("grid map", m_imgOccupancy);
+	imshow("grid map", m_imgGrid);
 	waitKey(1);
 	m_pathLength += (m_posRobot - m_posRobotLast).GetMagnitude();
 	m_posRobotLast = m_posRobot;
@@ -246,7 +260,7 @@ int Robot::TestPathGeneration()
 	
 	else if (m_mission.compare("path_plan") == 0)
 	{
-		SetOccupancyMap(400, 400, 0.25, -50, -50);
+		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 		VecPosition posTarget(3,-0.5);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, posTarget);
@@ -324,7 +338,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 			CallForPercepstionService();
 			Perception();
 			m_entities = GetVisiableEntities();
-			SetOccupancyMap(400, 400, 0.25, -50, -50);
+			SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
             
 			m_mission = "receive_keyboard_action";
 		}
@@ -368,7 +382,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 					CallForPercepstionService();
 					Perception();
 					m_entities = GetVisiableEntities();
-					SetOccupancyMap(400, 400, 0.25, -50, -50);
+					SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 					DrawOccupancyGrid();
                     
 					cout << "The entities in the map: " << endl;
@@ -442,7 +456,7 @@ int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
 			CallForPercepstionService();
 			Perception();
 			m_entities = GetVisiableEntities();
-			SetOccupancyMap(400, 400, 0.25, -50, -50);
+			SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
             
 			m_mission = "receive_keyboard_action";
 		}
@@ -485,7 +499,7 @@ int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
 					CallForPercepstionService();
 					Perception();
 					m_entities = GetVisiableEntities();
-					SetOccupancyMap(400, 400, 0.25, -50, -50);
+					SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 					DrawOccupancyGrid();
                     
 					cout << "The entities in the map: " << endl;
