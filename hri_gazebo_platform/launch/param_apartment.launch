@@ -1,0 +1,6 @@
+<launch>
+
+        <param name="tilt_angle" value= "-20.0" type="double" />
+	<param name="world_name" value= "apartment" />
+
+</launch>
