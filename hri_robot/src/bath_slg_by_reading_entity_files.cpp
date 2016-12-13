@@ -8,15 +8,8 @@ int main(int argc, char **argv)
 {
 	//
 	Robot _robot;
-	
-	if (argc > 1)
-	{
-	      string targetObject(argv[1]);
-	      _robot.m_targetObject = targetObject;
-	}
-	
 	_robot.ConnectToServer();
-	_robot.KeyboardControlForLanguageGeneration();
+	_robot.Test();
 
 	return 0;
 }

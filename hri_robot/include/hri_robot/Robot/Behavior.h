@@ -118,7 +118,7 @@ int Robot::RunCommand(vector<string> cmd)
 		{
 			if (ToPos(m_pathPoints[m_path])) 
 			{
-				cout << ++m_path << endl;
+				//cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -126,7 +126,7 @@ int Robot::RunCommand(vector<string> cmd)
 		{
 			if (ToAngle(m_turnTarget)) 
 			{
-				cout << ++m_path << endl;
+				//cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -220,7 +220,7 @@ int Robot::GotoRoom(string worldAndroom)
 		{
 			if (ToPos(m_pathPoints[m_path])) 
 			{
-				cout << ++m_path << endl;
+// 				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -228,7 +228,7 @@ int Robot::GotoRoom(string worldAndroom)
 		{
 			if (ToAngle(m_turnTarget)) 
 			{
-				cout << ++m_path << endl;
+// 				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}

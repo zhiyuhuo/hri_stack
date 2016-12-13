@@ -214,7 +214,7 @@ vector<VecPosition> Planner::DijkstraSearchPath(cv::Mat map, VecPosition posStar
 		res.push_back(p);
 	}
 	res.push_back(posTarget);
-	show_path(m_tmp, m_show, path);
+	//show_path(m_tmp, m_show, path);
 	return res;
 }
 

@@ -243,8 +243,7 @@ int Robot::DecisionMaking()
 
 int Robot::Test()
 {
-	map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
-	GenerateStaticDescription(dcts);
+	return 0;
 }
 
 int Robot::TestPathGeneration()
@@ -260,7 +259,7 @@ int Robot::TestPathGeneration()
 	
 	else if (m_mission.compare("path_plan") == 0)
 	{
-		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
+		//SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 		VecPosition posTarget(3,-0.5);
 		m_pathPoints.clear();
 		m_pathPoints = CallForPathPlan(m_posRobot, posTarget);
@@ -312,7 +311,7 @@ int Robot::TestRead()
 	return 0;
 }
 
-int Robot::KeyboardControlForLanguageGeneration()
+int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetObject)
 {
 	int res = 0;
 	//m_targetObject = "mug";
@@ -324,6 +323,12 @@ int Robot::KeyboardControlForLanguageGeneration()
         
 		if (m_mission == "init") 
 		{
+			m_LEList.clear();
+			m_worldName = worldName;
+			m_targetObject = targetObject;
+			string LEDir("/home/hri/hri_DATA/LE_" + worldName);
+			cout << "loading le from " << LEDir << endl;
+			ImportLEList(LEDir.c_str());
 			CallForPercepstionService();
 			if (m_ifGetPerception && m_ifGetPose) 
 			{
@@ -338,7 +343,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 			CallForPercepstionService();
 			Perception();
 			m_entities = GetVisiableEntities();
-			SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
+			//SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
             
 			m_mission = "receive_keyboard_action";
 		}
@@ -397,7 +402,8 @@ int Robot::KeyboardControlForLanguageGeneration()
 				{
 					//AnalyseEntityRelation();
 					//break;
-				      
+					string entitiesFileDir = "/home/hri/hri_DATA/language_generation_data/entities_log/" + m_worldName + "_" + m_targetObject + ".txt";
+				        SaveEntitiesInformationToTXT(entitiesFileDir, m_entities);
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
 					vector<string> dscpSet = GenerateStaticDescription(dcts);		
 					dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
@@ -430,7 +436,7 @@ int Robot::KeyboardControlForLanguageGeneration()
 	return res;
 }
 
-int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
+int Robot::AutomaticLanguageGenerationFromVideo(string worldName, string targetObject)
 {
 	int res = 0;
 	m_targetObject = targetObject;
@@ -442,6 +448,12 @@ int Robot::AutomaticLanguageGenerationFromVideo(string targetObject)
         
 		if (m_mission == "init") 
 		{
+			m_LEList.clear();
+			m_worldName = worldName;
+			m_targetObject = targetObject;
+			string LEDir("/home/hri/hri_DATA/LE_" + worldName);
+			cout << "loading le from " << LEDir << endl;
+			ImportLEList(LEDir.c_str());
 			CallForPercepstionService();
 			if (m_ifGetPerception && m_ifGetPose) 
 			{

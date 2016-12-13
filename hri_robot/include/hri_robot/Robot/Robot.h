@@ -231,8 +231,8 @@ public:	//Robot Strategy
 	int TestPathGeneration();
 	int TestRead();
 	int UpdatePerception();
-	int KeyboardControlForLanguageGeneration();
-	int AutomaticLanguageGenerationFromVideo(string targetObject);
+	int KeyboardControlForLanguageGeneration(string worldName, string targetObject);
+	int AutomaticLanguageGenerationFromVideo(string worldName, string targetObject);
 	
 	int BuildGroundingList(vector<string> groundings);
 	int BuildFakeGroundingList();
@@ -245,6 +245,8 @@ public:	//Grounding Generation (Generate RDT from Path)
 	vector<string> GenerateDynamicDescription(float addresseeDir, vector<VecPosition> pathPoints, map<string, vector<Dct> > dctMap);
 	float ScoreStateToOneGrounding(vector<float> CRPose, vector<float> ORPose, vector<Dct> decisionSpatialRelations, bool isStatic);
 	vector<string> AdjustGroundingsFormatToLGServer(vector<string> groundings);
+	int SaveEntitiesInformationToTXT(string fileName, vector<Ent> entities);
+	vector<Ent> ReadEntitiesInformationFromTXT(string fileName);
 	void AnalyseEntityRelation();
 	void LoadGroundingC0Appear();
 };

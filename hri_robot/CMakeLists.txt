@@ -149,9 +149,9 @@ add_executable(control src/control.cpp)
 target_link_libraries(control ${catkin_LIBRARIES})
 add_dependencies(control ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
-add_executable(speak src/speak.cpp)
-target_link_libraries(speak ${catkin_LIBRARIES})
-add_dependencies(speak ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
+add_executable(slg_task src/slg_task.cpp)
+target_link_libraries(slg_task ${catkin_LIBRARIES})
+add_dependencies(slg_task ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 add_executable(rebuild_environment_and_generate_spl src/rebuild_environment_and_generate_spl.cpp)
 target_link_libraries(rebuild_environment_and_generate_spl ${catkin_LIBRARIES})
@@ -160,6 +160,10 @@ add_dependencies(rebuild_environment_and_generate_spl ${hri_language_generation_
 add_executable(run_rdt_commands src/run_rdt_commands.cpp)
 target_link_libraries(run_rdt_commands ${catkin_LIBRARIES})
 add_dependencies(run_rdt_commands ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
+
+add_executable(bath_slg_by_reading_entity_files src/bath_slg_by_reading_entity_files.cpp)
+target_link_libraries(bath_slg_by_reading_entity_files ${catkin_LIBRARIES})
+add_dependencies(bath_slg_by_reading_entity_files ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

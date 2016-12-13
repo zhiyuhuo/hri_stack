@@ -98,7 +98,7 @@ std::vector<string> Robot::GenerateStaticDescription(map<string, std::vector<Dct
             ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			std::cout << "   The score is:    " << score << endl;
-			if (score > 0.50)
+			if (score > 0.25)
 			{
 				res.push_back(it->first);
 			}
@@ -251,8 +251,8 @@ float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<flo
 // 	std::cout << m_posRobot.GetX() << ", " << m_posRobot.GetY() << ", " << m_theta << endl;
 	
 	float resp_min = 1;
-    float resp_mul = 1;
-    float resp_mean = 0;
+	float resp_mul = 1;
+	float resp_mean = 0;
 	for (int i = 0; i < decisionSpatialRelations.size(); i++)
 	{
 		Dct dct = decisionSpatialRelations[i];
@@ -297,23 +297,54 @@ float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<flo
 	return res;
 }
 
+
+
+int Robot::SaveEntitiesInformationToTXT(string fileName, std::vector<Ent> entities)
+{
+	std::ofstream out(fileName.c_str());
+	for (int i = 0; i < entities.size(); i++)
+	{
+		out << entities[i].name << ": " << entities[i].id << " " << entities[i].tag << " "
+		    << entities[i].x << " " << entities[i].y << " " << entities[i].dir << " "
+		    << entities[i].confidence << " " << entities[i].vec.size()/2 << endl;
+		for (int j = 0; j < entities[i].vec.size()/2; j++)
+		{
+			out << entities[i].vec[2*j] << " " << entities[i].vec[2*j+1] << endl;
+		}
+	}
+	
+	return entities.size();
+}
+
+std::vector<Ent> Robot::ReadEntitiesInformationFromTXT(string fileName)
+{
+	std::vector<Ent> res;
+	std::ifstream in(fileName.c_str());
+	std::vector<std::string> lines;
+	std::string line;
+	while(getline(in, line))
+		lines.push_back(line);
+	cout << lines.size() << endl;
+	return res;
+}
+
 void Robot::AnalyseEntityRelation()
 {   
 	for (int i = 0; i < m_entities.size(); i++)
 	{
 		std::cout << " -" << m_entities[i].name << ": " 
-            << m_entities[i].vec.size()/2 << ", " 
-            << m_entities[i].x << ", " << m_entities[i].y << ",   " 
-            << m_entities[i].dir << endl;
-            
-            m_entities[i].id = i;
+			  << m_entities[i].vec.size()/2 << ", " 
+			  << m_entities[i].x << ", " << m_entities[i].y << ",   " 
+			  << m_entities[i].dir << endl;
+			  
+			  m_entities[i].id = i;
  	}
      
-    int L = m_entities.size();
-    matrix<double> m (L, L);
-    int t = 0;
+	int L = m_entities.size();
+	matrix<double> m (L, L);
+	int t = 0;
 
-    std::cout << m << std::endl;
+	std::cout << m << std::endl;
 }
 
 
