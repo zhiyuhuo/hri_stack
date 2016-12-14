@@ -404,6 +404,9 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
 					//break;
 					string entitiesFileDir = "/home/hri/hri_DATA/language_generation_data/entities_log/" + m_worldName + "_" + m_targetObject + ".txt";
 				        SaveEntitiesInformationToTXT(entitiesFileDir, m_entities);
+					ReadEntitiesInformationFromTXT(entitiesFileDir);
+					break;
+					
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
 					vector<string> dscpSet = GenerateStaticDescription(dcts);		
 					dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later

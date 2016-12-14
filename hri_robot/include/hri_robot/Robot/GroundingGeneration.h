@@ -8,6 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <dirent.h>
 
 #include <boost/numeric/ublas/matrix.hpp>
@@ -291,9 +292,9 @@ float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<flo
         resp_mul *= dctResponse;
         resp_mean += dctResponse;
 	}
-    resp_mean /= decisionSpatialRelations.size();
+	resp_mean /= decisionSpatialRelations.size();
 	
-    res = resp_min;
+	res = resp_min;
 	return res;
 }
 
@@ -304,8 +305,7 @@ int Robot::SaveEntitiesInformationToTXT(string fileName, std::vector<Ent> entiti
 	std::ofstream out(fileName.c_str());
 	for (int i = 0; i < entities.size(); i++)
 	{
-		out << entities[i].name << ": " << entities[i].id << " " << entities[i].tag << " "
-		    << entities[i].x << " " << entities[i].y << " " << entities[i].dir << " "
+		out << entities[i].name << ": " << entities[i].x << " " << entities[i].y << " " << entities[i].dir << " "
 		    << entities[i].confidence << " " << entities[i].vec.size()/2 << endl;
 		for (int j = 0; j < entities[i].vec.size()/2; j++)
 		{
@@ -325,6 +325,39 @@ std::vector<Ent> Robot::ReadEntitiesInformationFromTXT(string fileName)
 	while(getline(in, line))
 		lines.push_back(line);
 	cout << lines.size() << endl;
+	std::vector<int> entityHeads;
+	for (int i = 0; i < lines.size(); i++)
+	{
+		if (lines[i].find(":") != std::string::npos)
+		{
+			entityHeads.push_back(i);
+		}
+	}
+	entityHeads.push_back(lines.size());
+	for (int i = 0; i < entityHeads.size()-1; i++)
+	{
+		Ent ent;
+		int entityhead = entityHeads[i];
+		int entitytail = entityHeads[i+1];
+		string head = lines[entityhead];
+		int vecSize = entitytail - entityhead - 1;
+		std::stringstream ss(head);
+		ss >> ent.name >> ent.x >> ent.y >> ent.dir >> ent.confidence >> vecSize;
+		ent.name.erase(ent.name.size()-1);
+		float x,y = 0;
+		for (int i = 1; i <= vecSize; i++)
+		{	
+			std::stringstream ss(lines[entityhead+i]);
+			ss >> x >> y;
+			ent.vec.push_back(x);
+			ent.vec.push_back(y);
+		}
+		std::cout << ent.name << "- "
+		    << ent.x << " " << ent.y << " " << ent.dir << " "
+		    << ent.confidence << " " << ent.vec.size()/2 << endl;
+		
+		res.push_back(ent);
+	}
 	return res;
 }
 
