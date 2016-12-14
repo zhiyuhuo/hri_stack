@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 	//
 	Robot _robot;
 	_robot.ConnectToServer();
-	_robot.Test();
+	_robot.BatchTestSLG();
 
 	return 0;
 }

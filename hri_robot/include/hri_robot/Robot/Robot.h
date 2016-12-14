@@ -228,6 +228,7 @@ public:	//Robot Strategy
 	int HomeFetchTask();
 	int DecisionMaking();
 	int Test();
+	int BatchTestSLG();
 	int TestPathGeneration();
 	int TestRead();
 	int UpdatePerception();

@@ -6,6 +6,9 @@
 #include <vector>
 #include <cmath>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <dirent.h>
 
 #include "Header.h"
 
@@ -241,8 +244,36 @@ int Robot::DecisionMaking()
 	return 0;	
 }
 
+int Robot::BatchTestSLG()
+{
+	string rootqDir = "/home/hri/hri_DATA/language_generation_data/entities_log/";
+	vector<string> entitiesListDirSet;
+	DIR *dpdf;
+	struct dirent *epdf;
+	dpdf = opendir(rootDir.c_str());
+	if (dpdf != NULL)
+	{
+		while (epdf = readdir(dpdf))
+		{  
+			//std::std::cout << epdf->d_name << endl;
+			string dirName(epdf->d_name);
+			if (dirName.size() > 5)
+			{
+				entitiesListDirSet.push_back(rootDir + dirName);
+			}
+		}
+	}
+	
+	for (int i = 0; i < entitiesListDirSet.size(); i++)
+	{
+		cout << entitiesListDirSet[i] << endl;
+	}
+	return 0;
+}
+
 int Robot::Test()
 {
+	
 	return 0;
 }
 
@@ -404,7 +435,7 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
 					//break;
 					string entitiesFileDir = "/home/hri/hri_DATA/language_generation_data/entities_log/" + m_worldName + "_" + m_targetObject + ".txt";
 				        SaveEntitiesInformationToTXT(entitiesFileDir, m_entities);
-					ReadEntitiesInformationFromTXT(entitiesFileDir);
+					//ReadEntitiesInformationFromTXT(entitiesFileDir);
 					break;
 					
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");

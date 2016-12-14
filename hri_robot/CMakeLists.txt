@@ -161,9 +161,9 @@ add_executable(run_rdt_commands src/run_rdt_commands.cpp)
 target_link_libraries(run_rdt_commands ${catkin_LIBRARIES})
 add_dependencies(run_rdt_commands ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
-add_executable(bath_slg_by_reading_entity_files src/bath_slg_by_reading_entity_files.cpp)
-target_link_libraries(bath_slg_by_reading_entity_files ${catkin_LIBRARIES})
-add_dependencies(bath_slg_by_reading_entity_files ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
+add_executable(batch_slg_by_reading_entity_files src/batch_slg_by_reading_entity_files.cpp)
+target_link_libraries(batch_slg_by_reading_entity_files ${catkin_LIBRARIES})
+add_dependencies(batch_slg_by_reading_entity_files ${hri_language_generation_EXPORTED_TARGETS} ${hri_perception_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
