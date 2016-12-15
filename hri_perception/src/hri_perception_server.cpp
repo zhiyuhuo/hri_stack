@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	ros::Rate loopRate(30);
 	while(ros::ok() && (!ifGetPointCloud))
 	{
-		cv::imshow("tagged image", _perception.m_imgTag);
+		//cv::imshow("tagged image", _perception.m_imgTag);
 		ros::spinOnce();
 	}
 

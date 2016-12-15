@@ -89,14 +89,14 @@ std::vector<string> Robot::GenerateStaticDescription(map<string, std::vector<Dct
 		if (it->first.find("move") == string::npos && it->first.find("robot") == string::npos)
 		{
 			std::cout << "-" << it->first << ":" << endl;
-            std::vector<float> CRPose;
-            CRPose.push_back(m_posRobot.GetX());
-            CRPose.push_back(m_posRobot.GetY());
-            CRPose.push_back(m_theta);
-            std::vector<float> ORPose;
-            ORPose.push_back(0);
-            ORPose.push_back(0);
-            ORPose.push_back(0);
+			std::vector<float> CRPose;
+			CRPose.push_back(m_posRobot.GetX());
+			CRPose.push_back(m_posRobot.GetY());
+			CRPose.push_back(m_theta);
+			std::vector<float> ORPose;
+			ORPose.push_back(0);
+			ORPose.push_back(0);
+			ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			std::cout << "   The score is:    " << score << endl;
 			if (score > 0.25)
@@ -161,24 +161,24 @@ std::vector<string> Robot::AdjustGroundingsFormatToLGServer(std::vector<string> 
 
 float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<float> ORPose, std::vector<Dct> decisionSpatialRelations, bool isStatic)
 {
-    std::vector<Ent> entities = m_entities;
+	std::vector<Ent> entities = m_entities;
 
-    if (isStatic)
-    {
-        std::vector<Dct>::iterator it;
-        for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
-        {
-            //std::cout << it->nameA << " ----- " << it->nameB << endl;
-            if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
-            || it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
-            )
-            {
-                //std::cout << "remove:" << it->nameA << " ----- " << it->nameB << endl;
-                decisionSpatialRelations.erase(it);
-                it--;
-            }
-        }
-    }
+	if (isStatic)
+	{
+	    std::vector<Dct>::iterator it;
+	    for (it = decisionSpatialRelations.begin(); it < decisionSpatialRelations.end(); it++)
+	    {
+		//std::cout << it->nameA << " ----- " << it->nameB << endl;
+		if (it->nameA.find("OR") != string::npos || it->nameB.find("OR") != string::npos
+		|| it->nameA.find("rotation") != string::npos || it->nameB.find("rotation") != string::npos
+		)
+		{
+		    //std::cout << "remove:" << it->nameA << " ----- " << it->nameB << endl;
+		    decisionSpatialRelations.erase(it);
+		    it--;
+		}
+	    }
+	}
   
 	float res = 1;
 	float res2 = 0;
@@ -289,8 +289,8 @@ float Robot::ScoreStateToOneGrounding(std::vector<float> CRPose, std::vector<flo
 		{
 			resp_min = dctResponse;
 		}
-        resp_mul *= dctResponse;
-        resp_mean += dctResponse;
+		resp_mul *= dctResponse;
+		resp_mean += dctResponse;
 	}
 	resp_mean /= decisionSpatialRelations.size();
 	

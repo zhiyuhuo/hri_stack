@@ -264,9 +264,40 @@ int Robot::BatchTestSLG()
 		}
 	}
 	
+	map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
 	for (int i = 0; i < entitiesListDirSet.size(); i++)
 	{
 		cout << entitiesListDirSet[i] << endl;
+		m_entities.clear();
+		m_entities = ReadEntitiesInformationFromTXT(entitiesListDirSet[i]);
+		for (int i = 0; i < m_entities.size(); i++)
+		{
+			if (m_entities[i].name == "CR")
+			{	
+				m_posRobot.SetVecPosition(m_entities[i].x, m_entities[i].y);
+				m_theta = m_entities[i].dir;
+			}
+		}
+
+		vector<string> dscpSet = GenerateStaticDescription(dcts);		
+		dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
+					    
+		hri_language_generation::GenerateSpatialLanguage srv;
+		for (int i = 0; i < dscpSet.size(); i++)
+		{
+			cout << i << ": " << dscpSet[i] << endl;
+			srv.request.groundings.push_back(dscpSet[i]);
+		}
+					  
+		if (m_generatingLanguageClient.call(srv))
+		{
+			cout << srv.response.language << endl;
+		}
+		else
+		{
+			ROS_ERROR("Failed to call service SpatialLanguageGrounding\nLet's try it again.");
+		}
+		cout << "\n------------------------------------------------------------\n";
 	}
 	return 0;
 }
@@ -385,7 +416,7 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
 			{
 				case 'w':	
 				{	
-					m_linearSpeed = 0.1; 
+					m_linearSpeed = 0.2; 
 					m_angularSpeed = 0;	
 					break;
 				}
@@ -408,7 +439,7 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
 				}
 				case 'x':
 				{	
-					m_linearSpeed = -0.1; 
+					m_linearSpeed = -0.2; 
 					m_angularSpeed = 0;	 
 					break;			  
 				}
@@ -428,16 +459,18 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
  					}
 					break;			  
 				}
+				
+				case 'r':
+				{
+					string entitiesFileDir = "/home/hri/hri_DATA/language_generation_data/entities_log/" + m_worldName + "_" + m_targetObject + ".txt";
+				        SaveEntitiesInformationToTXT(entitiesFileDir, m_entities);
+					cout << "entities list saved. you can exit the program by pressing Ctrl+C" << endl;
+					//ReadEntitiesInformationFromTXT(entitiesFileDir);
+					break;					
+				}
                 
 				case 'l':
 				{
-					//AnalyseEntityRelation();
-					//break;
-					string entitiesFileDir = "/home/hri/hri_DATA/language_generation_data/entities_log/" + m_worldName + "_" + m_targetObject + ".txt";
-				        SaveEntitiesInformationToTXT(entitiesFileDir, m_entities);
-					//ReadEntitiesInformationFromTXT(entitiesFileDir);
-					break;
-					
 					map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
 					vector<string> dscpSet = GenerateStaticDescription(dcts);		
 					dscpSet = AdjustGroundingsFormatToLGServer(dscpSet); // temp add here need to be removed later
