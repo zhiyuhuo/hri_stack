@@ -246,7 +246,7 @@ int Robot::DecisionMaking()
 
 int Robot::BatchTestSLG()
 {
-	string rootqDir = "/home/hri/hri_DATA/language_generation_data/entities_log/";
+	string rootDir = "/home/hri/hri_DATA/language_generation_data/entities_log/";
 	vector<string> entitiesListDirSet;
 	DIR *dpdf;
 	struct dirent *epdf;
