@@ -263,6 +263,14 @@ int Robot::Perception()
 	{
 		tempGlobalSEList.push_back(GenerateGlobalEnt(m_tempSEList[i]));
 	}
+	for (int i = 0; i < m_LEList.size(); i++)
+        {
+                if (m_LEList[i].name == "bed")
+                {
+                    tempGlobalSEList.push_back(m_LEList[i]);
+                    break;
+                }
+        }
 	UpdateSEMap(tempGlobalSEList);
 	return res;
 }
@@ -378,18 +386,29 @@ int Robot::CompareTwoGOs(Ent go1, Ent go2)
 	
 	if (go1.name != "unknown")
 	{
-		if (areaand > 0.5 * area1)
+                if (areaand > 3)
+                {
+                        if (area1 > area2)
+                        {
+                                if (go1.confidence > go2.confidence)
+				{
+					res = 1;
+				}
+                        }
+                }
+                
+		if (areaand > 0.2 * area1)
 		{
-			if (areaand > 0.3 * area2)
+			if (areaand > 0.2 * area2)
 			{
-				if (go1.confidence > 1.2 * go2.confidence)
+				if (go1.confidence > go2.confidence)
 				{
 					res = 1;
 				}
 			}
 		}
 		
-		if (areaand <= 0.1 * area1 && areaand < 0.1 * area2)
+		if (areaand <= 0.05 * area1 && areaand < 0.05 * area2)
 		{
 			res = 2;
 		}

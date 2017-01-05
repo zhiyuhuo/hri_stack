@@ -68,7 +68,7 @@ int Robot::RunCommand(vector<string> cmd)
 // 					m_state = "plan_path";
 // 					m_state = "directly_to_targert";
 					cout << "m_moveTarget: " << m_moveTarget.GetX() << " " << m_moveTarget.GetY() << " " << m_turnTarget << endl;
-					if (m_moveTarget.GetDistanceTo(m_posRobot) > 1.5)
+					if (m_moveTarget.GetDistanceTo(m_posRobot) > 1.8)
 					{
 						m_state = "plan_path";
 					}
@@ -106,7 +106,16 @@ int Robot::RunCommand(vector<string> cmd)
 		cout << "m_entities.size(): " << m_entities.size() << endl; 
 		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 		m_pathPoints.clear();
-		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+                vector<VecPosition> pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+                if (pathPoints.size() > 10)
+                {
+                        for (int i = 1; i < pathPoints.size(); i+=2)
+                                m_pathPoints.push_back(pathPoints[i]);
+                }
+                else
+                {
+                        m_pathPoints = pathPoints;
+                }
 		/*show the information*/
 		m_path = 1;
 		m_state = "move_to_targert";
@@ -118,7 +127,9 @@ int Robot::RunCommand(vector<string> cmd)
 		{
 			if (ToPos(m_pathPoints[m_path])) 
 			{
-				//cout << ++m_path << endl;
+                                CallForPercepstionService();
+                                Perception();
+				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -126,7 +137,7 @@ int Robot::RunCommand(vector<string> cmd)
 		{
 			if (ToAngle(m_turnTarget)) 
 			{
-				//cout << ++m_path << endl;
+				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -208,7 +219,9 @@ int Robot::GotoRoom(string worldAndroom)
 		cout << "m_entities.size(): " << m_entities.size() << endl; 
 		SetOccupancyMap(OCCUPANCYMAP_W, OCCUPANCYMAP_H, OCCUPANCYMAP_RL, OCCUPANCYMAP_X, OCCUPANCYMAP_Y);
 		m_pathPoints.clear();
-		m_pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+		vector<VecPosition> pathPoints = CallForPathPlan(m_posRobot, m_moveTarget);
+                for (int i = 1; i < pathPoints.size(); i+=2)
+                        m_pathPoints.push_back(pathPoints[i]);
 		/*show the information*/
 		m_path = 1;
 		m_state = "move_to_targert";
@@ -220,7 +233,7 @@ int Robot::GotoRoom(string worldAndroom)
 		{
 			if (ToPos(m_pathPoints[m_path])) 
 			{
-// 				cout << ++m_path << endl;
+ 				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
@@ -228,11 +241,11 @@ int Robot::GotoRoom(string worldAndroom)
 		{
 			if (ToAngle(m_turnTarget)) 
 			{
-// 				cout << ++m_path << endl;
+ 				cout << ++m_path << endl;
 			}
 			SetRobotVelocity();
 		}
-		else if (m_path > m_pathPoints.size())
+		else if (m_path >= m_pathPoints.size())
 		{	
 			m_state = "end";
 		}

@@ -382,7 +382,7 @@ int Robot::KeyboardControlForLanguageGeneration(string worldName, string targetO
 	{
 		imshow("grid map", m_imgGrid);
 		char c = waitKey(1);
-        
+                //cout << "m_mission: " << m_mission << endl;
 		if (m_mission == "init") 
 		{
 			m_LEList.clear();

@@ -148,7 +148,7 @@ Ent Robot::GetLE(string fullfname, string lename)
 		res.y = yc / ct;
 		myfile.close();
 	}
-	res.confidence = 1.0;
+	res.confidence = 2.0;
 
 	return res;
 }
