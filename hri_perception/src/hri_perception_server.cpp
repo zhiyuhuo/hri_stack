@@ -130,6 +130,7 @@ bool CallPerception(hri_perception::Perception::Request  &req, hri_perception::P
 {
 	vector<float> pts = Transformation(rawPoints, cameraHeight, curTiltAngle);
 	_perception.ImportKinectData(imgRGB, pts);
+	_perception.m_SEList.clear();
 	_perception.Process();
 	hri_perception::Env envMsg = BuildEnvMsg();
 	res.env = envMsg;
