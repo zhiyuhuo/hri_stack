@@ -39,8 +39,22 @@ int Robot::RunCommand(vector<string> cmd)
 			res = -1;
 			m_state = "end";
 		}
-		m_state = "navigation";
+// 		m_state = "pre_search";
+                if (cmd[2] != "move")
+                        m_state = "pre_search";
+                else
+                        m_state = "navigation";
 	}
+	
+    	else if (m_state.compare("pre_search") == 0)
+        {
+//    		int r = Search90();
+		int r = SearchAround();
+		if (r == 1)
+		{
+			m_state = "navigation";
+		}             
+        }
 	
 	else if (m_state.compare("navigation") == 0)
 	{
