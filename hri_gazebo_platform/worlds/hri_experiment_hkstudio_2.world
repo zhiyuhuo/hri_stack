@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+	<world name="hri_hk_studio_world">
+	  
+		<include>
+			<uri>model://sun</uri>
+		</include>
+
+		<include>
+			<uri>model://ground_plane</uri>
+		</include>
+
+		<include>
+			<uri>model://hri_robot</uri>
+			<pose>-2.1 -3 0 0 0 1.5708</pose>
+		</include>
+	  
+		<include>
+			<uri>model://hri_hk_studio</uri>
+			<pose>2 -5 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_dinnertable</uri>
+			<pose>-4 -3 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>-4 -1.7 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>-4 -4.3 0 0 0 3.14</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_desk</uri>
+			<pose>-4 0.75 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_woodchair</uri>
+			<pose>-4 2 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_desk</uri>
+			<pose>-4.5 6 0 0 0 1.57</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_woodchair</uri>
+			<pose>-3.5 6 0 0 0 -1.57</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_hexagontable</uri>
+			<pose>4.5 4 0 0 0 0</pose>
+		</include>
+		
+		<include>
+			<uri>model://hri_woodchair</uri>
+			<pose>4.5 3 0 0 0 4.71</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_desk</uri>
+			<pose>4 -4.3 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_bluechair</uri>
+			<pose>4 -3.3 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_couch</uri>
+			<pose>0 -3.5 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_coffeetable</uri>
+			<pose>1 -3.5 0 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_laptop</uri>
+			<pose>-4 -2.9 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_mug</uri>
+			<pose>1 -3.5 0.5 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_glassescase</uri>
+			<pose>4 -4.5 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_fork</uri>
+			<pose>-4 0.5 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_statue</uri>
+			<pose>-4.5 6 0.9 0 0 0</pose>
+		</include>
+
+		<include>
+			<uri>model://hri_obj_monitor</uri>
+			<pose>4.5 4 0.6 0 0 0</pose>
+		</include>
+
+	</world>
+</sdf>
+
+
+
+
+
+
+
+
+
+

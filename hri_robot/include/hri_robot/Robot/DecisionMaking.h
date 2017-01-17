@@ -247,6 +247,7 @@ int Robot::DecisionMaking()
 int Robot::BatchTestSLG()
 {
 	string rootDir = "/home/hri/hri_DATA/language_generation_data/entities_log/";
+        vector<string> listNameSet;
 	vector<string> entitiesListDirSet;
 	DIR *dpdf;
 	struct dirent *epdf;
@@ -260,11 +261,13 @@ int Robot::BatchTestSLG()
 			if (dirName.size() > 5)
 			{
 				entitiesListDirSet.push_back(rootDir + dirName);
+                                listNameSet.push_back(dirName);
 			}
 		}
 	}
 	
 	map<string, vector<Dct> > dcts = LoadGroundingTypesList("/home/hri/hri_DATA/Targets/");
+        vector<string> languageList;
 	for (int i = 0; i < entitiesListDirSet.size(); i++)
 	{
 		cout << entitiesListDirSet[i] << endl;
@@ -292,6 +295,8 @@ int Robot::BatchTestSLG()
 		if (m_generatingLanguageClient.call(srv))
 		{
 			cout << srv.response.language << endl;
+                        languageList.push_back(listNameSet[i] + ":");
+                        languageList.push_back(srv.response.language);
 		}
 		else
 		{
@@ -299,6 +304,14 @@ int Robot::BatchTestSLG()
 		}
 		cout << "\n------------------------------------------------------------\n";
 	}
+	
+	ofstream file("/home/hri/hri_DATA/language_generation_data/dates.out");  
+
+        for(unsigned int i=0; i<languageList.size(); i++)    
+            file << languageList[i] << endl;
+
+        file.close();
+	
 	return 0;
 }
 
