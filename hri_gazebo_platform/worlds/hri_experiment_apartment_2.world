@@ -28,7 +28,7 @@
 
 		<include>
 			<uri>model://hri_roundtable</uri>
-			<pose>4 2 0 0 0 0</pose>
+			<pose>4.3 2 0 0 0 0</pose>
 		</include>
 
 		<include>
@@ -38,7 +38,7 @@
 
 		<include>
 			<uri>model://hri_coffeetable</uri>
-			<pose>4.5 4 0 0 0 0</pose>
+			<pose>4.4 4.1 0 0 0 0</pose>
 		</include>
 
 		<include>
@@ -48,12 +48,12 @@
 
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>3.25 7 0 0 0 1.5708</pose>
+			<pose>3.15 7.1 0 0 0 1.5708</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_bluechair</uri>
-			<pose>5.75 7 0 0 0 -1.5708</pose>
+			<pose>5.95 6.9 0 0 0 -1.5708</pose>
 		</include>
 
 		<include>
@@ -63,27 +63,27 @@
 
 		<include>
 			<uri>model://hri_roundtable</uri>
-			<pose>4 -2 0 0 0 0</pose>
+			<pose>3.9 -4 0 0 0 0</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_coffeetable</uri>
-			<pose>6.2 -2 0 0 0 0</pose>
+			<pose>6.2 -2.5 0 0 0 0</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_hexagontable</uri>
-			<pose>-1.25 -5 0 0 0 0</pose>
+			<pose>-1.15 -5 0 0 0 0</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_woodchair</uri>
-			<pose>-1.25 -4 0 0 0 1.5708</pose>
+			<pose>-1.25 -3.8 0 0 0 1.5708</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_woodchair</uri>
-			<pose>-1.25 -6 0 0 0 1.5708</pose>
+			<pose>-1.25 -6.2 0 0 0 1.5708</pose>
 		</include>
 
 		<include>
@@ -93,12 +93,12 @@
 
 		<include>
 			<uri>model://hri_obj_glassescase</uri>
-			<pose>4.5 4 0.6 0 0 0</pose>
+			<pose>4.4 4.1 0.6 0 0 0</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_obj_fork</uri>
-			<pose>4 2 0.6 0 0 0</pose>
+			<pose>4.3 2 0.6 0 0 0</pose>
 		</include>
 
 		<include>
