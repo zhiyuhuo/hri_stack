@@ -82,7 +82,7 @@
 
 		<include>
 			<uri>model://hri_coffeetable</uri>
-			<pose>1 -3.8 0 0 0 0</pose>
+			<pose>1 -4 0 0 0 0</pose>
 		</include>
 
 		<include>

@@ -103,12 +103,12 @@
 
 		<include>
 			<uri>model://hri_obj_monitor</uri>
-			<pose>6.2 -2.5 0.5 0 0 0</pose>
+			<pose>6.2 -2 0.5 0 0 0</pose>
 		</include>
 
 		<include>
 			<uri>model://hri_obj_statue</uri>
-			<pose>3.9 -3 0.6 0 0 0</pose>
+			<pose>4 -1.9 0.6 0 0 0</pose>
 		</include>
 
 		<include>
