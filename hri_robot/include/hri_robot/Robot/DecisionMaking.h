@@ -305,7 +305,13 @@ int Robot::BatchTestSLG()
 		cout << "\n------------------------------------------------------------\n";
 	}
 	
-	ofstream file("/home/hri/hri_DATA/language_generation_data/dates.out");  
+
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char filename[200] = {};
+	sprintf(filename, "/home/hri/hri_DATA/language_generation_data/dates-%d_%d_%d_%d-%d-%d.out", 
+			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	ofstream file(filename);  
 
         for(unsigned int i=0; i<languageList.size(); i++)    
             file << languageList[i] << endl;
