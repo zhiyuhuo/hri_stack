@@ -99,7 +99,7 @@ std::vector<string> Robot::GenerateStaticDescription(map<string, std::vector<Dct
 			ORPose.push_back(0);
 			float score = ScoreStateToOneGrounding(CRPose, m_originalRobotPose, it->second, true);
 			std::cout << "   The score is:    " << score << endl;
-			if (score > 0.30)
+			if (score > 0.)
 			{
 				res.push_back(it->first);
 			}
